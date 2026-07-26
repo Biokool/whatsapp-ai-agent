@@ -1,8 +1,11 @@
+import dotenv from "dotenv";
+import path from "node:path";
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 import Database from "better-sqlite3";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
-import path from "node:path";
 import fs from "node:fs";
+import ws from "ws";
 
 // ============================================================
 // SQLite → Supabase Migration Script
@@ -24,7 +27,9 @@ if (!fs.existsSync(SQLITE_PATH)) {
 }
 
 const sqlite = new Database(SQLITE_PATH, { readonly: true });
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  realtime: { transport: ws },
+});
 
 async function migrate() {
   console.log("Starting migration from SQLite to Supabase...\n");
