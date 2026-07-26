@@ -4,15 +4,16 @@ import type { Conversation } from "@/core/types";
 
 interface ConversationListProps {
   conversations: Conversation[];
-  selectedId: number | null;
-  onSelect: (id: number) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
   searchQuery: string;
 }
 
-function formatRelative(timestamp: number | null): string {
-  if (!timestamp) return "";
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - timestamp;
+function formatRelative(isoTimestamp: string | null): string {
+  if (!isoTimestamp) return "";
+  const then = new Date(isoTimestamp).getTime();
+  const now = Date.now();
+  const diff = Math.floor((now - then) / 1000);
   if (diff < 60) return "ahora";
   if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
   if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;

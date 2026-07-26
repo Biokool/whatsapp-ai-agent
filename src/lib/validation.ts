@@ -98,7 +98,7 @@ export function sanitizeText(text: string): string {
 }
 
 /**
- * Validate conversation ID parameter
+ * Validate conversation ID parameter (UUID format)
  */
 export function validateConversationId(
   id: unknown
@@ -110,9 +110,10 @@ export function validateConversationId(
     return { valid: false, errors };
   }
 
-  const num = Number(id);
-  if (Number.isNaN(num) || !Number.isInteger(num) || num <= 0) {
-    errors.push("conversationId must be a positive integer");
+  const str = String(id);
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(str)) {
+    errors.push("conversationId must be a valid UUID");
   }
 
   return { valid: errors.length === 0, errors };

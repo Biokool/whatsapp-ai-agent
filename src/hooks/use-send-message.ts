@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-async function sendMessage(conversationId: number, content: string): Promise<void> {
+async function sendMessage(conversationId: string, content: string): Promise<void> {
   const res = await fetch(`/api/messages/${conversationId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -15,7 +15,7 @@ export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ conversationId, content }: { conversationId: number; content: string }) =>
+    mutationFn: ({ conversationId, content }: { conversationId: string; content: string }) =>
       sendMessage(conversationId, content),
 
     onSettled: (_data, _error, variables) => {

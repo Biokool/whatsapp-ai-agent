@@ -4,26 +4,26 @@ import type { Conversation, Message, ConnectionPayload, MessageRole } from "./in
 describe("Core Types", () => {
   it("Conversation has required fields", () => {
     const conversation: Conversation = {
-      id: 1,
+      id: "00000000-0000-0000-0000-000000000001",
       phone: "5215664436277",
       name: "Test User",
       mode: "AI",
-      last_message_at: Date.now(),
+      last_message_at: new Date().toISOString(),
       last_message_preview: "Hello",
     };
 
-    expect(conversation.id).toBe(1);
+    expect(conversation.id).toBe("00000000-0000-0000-0000-000000000001");
     expect(conversation.phone).toBe("5215664436277");
     expect(conversation.mode).toBe("AI");
   });
 
   it("Message has required fields", () => {
     const message: Message = {
-      id: 1,
-      conversation_id: 1,
+      id: "00000000-0000-0000-0000-000000000002",
+      conversation_id: "00000000-0000-0000-0000-000000000001",
       role: "assistant",
       content: "Hello!",
-      created_at: Date.now(),
+      created_at: new Date().toISOString(),
     };
 
     expect(message.role).toBe("assistant");

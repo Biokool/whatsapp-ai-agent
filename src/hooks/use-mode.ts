@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Conversation } from "@/core/types";
 
-async function toggleMode(conversationId: number, mode: "AI" | "HUMAN"): Promise<void> {
+async function toggleMode(conversationId: string, mode: "AI" | "HUMAN"): Promise<void> {
   const res = await fetch(`/api/mode/${conversationId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -16,7 +16,7 @@ export function useModeToggle() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ conversationId, mode }: { conversationId: number; mode: "AI" | "HUMAN" }) =>
+    mutationFn: ({ conversationId, mode }: { conversationId: string; mode: "AI" | "HUMAN" }) =>
       toggleMode(conversationId, mode),
 
     // Optimistic update

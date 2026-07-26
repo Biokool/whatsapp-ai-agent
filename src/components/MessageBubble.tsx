@@ -3,11 +3,11 @@
 interface MessageBubbleProps {
   role: "user" | "assistant" | "human";
   content: string;
-  timestamp: number;
+  timestamp: string;
 }
 
-function formatTime(ts: number): string {
-  const d = new Date(ts * 1000);
+function formatTime(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp);
   return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 }
 

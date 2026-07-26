@@ -121,8 +121,14 @@ export async function start(): Promise<void> {
       stopOutboxListener();
 
       if (code === DisconnectReason.loggedOut) {
+        stopOutboxListener();
         await resetConnectionState();
-        logger.info("[bot] sesión cerrada desde el móvil. No reconectando.");
+        // Limpiar sesión vieja y reconectar con QR nuevo
+        if (fs.existsSync(AUTH_DIR)) {
+          fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+          logger.info("[bot] sesión cerrada desde el móvil. Sesión borrada, reconectando...");
+        }
+        scheduleReconnect(code);
         return;
       }
 

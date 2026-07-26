@@ -9,18 +9,18 @@ export interface ConnectionPayload {
 export type MessageRole = "user" | "assistant" | "human";
 
 export interface Conversation {
-  id: number;
+  id: string;
   phone: string;
   name: string | null;
   mode: "AI" | "HUMAN";
-  last_message_at: number | null;
+  last_message_at: string | null;
   last_message_preview: string | null;
 }
 
 export interface Message {
-  id: number;
-  conversation_id: number;
+  id: string;
+  conversation_id: string;
   role: MessageRole;
   content: string;
-  created_at: number;
+  created_at: string;
 }

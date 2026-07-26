@@ -28,7 +28,7 @@ if (!fs.existsSync(SQLITE_PATH)) {
 
 const sqlite = new Database(SQLITE_PATH, { readonly: true });
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  realtime: { transport: ws },
+  realtime: { transport: ws as never },
 });
 
 async function migrate() {

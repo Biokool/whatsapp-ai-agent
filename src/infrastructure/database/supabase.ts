@@ -18,7 +18,7 @@ export function getSupabase(): SupabaseClient {
       autoRefreshToken: false,
       persistSession: false,
     },
-    realtime: { transport: ws },
+    realtime: { transport: ws as never },
   });
 
   return _supabase;
