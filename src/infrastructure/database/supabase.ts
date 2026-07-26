@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { getEnv } from "@/config/environment";
+import ws from "ws";
 
 let _supabase: SupabaseClient | null = null;
 
@@ -17,6 +18,7 @@ export function getSupabase(): SupabaseClient {
       autoRefreshToken: false,
       persistSession: false,
     },
+    realtime: { transport: ws },
   });
 
   return _supabase;
