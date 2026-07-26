@@ -1,0 +1,33 @@
+# ============================================================
+# WhatsApp AI Agent — Docker Compose (LOCAL)
+# ============================================================
+# Uso: docker compose -f docker-compose.local.yml up -d
+#
+# Esto levanta:
+#   - WhatsApp AI Agent (bot + dashboard) en puerto 3000
+#
+# NO incluye PostgreSQL/Redis/Evolution API — ya corren por separado.
+# Cloudflare NO aplica en local (solo para VPS con acceso publico).
+# ============================================================
+
+services:
+  whatsapp-agent:
+    container_name: whatsapp-agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./auth:/app/auth
+      - ./prompts:/app/prompts
+      - ./docs:/app/docs
+      - ./.env.local:/app/.env.local:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - LOG_LEVEL=info
+    networks:
+      - default
