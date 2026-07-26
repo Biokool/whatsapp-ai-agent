@@ -10,9 +10,13 @@ import pino from "pino";
 import qrcodeTerminal from "qrcode-terminal";
 import path from "node:path";
 import fs from "node:fs";
-import { setConnectionState, getConnectionState } from "../db";
+import {
+  getConnectionState,
+  setConnectionState,
+  resetConnectionState,
+} from "@/infrastructure/cache/connection-state";
 import { handleIncomingMessages } from "./handler";
-import { startOutboxLoop, stopOutboxLoop } from "./outbox";
+import { startOutboxListener, stopOutboxListener } from "./outbox";
 
 const AUTH_DIR = path.resolve(process.cwd(), "auth");
 const DATA_DIR = path.resolve(process.cwd(), "data");
@@ -27,9 +31,6 @@ const baileysLogger = pino({ level: "silent" });
 function scheduleReconnect(code: number | undefined) {
   if (reconnectTimer) return;
 
-  // Code 440 = connectionReplaced. Ocurre justo después del pairing.
-  // Si reintentamos muy rápido, entramos en loop. Espera 15s.
-  // El resto de errores: 5s es suficiente.
   const delay = code === 440 ? 15000 : 5000;
 
   logger.info(`[bot] reconectando en ${delay / 1000}s (code=${code ?? "?"})`);
@@ -37,8 +38,6 @@ function scheduleReconnect(code: number | undefined) {
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
     if (handle) {
-      // Cleanup explícito del socket viejo antes de reconectar.
-      // Sin esto, Baileys puede dejar listeners colgando que se mezclan con la nueva conexión.
       try {
         handle.sock.end(undefined);
       } catch {
@@ -60,8 +59,6 @@ export async function start(): Promise<void> {
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
 
-  // OBLIGATORIO: WhatsApp rechaza versiones desactualizadas con code 405.
-  // Baileys hardcodea una versión que queda vieja entre releases.
   let version: [number, number, number] | undefined;
   try {
     const fetched = await fetchLatestBaileysVersion();
@@ -75,52 +72,45 @@ export async function start(): Promise<void> {
     version,
     auth: state,
     logger: baileysLogger,
-    // OBLIGATORIO: browser fingerprint conocido. Custom dispara code 440 en loop.
     browser: Browsers.macOS("Desktop"),
     markOnlineOnConnect: false,
     syncFullHistory: false,
-    // printQRInTerminal está deprecated en Baileys 6.7+. Manejamos el QR manualmente.
   });
 
   // Mark current state
-  const current = getConnectionState();
+  const current = await getConnectionState();
   if (current.status === "disconnected") {
-    setConnectionState({ status: "connecting" });
+    await setConnectionState({ status: "connecting" });
   }
 
   // Eventos
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", (update) => {
+  sock.ev.on("connection.update", async (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
       logger.info("[bot] QR generado");
-      setConnectionState({ status: "qr", qr_string: qr, phone: null });
-      // Fallback: pintar el QR en la terminal en ASCII
+      await setConnectionState({ status: "qr", qr_string: qr, phone: null });
       qrcodeTerminal.generate(qr, { small: true });
     }
 
     if (connection === "connecting") {
-      // Solo degradamos a 'connecting' desde 'disconnected'.
-      // NO degradar desde 'qr' (perderíamos el qr_string) ni desde 'connected'.
-      const state = getConnectionState();
+      const state = await getConnectionState();
       if (state.status === "disconnected") {
-        setConnectionState({ status: "connecting" });
+        await setConnectionState({ status: "connecting" });
       }
     }
 
     if (connection === "open") {
       const userId = sock.user?.id ?? "";
-      // Formato típico: "5491155...:N@s.whatsapp.net"
       const phone = userId.split(":")[0].split("@")[0] || null;
-      setConnectionState({ status: "connected", qr_string: null, phone });
+      await setConnectionState({ status: "connected", qr_string: null, phone });
       logger.info(`[bot] ✓ conectado como ${phone}`);
-      startOutboxLoop(sock);
+      startOutboxListener(sock);
     }
 
     if (connection === "close") {
-      // Type-safe extract of status code
       const error = lastDisconnect?.error as unknown;
       const code =
         error && typeof error === "object" && "output" in error
@@ -128,22 +118,14 @@ export async function start(): Promise<void> {
             (error.output?.statusCode as number | undefined)
           : undefined;
 
-      stopOutboxLoop();
+      stopOutboxListener();
 
       if (code === DisconnectReason.loggedOut) {
-        // 401: logout explícito desde el móvil. NO reconectar.
-        setConnectionState({
-          status: "disconnected",
-          qr_string: null,
-          phone: null,
-        });
+        await resetConnectionState();
         logger.info("[bot] sesión cerrada desde el móvil. No reconectando.");
         return;
       }
 
-      // Cualquier otro código: NO modificar el estado de la DB.
-      // Si estamos 'connected', queremos seguir mostrando 'connected' en el dashboard
-      // mientras el bot reconecta. Si la reconexión necesita un nuevo QR, el evento 'qr' lo sobreescribirá.
       logger.warn(`[bot] conexión cerrada (code=${code ?? "?"}). Reconectando...`);
       scheduleReconnect(code);
     }
@@ -165,11 +147,6 @@ export async function start(): Promise<void> {
   };
 }
 
-/**
- * Loop opcional para detectar el flag de restart desde el dashboard.
- * Si /api/connection/disconnect crea ./data/.restart, el bot lo detecta,
- * cierra la sesión, borra ./auth/ y arranca limpio (genera QR nuevo).
- */
 export function watchRestartFlag(): void {
   setInterval(() => {
     if (fs.existsSync(RESTART_FLAG)) {
@@ -184,7 +161,6 @@ export function watchRestartFlag(): void {
           await handle.shutdown();
           handle = null;
         }
-        // Defensa: borrar carpeta auth si sigue existiendo (cross-platform)
         if (fs.existsSync(AUTH_DIR)) {
           fs.rmSync(AUTH_DIR, { recursive: true, force: true });
         }
