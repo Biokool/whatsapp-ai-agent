@@ -1,50 +1,77 @@
 import type { WASocket } from "@whiskeysockets/baileys";
 import pino from "pino";
-import { getPendingOutbox, markOutboxSent, getConversationById } from "../db";
+import { getSupabase } from "@/infrastructure/database/supabase";
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
 
-let outboxTimer: NodeJS.Timeout | null = null;
+let channel: ReturnType<typeof getSupabase>["channel"] | null = null;
 
 /**
- * Loop que cada 2s revisa la tabla outbox y manda los mensajes humanos
- * pendientes a través de Baileys.
- *
- * Patrón outbox: bot y Next.js son procesos separados, no comparten memoria.
- * El dashboard escribe en outbox cuando el humano envía un mensaje.
- * El bot lee el outbox y lo envía por WhatsApp.
+ * Subscribe to Supabase Realtime for outgoing messages.
+ * When a human sends a message from the dashboard, it's inserted into
+ * the `messages` table with role='human'. Baileys listens for these
+ * inserts and sends them via WhatsApp.
  */
-export function startOutboxLoop(sock: WASocket): void {
-  if (outboxTimer) return;
+export function startOutboxListener(sock: WASocket): void {
+  if (channel) return;
 
-  outboxTimer = setInterval(async () => {
-    const pending = getPendingOutbox(20);
-    if (pending.length === 0) return;
+  const supabase = getSupabase();
 
-    for (const item of pending) {
-      // Usar la dirección completa guardada en la conversación (soporta @lid).
-      // Fallback al formato clásico para filas antiguas sin jid registrado.
-      const convo = getConversationById(item.conversation_id);
-      const jid = convo?.jid ?? `${item.phone}@s.whatsapp.net`;
-      try {
-        await sock.sendMessage(jid, { text: item.content });
-        markOutboxSent(item.id);
-        logger.info(`[bot] → outbox enviado a ${item.phone}: "${item.content.slice(0, 40)}..."`);
-      } catch (err) {
-        // Dejar sent=0 para reintentar en el siguiente tick.
-        // Útil cuando la conexión cae transitoriamente.
-        logger.warn(
-          { err: err instanceof Error ? err.message : String(err) },
-          `[bot] outbox #${item.id} falló, reintentando`
-        );
+  channel = supabase
+    .channel("outbox")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: "role=eq.human",
+      },
+      async (payload) => {
+        const msg = payload.new as {
+          id: string;
+          conversation_id: string;
+          role: string;
+          content: string;
+        };
+
+        logger.info(`[bot] ← outbox realtime: message ${msg.id}`);
+
+        // Get conversation to find the JID
+        const { data: convo } = await supabase
+          .from("conversations")
+          .select("jid, phone")
+          .eq("id", msg.conversation_id)
+          .single();
+
+        if (!convo) {
+          logger.warn(`[bot] conversation ${msg.conversation_id} not found`);
+          return;
+        }
+
+        const jid = convo.jid ?? `${convo.phone}@s.whatsapp.net`;
+
+        try {
+          await sock.sendMessage(jid, { text: msg.content });
+          logger.info(`[bot] → outbox enviado a ${convo.phone}: "${msg.content.slice(0, 40)}..."`);
+        } catch (err) {
+          logger.warn(
+            { err: err instanceof Error ? err.message : String(err) },
+            `[bot] outbox message ${msg.id} falló`
+          );
+        }
       }
-    }
-  }, 2000);
+    )
+    .subscribe();
+
+  logger.info("[bot] outbox listener started (Supabase Realtime)");
 }
 
-export function stopOutboxLoop(): void {
-  if (outboxTimer) {
-    clearInterval(outboxTimer);
-    outboxTimer = null;
+export function stopOutboxListener(): void {
+  if (channel) {
+    const supabase = getSupabase();
+    supabase.removeChannel(channel);
+    channel = null;
+    logger.info("[bot] outbox listener stopped");
   }
 }
