@@ -1,36 +1,35 @@
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
-import { getConnectionState } from "@/lib/db";
+import { getConnectionState } from "@/infrastructure/cache/connection-state";
 
-// Esta ruta lee de SQLite. No se debe evaluar en build time.
 export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<NextResponse> {
-  const state = getConnectionState();
+  try {
+    const state = await getConnectionState();
 
-  // API defensiva: mostrar el QR si existe qr_string AUNQUE el status no sea exactamente 'qr'.
-  // Race condition: el bot pasa por 'qr' → 'connecting' muy rápido y el frontend nunca lo ve.
-  const shouldShowQr =
-    !!state.qr_string &&
-    (state.status === "qr" || state.status === "connecting");
+    const shouldShowQr =
+      !!state.qr_string &&
+      (state.status === "qr" || state.status === "connecting");
 
-  if (shouldShowQr && state.qr_string) {
-    const qrPng = await QRCode.toDataURL(state.qr_string, {
-      width: 320,
-      margin: 2,
-      errorCorrectionLevel: "M",
-    });
+    if (shouldShowQr && state.qr_string) {
+      const qrPng = await QRCode.toDataURL(state.qr_string, {
+        width: 320,
+        margin: 2,
+        errorCorrectionLevel: "M",
+      });
+      return NextResponse.json({
+        status: "qr",
+        qrPng,
+        phone: state.phone,
+      });
+    }
+
     return NextResponse.json({
-      status: "qr",
-      qrPng,
+      status: state.status,
       phone: state.phone,
-      updatedAt: state.updated_at,
     });
+  } catch (error) {
+    return NextResponse.json({ status: "disconnected", qrPng: null, phone: null }, { status: 500 });
   }
-
-  return NextResponse.json({
-    status: state.status,
-    phone: state.phone,
-    updatedAt: state.updated_at,
-  });
 }

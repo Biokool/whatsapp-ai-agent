@@ -4,6 +4,10 @@ import { listConversations } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<NextResponse> {
-  const conversations = listConversations();
-  return NextResponse.json({ conversations });
+  try {
+    const conversations = await listConversations();
+    return NextResponse.json({ conversations });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to list conversations" }, { status: 500 });
+  }
 }

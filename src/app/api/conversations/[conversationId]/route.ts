@@ -14,7 +14,6 @@ export async function DELETE(
 ): Promise<NextResponse> {
   const { conversationId } = await params;
 
-  // Validate conversation ID
   const validation = validateConversationId(conversationId);
   if (!validation.valid) {
     return NextResponse.json(
@@ -23,7 +22,6 @@ export async function DELETE(
     );
   }
 
-  const id = parseInt(conversationId, 10);
-  deleteConversation(id);
+  await deleteConversation(conversationId);
   return NextResponse.json({ ok: true });
 }

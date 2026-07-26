@@ -3,7 +3,6 @@ import {
   getConversationById,
   getMessages,
   insertMessage,
-  enqueueOutbox,
 } from "@/lib/db";
 import {
   validateConversationId,
@@ -23,7 +22,6 @@ export async function GET(
 ): Promise<NextResponse> {
   const { conversationId } = await params;
 
-  // Validate conversation ID
   const validation = validateConversationId(conversationId);
   if (!validation.valid) {
     return NextResponse.json(
@@ -32,8 +30,7 @@ export async function GET(
     );
   }
 
-  const id = parseInt(conversationId, 10);
-  const messages = getMessages(id, 200);
+  const messages = await getMessages(conversationId, 200);
   return NextResponse.json({ messages });
 }
 
@@ -43,7 +40,6 @@ export async function POST(
 ): Promise<NextResponse> {
   const { conversationId } = await params;
 
-  // Validate conversation ID
   const idValidation = validateConversationId(conversationId);
   if (!idValidation.valid) {
     return NextResponse.json(
@@ -52,9 +48,7 @@ export async function POST(
     );
   }
 
-  const id = parseInt(conversationId, 10);
-
-  const conv = getConversationById(id);
+  const conv = await getConversationById(conversationId);
   if (!conv) {
     return NextResponse.json(
       { ok: false, error: "Conversation not found" },
@@ -62,7 +56,6 @@ export async function POST(
     );
   }
 
-  // Parse and validate body
   let body: { content?: string };
   try {
     body = await req.json();
@@ -73,7 +66,6 @@ export async function POST(
     );
   }
 
-  // Validate content
   const contentValidation = validateMessageContent(body.content);
   if (!contentValidation.valid) {
     return NextResponse.json(
@@ -82,14 +74,10 @@ export async function POST(
     );
   }
 
-  // Sanitize content
   const content = sanitizeText(body.content!);
 
-  // 1) Insert the message as 'human' (visible immediately in dashboard)
-  const messageId = insertMessage(id, "human", content);
-
-  // 2) Enqueue in outbox for the bot to send via WhatsApp
-  enqueueOutbox(id, conv.phone, content);
+  // Insert message as 'human' — Supabase Realtime will trigger Baileys to send it
+  const messageId = await insertMessage(conversationId, "human", content);
 
   return NextResponse.json({ ok: true, messageId });
 }

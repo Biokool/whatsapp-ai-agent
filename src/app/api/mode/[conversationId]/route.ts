@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { setMode, type ConversationMode } from "@/lib/db";
+import { setMode } from "@/lib/db";
+import type { ConversationMode } from "@/core/types/database";
 import { validateConversationId, validateMode } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,6 @@ export async function POST(
 ): Promise<NextResponse> {
   const { conversationId } = await params;
 
-  // Validate conversation ID
   const idValidation = validateConversationId(conversationId);
   if (!idValidation.valid) {
     return NextResponse.json(
@@ -23,9 +23,6 @@ export async function POST(
     );
   }
 
-  const id = parseInt(conversationId, 10);
-
-  // Parse and validate body
   let body: { mode?: string };
   try {
     body = await req.json();
@@ -36,7 +33,6 @@ export async function POST(
     );
   }
 
-  // Validate mode
   const modeValidation = validateMode(body.mode);
   if (!modeValidation.valid) {
     return NextResponse.json(
@@ -45,6 +41,6 @@ export async function POST(
     );
   }
 
-  setMode(id, body.mode as ConversationMode);
+  await setMode(conversationId, body.mode as ConversationMode);
   return NextResponse.json({ ok: true });
 }
