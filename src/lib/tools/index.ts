@@ -35,7 +35,7 @@ export interface ToolDefinition {
 // El handler de cada tool define sus propios argumentos.
 // Aquí trabajamos con un wrapper que acepta unknown args (los validamos al entrar).
 export type ToolHandler<TArgs = Record<string, unknown>> = (
-  args: TArgs & { conversationId?: number }
+  args: TArgs & { conversationId?: string }
 ) => Promise<Record<string, unknown>>;
 
 // ============================================================
@@ -50,7 +50,7 @@ export const toolDefinitions: ToolDefinition[] = [
 ];
 
 type GenericHandler = (
-  args: Record<string, unknown> & { conversationId?: number }
+  args: Record<string, unknown> & { conversationId?: string }
 ) => Promise<Record<string, unknown>>;
 
 const handlers: Record<string, GenericHandler> = {
@@ -69,7 +69,7 @@ const handlers: Record<string, GenericHandler> = {
 export async function executeTool(
   toolName: string,
   args: Record<string, unknown>,
-  context: { conversationId: number }
+  context: { conversationId: string }
 ): Promise<Record<string, unknown>> {
   const handler = handlers[toolName];
   if (!handler) {

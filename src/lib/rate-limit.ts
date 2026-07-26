@@ -55,7 +55,7 @@ setInterval(() => {
 /**
  * Check if a request is allowed for a given conversation
  */
-export function checkRateLimit(conversationId: number): RateLimitResult {
+export function checkRateLimit(conversationId: string): RateLimitResult {
   const key = `llm:${conversationId}`;
   const now = Date.now();
 
@@ -100,7 +100,7 @@ export function checkRateLimit(conversationId: number): RateLimitResult {
 /**
  * Get rate limit status without incrementing
  */
-export function getRateLimitStatus(conversationId: number): RateLimitResult {
+export function getRateLimitStatus(conversationId: string): RateLimitResult {
   const key = `llm:${conversationId}`;
   const now = Date.now();
 
@@ -135,7 +135,7 @@ export function getRateLimitStatus(conversationId: number): RateLimitResult {
 /**
  * Reset rate limit for a conversation
  */
-export function resetRateLimit(conversationId: number): void {
+export function resetRateLimit(conversationId: string): void {
   const key = `llm:${conversationId}`;
   store.delete(key);
 }

@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { buildSystemPrompt } from "./system-prompt";
 import { toolDefinitions, executeTool } from "./tools";
 import { checkRateLimit } from "./rate-limit";
-import type { Message } from "./db";
+import type { Message } from "@/core/types/database";
 
 const MODEL = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
 
@@ -29,7 +29,7 @@ function getClient(): OpenAI {
 
 interface GenerateReplyInput {
   history: Message[];
-  conversationId: number;
+  conversationId: string;
 }
 
 /**

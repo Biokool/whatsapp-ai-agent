@@ -2,7 +2,7 @@ import type { ToolDefinition, ToolHandler } from "./index";
 import { setMode } from "../db";
 
 interface DerivarHumanoArgs {
-  conversationId: number;
+  conversationId: string;
   razon: string;
 }
 

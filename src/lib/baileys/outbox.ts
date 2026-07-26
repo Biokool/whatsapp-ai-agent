@@ -1,10 +1,11 @@
 import type { WASocket } from "@whiskeysockets/baileys";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import pino from "pino";
 import { getSupabase } from "@/infrastructure/database/supabase";
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
 
-let channel: ReturnType<typeof getSupabase>["channel"] | null = null;
+let channel: RealtimeChannel | null = null;
 
 /**
  * Subscribe to Supabase Realtime for outgoing messages.
