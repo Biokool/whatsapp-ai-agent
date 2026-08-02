@@ -15,7 +15,7 @@ implemented:
   - "CalendarProvider interface + MVP SupabaseCalendarProvider con validación de timezone y doble reserva (src/lib/calendar/types.ts, src/lib/calendar/providers/supabase-calendar.ts)"
   - "Adaptadores Google Calendar y Cal.com (stubs pluggables 'en preparación', sin tocar Agent Core) (src/lib/calendar/providers/google-calendar.ts, src/lib/calendar/providers/cal-com.ts)"
   - "transferToHuman: escalado a humano desde el framework de tools (src/lib/tools/transfer-to-human.ts)"
-  - "Infra de tools: timeout, retry y dependencias compartidas (src/lib/tools/infra.ts)"
+  - "Infra de tools: idempotency store y audit sink compartidos (src/lib/tools/infra.ts)"
   - "Registry que inyecta CalendarProvider y fusiona legacy + herramientas nuevas (src/lib/tools/registry.ts)"
   - "Migración 007: tablas follow_ups y tool_executions con RLS por tenant, columnas appointments.timezone y appointments.external_event_id (src/infrastructure/database/migrations/007_tools_calendar.sql)"
 
@@ -52,25 +52,26 @@ database_changes:
   - "NOTA: la migración 007 NO se aplicó automáticamente a la base Supabase en ejecución. Este repo no tiene runner de migraciones (no hay script que ejecute los .sql); las tablas/columnas nuevas solo se tocan cuando una tool se invoca en runtime, por lo que la migración debe aplicarse manualmente antes de usar las tools de datos/calendario en vivo."
 
 tests:
-  executed: 68
-  passed: 68
+  executed: 76
+  passed: 76
   failed: 0
   files: 14
 
-validation: "Typecheck sin errores. 68 tests pasando (14 archivos). Bot verificado en ejecución conectado como 5215664436277."
+validation: "Typecheck sin errores. 76 tests pasando (14 archivos). Bot verificado en ejecución conectado como 5215664436277."
 
 evidence:
   - "npm run typecheck — 0 errores (2026-08-02)"
-  - "npm run test — 68/68 tests pasando, 14 files (2026-08-02)"
+  - "npm run test — 76/76 tests pasando, 14 files (2026-08-02)"
   - "docker compose -f docker-compose.local.yml up -d --build — imagen whatsapp-ai-agent-whatsapp-agent construida OK, contenedor whatsapp-agent arrancado"
   - "docker logs whatsapp-agent — connected to WA, myPN 5215664436277, own LID session created, 'esperando QR scan en el dashboard' (sesión previa válida); race inicial de lock resuelta (PID 30)"
   - "GET /api/connection/status — { status: connected, phone: 5215664436277 }"
-  - "Commits: 90ffa3f (core types + ToolSpec), 010cecf (executor), 2bb256c (migración 007 + db), e4ad5dd (CalendarProvider + Supabase MVP), 6c9a34a (adaptadores Google/Cal.com), a60f9d9 (data tools), 07cabb3 (calendar tools), 2716f50 (registry + transferToHuman)"
+  - "Commits: 90ffa3f (core types + ToolSpec), 010cecf (executor), 2bb256c (migración 007 + db), e4ad5dd (CalendarProvider + Supabase MVP), 6c9a34a (adaptadores Google/Cal.com), a60f9d9 (data tools), 07cabb3 (calendar tools), 2716f50 (registry + transferToHuman), 61d17f4 (fix review: política de retry + infra aislada + idempotencia de updateContact)"
 
 known_issues:
   - "Los adaptadores Google Calendar y Cal.com son stubs 'en preparación': implementan la interface CalendarProvider pero devuelven estado UNIMPLEMENTED/ERROR pendiente de credenciales y validación en vivo."
-  - "SupabaseCalendarProvider usa leadId: 'unknown' como fallback hasta que se conecte con el lead real: la tool de calendario aún no recibe un lead resuelto desde el canal."
+  - "SupabaseCalendarProvider usa leadId: 'unknown' como fallback hasta que se conecte con el lead real: la tool de calendario aún no recibe un lead resuelto desde el canal. Con lead_id UUID NOT NULL FK en appointments, crear una cita con leadId 'unknown' falla en runtime (R-010); resolver antes de demo/uso en vivo."
   - "La migración 007 no está aplicada en la Supabase en ejecución (no hay auto-migrator en el repo); aplicarla manualmente antes de invocar las tools en runtime (mismo patrón que la columna summary de la fase 06)."
+  - "Deuda MVP aceptada tras revisión de rama: buildSlots asume duración = durationMinutes mientras createAppointment fija 60 min; createLead no es atómico ni idempotente; doble reserva es check-then-insert (guard DB pendiente); upsertContact/auditoría ignoran errores de escritura; DefaultToolProvider no propaga tenantId. Todas registradas en el ledger SDD para la fase de hardening."
 
 risks:
   - "R-009 ABIERTO: adaptadores externos (Google Calendar, Cal.com) pendientes de credenciales y de validación en vivo; solo el MVP Supabase está operativo"
@@ -98,8 +99,9 @@ human_approval_required: true
 - [x] transferToHuman desde el framework de tools
 - [x] Migración 007 creada (follow_ups, tool_executions, appointments.timezone/external_event_id)
 - [x] TypeScript compila sin errores
-- [x] 68 tests pasando (14 archivos)
+- [x] 76 tests pasando (14 archivos)
 - [x] Bot verificado en ejecución (conectado como 5215664436277)
+- [x] Revisión global de rama: 0 Critical; retry alineado, infra aislada, idempotencia de updateContact corregidas
 
 ---
 
