@@ -153,4 +153,129 @@ describe("runTool", () => {
       expect.objectContaining({ tenantId: "t1", action: "testTool" })
     );
   });
+
+  it("does not retry deterministic ToolError statuses", async () => {
+    let calls = 0;
+    const result = await runTool(
+      makeSpec({
+        maxRetries: 2,
+        execute: async () => {
+          calls++;
+          throw new ToolError("DUPLICATE", "already done");
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      {}
+    );
+    expect(result.status).toBe("DUPLICATE");
+    expect(calls).toBe(1);
+  });
+
+  it("does not retry TIMEOUT even with retries configured", async () => {
+    let calls = 0;
+    const result = await runTool(
+      makeSpec({
+        timeoutMs: 50,
+        maxRetries: 2,
+        execute: async () => {
+          calls++;
+          await new Promise((r) => setTimeout(r, 300));
+          return { ok: true };
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      {}
+    );
+    expect(result.status).toBe("TIMEOUT");
+    expect(calls).toBe(1);
+  });
+
+  it("retries on unexpected errors and succeeds", async () => {
+    let calls = 0;
+    const result = await runTool(
+      makeSpec({
+        maxRetries: 2,
+        execute: async () => {
+          calls++;
+          if (calls < 2) throw new Error("boom");
+          return { ok: true };
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      {}
+    );
+    expect(result.status).toBe("VALID");
+    expect(calls).toBe(2);
+  });
+
+  it("returns FAILURE when retries are exhausted on unexpected errors", async () => {
+    let calls = 0;
+    const result = await runTool(
+      makeSpec({
+        maxRetries: 1,
+        execute: async () => {
+          calls++;
+          throw new Error("boom");
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      {}
+    );
+    expect(result.status).toBe("FAILURE");
+    expect(calls).toBe(2);
+  });
+
+  it("does not re-execute the tool when idempotency set fails", async () => {
+    let calls = 0;
+    const store = {
+      has: vi.fn().mockResolvedValue(false),
+      set: vi.fn().mockRejectedValue(new Error("db down")),
+    };
+    const result = await runTool(
+      makeSpec({
+        idempotencyKey: () => "k1",
+        execute: async () => {
+          calls++;
+          return { ok: true };
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      { idempotencyStore: store }
+    );
+    expect(result.status).toBe("VALID");
+    expect(calls).toBe(1);
+  });
+
+  it("does not throw when failure-path audit log rejects", async () => {
+    const auditSink: NonNullable<ToolExecutorDeps["auditSink"]> = {
+      log: vi.fn().mockRejectedValue(new Error("sink down")),
+    };
+    const result = await runTool(
+      makeSpec({
+        audit: true,
+        execute: async () => {
+          throw new ToolError("FAILURE", "upstream broke");
+        },
+      }),
+      { email: "a@b.com" },
+      ctx,
+      { auditSink }
+    );
+    expect(result.status).toBe("FAILURE");
+  });
+
+  it("returns VALID when success-path audit log rejects", async () => {
+    const auditSink: NonNullable<ToolExecutorDeps["auditSink"]> = {
+      log: vi.fn().mockRejectedValue(new Error("sink down")),
+    };
+    const result = await runTool(makeSpec({ audit: true }), { email: "a@b.com" }, ctx, {
+      auditSink,
+    });
+    expect(result.status).toBe("VALID");
+  });
 });

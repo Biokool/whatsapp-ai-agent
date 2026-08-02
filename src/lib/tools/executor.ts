@@ -63,34 +63,21 @@ export async function runTool(
 
   let lastError: unknown;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let data: Record<string, unknown>;
     try {
-      const data = await withTimeout(spec.execute(args, ctx), timeoutMs);
-      if (idempotencyKey && deps.idempotencyStore) {
-        await deps.idempotencyStore.set(idempotencyKey, { tool: spec.name, status: "VALID" });
-      }
-      if (spec.audit && deps.auditSink) {
-        await deps.auditSink.log({
-          tenantId: ctx.tenantId,
-          action: spec.name,
-          resourceType: "tool",
-          resourceId: ctx.conversationId,
-          details: { args, outcome: "VALID" },
-        });
-      }
-      return success(data);
+      data = await withTimeout(spec.execute(args, ctx), timeoutMs);
     } catch (err) {
       lastError = err;
-      if (err instanceof ToolError && err.status !== "TIMEOUT") {
-        // error tipado no transitorio salvo FAILURE (que sí se reintenta)
-        if (attempt >= maxRetries) break;
-        continue;
+      if (err instanceof ToolError) {
+        if (err.status === "TIMEOUT") break;
+        if (err.status !== "FAILURE") break;
       }
-      if (err instanceof ToolError && err.status === "TIMEOUT") {
-        break;
-      }
-      // error inesperado: reintentar
       if (attempt >= maxRetries) break;
+      continue;
     }
+
+    await recordInfra(spec, args, ctx, deps, idempotencyKey);
+    return success(data);
   }
 
   const message = lastError instanceof Error ? lastError.message : "Error desconocido en la tool";
@@ -98,14 +85,43 @@ export async function runTool(
     lastError instanceof ToolError && lastError.status !== "FAILURE" ? lastError.status : "FAILURE";
 
   if (spec.audit && deps.auditSink) {
-    await deps.auditSink.log({
-      tenantId: ctx.tenantId,
-      action: spec.name,
-      resourceType: "tool",
-      resourceId: ctx.conversationId,
-      details: { args, outcome: status, error: message },
-    });
+    try {
+      await deps.auditSink.log({
+        tenantId: ctx.tenantId,
+        action: spec.name,
+        resourceType: "tool",
+        resourceId: ctx.conversationId,
+        details: { args, outcome: status, error: message },
+      });
+    } catch {
+      // la infraestructura de auditoría no debe romper el contrato de runTool
+    }
   }
 
   return failure(status, message);
+}
+
+async function recordInfra(
+  spec: ToolSpec,
+  args: Record<string, unknown>,
+  ctx: ToolExecutionContext,
+  deps: ToolExecutorDeps,
+  idempotencyKey: string | undefined
+): Promise<void> {
+  try {
+    if (idempotencyKey && deps.idempotencyStore) {
+      await deps.idempotencyStore.set(idempotencyKey, { tool: spec.name, status: "VALID" });
+    }
+    if (spec.audit && deps.auditSink) {
+      await deps.auditSink.log({
+        tenantId: ctx.tenantId,
+        action: spec.name,
+        resourceType: "tool",
+        resourceId: ctx.conversationId,
+        details: { args, outcome: "VALID" },
+      });
+    }
+  } catch {
+    // la infraestructura no debe re-ejecutar la tool ni escapar como error
+  }
 }

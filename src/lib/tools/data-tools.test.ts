@@ -88,6 +88,31 @@ describe("data tools", () => {
     expect(upsertContact).toHaveBeenCalled();
   });
 
+  it("updateContact does not collide idempotency keys when metadata differs", async () => {
+    vi.mocked(upsertContact).mockResolvedValue({
+      id: "ct1",
+      phone: "5215555555",
+      name: "Ana",
+      email: "ana@x.com",
+      metadata: {},
+    } as any);
+    const spec = findSpec("updateContact");
+    const first = await runTool(
+      spec,
+      { phone: "5215555555", name: "Ana", email: "ana@x.com", metadata: { tag: "vip" } },
+      ctx,
+      makeDeps()
+    );
+    const second = await runTool(
+      spec,
+      { phone: "5215555555", name: "Ana", email: "ana@x.com", metadata: { tag: "lead" } },
+      ctx,
+      makeDeps()
+    );
+    expect(first.status).toBe("VALID");
+    expect(second.status).toBe("VALID");
+  });
+
   it("createLead creates a lead for a contact", async () => {
     vi.mocked(createLeadRow).mockResolvedValue({
       id: "lead1",

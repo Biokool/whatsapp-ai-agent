@@ -55,7 +55,10 @@ export const dataToolSpecs: ToolSpec[] = [
     }),
     timeoutMs: 8_000,
     maxRetries: 1,
-    idempotencyKey: (args) => `contact:${args.phone}:${args.name ?? ""}:${args.email ?? ""}`,
+    idempotencyKey: (args) =>
+      `contact:${args.phone}:${args.name ?? ""}:${args.email ?? ""}:${JSON.stringify(
+        args.metadata ?? {}
+      )}`,
     audit: true,
     async execute(args) {
       const contact = await upsertContact({
