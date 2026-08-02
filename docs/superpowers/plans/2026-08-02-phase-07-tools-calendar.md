@@ -1324,6 +1324,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
   }
 
   async getAvailability(_input: GetAvailabilityInput): Promise<CalendarSlot[]> {
+    void _input;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1331,7 +1332,10 @@ export class GoogleCalendarProvider implements CalendarProvider {
     );
   }
 
-  async createAppointment(_input: CreateAppointmentInput) {
+  async createAppointment(
+    _input: CreateAppointmentInput
+  ): Promise<{ id: string; scheduled_at: string; timezone: string; status: string }> {
+    void _input;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1339,7 +1343,12 @@ export class GoogleCalendarProvider implements CalendarProvider {
     );
   }
 
-  async reschedule(_appointmentId: string, _scheduledAt: string) {
+  async reschedule(
+    _appointmentId: string,
+    _scheduledAt: string
+  ): Promise<{ id: string; scheduled_at: string; status: string }> {
+    void _appointmentId;
+    void _scheduledAt;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1347,7 +1356,10 @@ export class GoogleCalendarProvider implements CalendarProvider {
     );
   }
 
-  async cancel(_appointmentId: string) {
+  async cancel(
+    _appointmentId: string
+  ): Promise<{ id: string; scheduled_at: string; status: string }> {
+    void _appointmentId;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1356,6 +1368,8 @@ export class GoogleCalendarProvider implements CalendarProvider {
   }
 }
 ```
+
+> **CORRECCIÓN del plan (revisión de Task 5):** los métodos stub del brief original NO tenían anotaciones de tipo de retorno explícitas (TS2416 al implementar la interface) ni manejaban parámetros `_`-prefijados (eslint no-unused-vars). El código anterior ya incluye las anotaciones `Promise<{...}>` alineadas con `CalendarProvider` y los `void _param;` necesarios. Aplicar SIEMPRE esta versión.
 
 - [ ] **Step 4: Write Cal.com adapter**
 
@@ -1390,6 +1404,7 @@ export class CalComProvider implements CalendarProvider {
   }
 
   async getAvailability(_input: GetAvailabilityInput): Promise<CalendarSlot[]> {
+    void _input;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1397,7 +1412,10 @@ export class CalComProvider implements CalendarProvider {
     );
   }
 
-  async createAppointment(_input: CreateAppointmentInput) {
+  async createAppointment(
+    _input: CreateAppointmentInput
+  ): Promise<{ id: string; scheduled_at: string; timezone: string; status: string }> {
+    void _input;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1405,7 +1423,12 @@ export class CalComProvider implements CalendarProvider {
     );
   }
 
-  async reschedule(_appointmentId: string, _scheduledAt: string) {
+  async reschedule(
+    _appointmentId: string,
+    _scheduledAt: string
+  ): Promise<{ id: string; scheduled_at: string; status: string }> {
+    void _appointmentId;
+    void _scheduledAt;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1413,7 +1436,10 @@ export class CalComProvider implements CalendarProvider {
     );
   }
 
-  async cancel(_appointmentId: string) {
+  async cancel(
+    _appointmentId: string
+  ): Promise<{ id: string; scheduled_at: string; status: string }> {
+    void _appointmentId;
     this.assertConfigured();
     throw new ToolError(
       "FAILURE",
@@ -1422,6 +1448,8 @@ export class CalComProvider implements CalendarProvider {
   }
 }
 ```
+
+> **CORRECCIÓN del plan (revisión de Task 5):** aplicar SIEMPRE esta versión (mismas anotaciones de retorno y `void _param;` que en GoogleCalendarProvider) — el código stub del brief original no era typecheck-clean ni lint-clean.
 
 - [ ] **Step 5: Run test to verify it passes**
 
