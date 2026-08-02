@@ -1,10 +1,9 @@
 import OpenAI from "openai";
 import { buildSystemPrompt } from "./system-prompt";
-import { toolDefinitions, executeTool } from "./tools";
-import { checkRateLimit } from "./rate-limit";
+import { executeTool } from "./tools";
+import { OpenRouterLLMProvider } from "./agent/providers/openrouter-llm";
+import type { AgentMessage, LLMCompletion } from "@/core/types/agent";
 import type { Message } from "@/core/types/database";
-
-const MODEL = process.env.OPENROUTER_MODEL ?? "google/gemini-2.0-flash-001";
 
 let _client: OpenAI | null = null;
 
@@ -33,97 +32,32 @@ interface GenerateReplyInput {
   ragContext?: string;
 }
 
-/**
- * Llama al LLM con el system prompt + el historial reciente.
- * Si el modelo decide ejecutar tools, las ejecuta y vuelve a llamar al LLM con los resultados.
- * Limite de 5 turnos para evitar loops infinitos.
- *
- * Incluye rate limiting por conversación para prevenir costos excesivos.
- */
 export async function generateReply(input: GenerateReplyInput): Promise<string> {
-  // Check rate limit before making LLM call
-  const rateLimit = checkRateLimit(input.conversationId);
-  if (!rateLimit.allowed) {
-    return `Estoy recibiendo muchas consultas en este momento. Por favor, espera ${rateLimit.retryAfter} segundos antes de continuar.`;
-  }
+  const systemPrompt = buildSystemPrompt();
+  const systemPromptWithRag =
+    input.ragContext && input.ragContext.trim().length > 0
+      ? `${systemPrompt}\n\nCONEXTO DEL CATÁLOGO Y DOCUMENTACIÓN:\n${input.ragContext}\n\nUsa esta información para responder preguntas sobre productos, servicios, precios y especificaciones técnicas.`
+      : systemPrompt;
 
-  const client = getClient();
-  let systemPrompt = buildSystemPrompt();
+  const messages: AgentMessage[] = input.history.map((m) => ({
+    role: m.role === "user" ? "user" : "assistant",
+    content: m.content,
+  }));
 
-  // Add RAG context if available
-  if (input.ragContext && input.ragContext.trim().length > 0) {
-    systemPrompt += `\n\nCONEXTO DEL CATÁLOGO Y DOCUMENTACIÓN:\n${input.ragContext}\n\nUsa esta información para responder preguntas sobre productos, servicios, precios y especificaciones técnicas.`;
-  }
+  const provider = new OpenRouterLLMProvider({
+    conversationId: input.conversationId,
+    executeTool,
+  });
 
-  // Mapeo de roles: 'human' (mensajes del dashboard) → 'assistant' para el LLM
-  // El LLM los ve como sus propias respuestas previas
-  const messagesForLLM: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-    { role: "system", content: systemPrompt },
-    ...input.history.map((m): OpenAI.Chat.Completions.ChatCompletionMessageParam => {
-      const role: "user" | "assistant" = m.role === "user" ? "user" : "assistant";
-      return { role, content: m.content };
-    }),
-  ];
+  const completion: LLMCompletion = await provider.complete({
+    systemPrompt: systemPromptWithRag,
+    messages,
+    tools: undefined, // generateReply no expone tools por compatibilidad; el handler de Baileys usa el agente completo
+  });
 
-  const MAX_TURNS = 5;
-  let turns = 0;
-
-  while (turns < MAX_TURNS) {
-    turns++;
-
-    const completion = await client.chat.completions.create({
-      model: MODEL,
-      messages: messagesForLLM,
-      tools: toolDefinitions,
-      tool_choice: "auto",
-      temperature: 0.4,
-    });
-
-    const choice = completion.choices[0];
-    const msg = choice.message;
-
-    // Si NO hay tool calls, devolvemos la respuesta tal cual
-    if (!msg.tool_calls || msg.tool_calls.length === 0) {
-      return msg.content ?? "";
-    }
-
-    // Si hay tool calls, ejecutarlas y meter los resultados en la conversación
-    messagesForLLM.push({
-      role: "assistant",
-      content: msg.content ?? "",
-      tool_calls: msg.tool_calls,
-    });
-
-    for (const call of msg.tool_calls) {
-      if (call.type !== "function") continue;
-      const name = call.function.name;
-      let parsed: Record<string, unknown> = {};
-      try {
-        parsed = JSON.parse(call.function.arguments);
-      } catch {
-        parsed = {};
-      }
-
-      const result = await executeTool(name, parsed, {
-        conversationId: input.conversationId,
-      });
-
-      messagesForLLM.push({
-        role: "tool",
-        tool_call_id: call.id,
-        content: JSON.stringify(result),
-      });
-    }
-  }
-
-  // Si llegamos al límite de turnos sin respuesta, devolvemos algo neutro
-  return "Déjame un momento — vuelvo contigo enseguida.";
+  return completion.content;
 }
 
-/**
- * Validador para /setup: hace una llamada mínima para comprobar que la API key funciona.
- * Devuelve true si la key es válida, false si no.
- */
 export async function validateApiKey(): Promise<{ ok: boolean; error?: string }> {
   try {
     const client = getClient();
