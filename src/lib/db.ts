@@ -6,8 +6,12 @@ import pino from "pino";
 import { getSupabase } from "@/infrastructure/database/supabase";
 import {
   DEFAULT_TENANT_ID,
+  type Appointment,
+  type Contact,
   type Conversation,
   type ConversationListItem,
+  type FollowUp,
+  type Lead,
   type Message,
   type ConversationMode,
   type MessageRole,
@@ -391,4 +395,249 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
     messages,
     uptime: process.uptime(),
   };
+}
+
+// ============================================================
+// Contacts / Leads / Follow-ups / Appointments / Tool executions
+// ============================================================
+
+export async function listContacts(): Promise<Contact[]> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("tenant_id", DEFAULT_TENANT_ID)
+    .order("created_at", { ascending: false });
+  return (data as Contact[]) ?? [];
+}
+
+export async function upsertContact(input: {
+  phone: string;
+  name?: string;
+  email?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<Contact> {
+  const supabase = getSupabase();
+  const existing = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("tenant_id", DEFAULT_TENANT_ID)
+    .eq("phone", input.phone)
+    .maybeSingle();
+  if (existing.data) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .update({
+        name: input.name ?? existing.data.name,
+        email: input.email ?? existing.data.email,
+        metadata: input.metadata ?? existing.data.metadata,
+      })
+      .eq("id", existing.data.id)
+      .select()
+      .single();
+    if (error) throw new Error(`Failed to update contact: ${error.message}`);
+    return data as Contact;
+  }
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({
+      tenant_id: DEFAULT_TENANT_ID,
+      phone: input.phone,
+      name: input.name ?? null,
+      email: input.email ?? null,
+      metadata: input.metadata ?? {},
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to create contact: ${error.message}`);
+  return data as Contact;
+}
+
+export async function createLeadRow(input: {
+  contactId: string;
+  score?: number;
+  criteria?: Record<string, unknown>;
+}): Promise<Lead> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("leads")
+    .insert({
+      tenant_id: DEFAULT_TENANT_ID,
+      contact_id: input.contactId,
+      score: input.score ?? 0,
+      criteria: input.criteria ?? {},
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to create lead: ${error.message}`);
+  return data as Lead;
+}
+
+export async function updateLeadRow(
+  leadId: string,
+  patch: Partial<Pick<Lead, "score" | "status" | "criteria">>
+): Promise<Lead> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("leads")
+    .update(patch)
+    .eq("id", leadId)
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to update lead: ${error.message}`);
+  return data as Lead;
+}
+
+export async function listFollowUps(): Promise<FollowUp[]> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("follow_ups")
+    .select("*")
+    .eq("tenant_id", DEFAULT_TENANT_ID)
+    .order("scheduled_at", { ascending: true });
+  return (data as FollowUp[]) ?? [];
+}
+
+export async function createFollowUp(input: {
+  conversationId?: string;
+  contactId?: string;
+  leadId?: string;
+  scheduledAt: string;
+  note?: string;
+}): Promise<FollowUp> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("follow_ups")
+    .insert({
+      tenant_id: DEFAULT_TENANT_ID,
+      conversation_id: input.conversationId ?? null,
+      contact_id: input.contactId ?? null,
+      lead_id: input.leadId ?? null,
+      scheduled_at: input.scheduledAt,
+      note: input.note ?? null,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to create follow-up: ${error.message}`);
+  return data as FollowUp;
+}
+
+export async function createAppointmentRow(input: {
+  leadId: string;
+  scheduledAt: string;
+  timezone?: string;
+  notes?: string;
+  externalEventId?: string;
+}): Promise<Appointment> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("appointments")
+    .insert({
+      tenant_id: DEFAULT_TENANT_ID,
+      lead_id: input.leadId,
+      scheduled_at: input.scheduledAt,
+      timezone: input.timezone ?? "UTC",
+      notes: input.notes ?? null,
+      external_event_id: input.externalEventId ?? null,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to create appointment: ${error.message}`);
+  return data as Appointment;
+}
+
+export async function listAppointmentsInRange(from: string, to: string): Promise<Appointment[]> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("appointments")
+    .select("*")
+    .eq("tenant_id", DEFAULT_TENANT_ID)
+    .gte("scheduled_at", from)
+    .lte("scheduled_at", to);
+  return (data as Appointment[]) ?? [];
+}
+
+export async function rescheduleAppointmentRow(
+  appointmentId: string,
+  scheduledAt: string
+): Promise<Appointment> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ scheduled_at: scheduledAt })
+    .eq("id", appointmentId)
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to reschedule appointment: ${error.message}`);
+  return data as Appointment;
+}
+
+export async function cancelAppointmentRow(appointmentId: string): Promise<Appointment> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled" })
+    .eq("id", appointmentId)
+    .select()
+    .single();
+  if (error) throw new Error(`Failed to cancel appointment: ${error.message}`);
+  return data as Appointment;
+}
+
+// ============================================================
+// Tool executions (idempotencia + auditoría)
+// ============================================================
+
+export async function hasToolExecution(
+  tenantId: string,
+  toolName: string,
+  key: string
+): Promise<boolean> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("tool_executions")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("tool_name", toolName)
+    .eq("idempotency_key", key)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+export async function recordToolExecution(input: {
+  tenantId: string;
+  toolName: string;
+  idempotencyKey?: string;
+  status: string;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: string;
+}): Promise<void> {
+  const supabase = getSupabase();
+  await supabase.from("tool_executions").insert({
+    tenant_id: input.tenantId,
+    tool_name: input.toolName,
+    idempotency_key: input.idempotencyKey ?? null,
+    status: input.status,
+    input: input.input ?? null,
+    output: input.output ?? null,
+    error: input.error ?? null,
+  });
+}
+
+export async function insertAuditLog(input: {
+  tenantId: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  details?: Record<string, unknown>;
+}): Promise<void> {
+  const supabase = getSupabase();
+  await supabase.from("audit_logs").insert({
+    tenant_id: input.tenantId,
+    action: input.action,
+    resource_type: input.resourceType,
+    resource_id: input.resourceId ?? null,
+    details: input.details ?? {},
+  });
 }
