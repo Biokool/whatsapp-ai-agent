@@ -17,20 +17,6 @@ import { DEFAULT_TENANT_ID } from "@/core/types/database";
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
 
-let agent: UniversalAgent | null = null;
-
-function getAgent(): UniversalAgent {
-  if (agent) return agent;
-  const memory = new SupabaseMemoryProvider(
-    new OpenRouterLLMProvider({ conversationId: "summary", executeTool })
-  );
-  const llm = new OpenRouterLLMProvider({ conversationId: "runtime", executeTool });
-  const rag = new SupabaseRAGProvider();
-  const tools = new DefaultToolProvider();
-  agent = new UniversalAgent({ llm, rag, memory, tools });
-  return agent;
-}
-
 function resolveJid(remoteJid: string): { phone: string; isLid: boolean; jid: string } {
   const phone = remoteJid.split("@")[0].split(":")[0];
   const isLid = remoteJid.endsWith("@lid");
@@ -106,10 +92,14 @@ export async function handleIncomingMessages(
 
       const start = Date.now();
       try {
-        const a = getAgent();
         const memory = new SupabaseMemoryProvider(
           new OpenRouterLLMProvider({ conversationId: convo.id, executeTool })
         );
+        const llm = new OpenRouterLLMProvider({ conversationId: convo.id, executeTool });
+        const rag = new SupabaseRAGProvider();
+        const tools = new DefaultToolProvider();
+        const a = new UniversalAgent({ llm, rag, memory, tools });
+
         const recent = await memory.getRecent(convo.id, 20);
         const summary = await memory.getSummary(convo.id);
 
