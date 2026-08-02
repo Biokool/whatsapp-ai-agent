@@ -121,6 +121,7 @@
 **Objective:** Define stable interfaces and centralize configuration
 
 **Steps:**
+
 1. Create `src/core/types/` directory
 2. Define TypeScript interfaces for all entities
 3. Define port interfaces for all adapters
@@ -130,6 +131,7 @@
 7. Create configuration objects
 
 **Files to Create:**
+
 ```
 src/
 ├── core/
@@ -159,6 +161,7 @@ src/
 ```
 
 **Validation:**
+
 - [ ] All interfaces compile without errors
 - [ ] Configuration loads correctly
 - [ ] Environment validation works
@@ -171,6 +174,7 @@ src/
 **Objective:** Establish engineering best practices
 
 **Steps:**
+
 1. Add ESLint configuration
 2. Add Prettier configuration
 3. Add Jest/Vitest for testing
@@ -181,6 +185,7 @@ src/
 8. Add test running to CI
 
 **Files to Create/Modify:**
+
 ```
 ├── .eslintrc.js
 ├── .prettierrc
@@ -194,6 +199,7 @@ src/
 ```
 
 **Validation:**
+
 - [ ] ESLint runs without errors
 - [ ] Prettier formats code correctly
 - [ ] Tests run and pass
@@ -207,6 +213,7 @@ src/
 **Objective:** Migrate to PostgreSQL and add multi-tenancy
 
 **Steps:**
+
 1. Set up Supabase project
 2. Create database schema
 3. Add tenant_id to all tables
@@ -218,6 +225,7 @@ src/
 9. Add tenant resolution middleware
 
 **Files to Create:**
+
 ```
 ├── supabase/
 │   ├── migrations/
@@ -253,6 +261,7 @@ src/
 ```
 
 **Validation:**
+
 - [ ] Database schema created correctly
 - [ ] RLS policies work
 - [ ] Data migration successful
@@ -266,6 +275,7 @@ src/
 **Objective:** Add RAG capabilities
 
 **Steps:**
+
 1. Enable pgvector extension
 2. Create rag_documents table with embeddings
 3. Implement document ingestion pipeline
@@ -274,6 +284,7 @@ src/
 6. Integrate with agent
 
 **Files to Create:**
+
 ```
 src/
 ├── infrastructure/
@@ -295,6 +306,7 @@ src/
 ```
 
 **Validation:**
+
 - [ ] Documents can be ingested
 - [ ] Embeddings are generated
 - [ ] Semantic search works
@@ -308,6 +320,7 @@ src/
 **Objective:** Refactor agent architecture
 
 **Steps:**
+
 1. Create agent context builder
 2. Implement intent detection
 3. Add memory layers (working, short-term, long-term)
@@ -316,6 +329,7 @@ src/
 6. Add escalation logic
 
 **Files to Create:**
+
 ```
 src/
 ├── core/
@@ -338,6 +352,7 @@ src/
 ```
 
 **Validation:**
+
 - [ ] Agent builds context correctly
 - [ ] Intent detection works
 - [ ] Memory persists correctly
@@ -398,7 +413,7 @@ docker compose -f docker-compose.local.yml up -d --build
 - Test complete message flow
 - Test lead qualification
 - Test appointment scheduling
--Test human escalation
+  -Test human escalation
 
 ---
 

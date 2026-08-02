@@ -262,46 +262,56 @@ src/
 ## 5. Implementation Steps
 
 ### Step 1: Supabase Client Setup
+
 - Install `@supabase/supabase-js`
 - Create `src/infrastructure/database/supabase.ts`
 - Configure with env vars
 
 ### Step 2: Redis Client Setup
+
 - Install `ioredis`
 - Create `src/infrastructure/cache/redis.ts`
 - Create `src/infrastructure/cache/connection-state.ts`
 
 ### Step 3: PostgreSQL Schema
+
 - Create `schema.sql` with all 8 tables
 - Create migration files
 - Create RLS policies
 
 ### Step 4: Core Types
+
 - Define TypeScript interfaces for all entities
 - UUID-based types
 
 ### Step 5: Storage Port
+
 - Define `StoragePort` interface
 - Abstracts all database operations
 
 ### Step 6: Supabase Repository
+
 - Implement `StoragePort` with Supabase client
 - All CRUD operations
 
 ### Step 7: Rewrite API Routes
+
 - Replace all `better-sqlite3` calls with Supabase
 - Add tenant resolution middleware
 
 ### Step 8: Rewrite Baileys Integration
+
 - Replace `better-sqlite3` with Supabase client
 - Replace outbox polling with Supabase Realtime
 - Move connection_state to Redis
 
 ### Step 9: Data Migration Script
+
 - Script to migrate existing SQLite data to Supabase
 - Handle UUID generation for existing INTEGER IDs
 
 ### Step 10: Testing + Validation
+
 - Verify all API routes work
 - Verify Baileys connection works
 - Verify real-time updates work
@@ -312,13 +322,13 @@ src/
 
 ### SQLite → PostgreSQL Mapping
 
-| SQLite | PostgreSQL | Notes |
-|--------|------------|-------|
-| `INTEGER` (id) | `UUID` | Generate UUIDs for existing rows |
-| `INTEGER` (unix epoch) | `TIMESTAMPTZ` | Convert unix timestamp |
-| `TEXT` (phone) | `TEXT` | Direct copy |
-| `TEXT` (mode) | `TEXT` (CHECK) | Direct copy |
-| `TEXT` (content) | `TEXT` | Direct copy |
+| SQLite                 | PostgreSQL     | Notes                            |
+| ---------------------- | -------------- | -------------------------------- |
+| `INTEGER` (id)         | `UUID`         | Generate UUIDs for existing rows |
+| `INTEGER` (unix epoch) | `TIMESTAMPTZ`  | Convert unix timestamp           |
+| `TEXT` (phone)         | `TEXT`         | Direct copy                      |
+| `TEXT` (mode)          | `TEXT` (CHECK) | Direct copy                      |
+| `TEXT` (content)       | `TEXT`         | Direct copy                      |
 
 ### Migration Script
 
@@ -355,7 +365,9 @@ async function migrate() {
     });
 
     // 3. Migrate messages for this conversation
-    const messages = sqlite.prepare("SELECT * FROM messages WHERE conversation_id = ?").all(conv.id);
+    const messages = sqlite
+      .prepare("SELECT * FROM messages WHERE conversation_id = ?")
+      .all(conv.id);
     for (const msg of messages) {
       await supabase.from("messages").insert({
         conversation_id: newId,
@@ -410,13 +422,13 @@ DASHBOARD_PASSWORD=biokool2026
 
 ## 9. Risk Assessment
 
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| Baileys async migration breaks connection | HIGH | Test thoroughly, keep SQLite as fallback option |
-| Supabase Realtime reliability | MEDIUM | Keep polling as fallback |
-| Data loss during migration | HIGH | Backup SQLite before migration, verify row counts |
-| Redis connection failures | MEDIUM | Graceful degradation, retry logic |
-| RLS policy errors | MEDIUM | Test with multiple tenants |
+| Risk                                      | Severity | Mitigation                                        |
+| ----------------------------------------- | -------- | ------------------------------------------------- |
+| Baileys async migration breaks connection | HIGH     | Test thoroughly, keep SQLite as fallback option   |
+| Supabase Realtime reliability             | MEDIUM   | Keep polling as fallback                          |
+| Data loss during migration                | HIGH     | Backup SQLite before migration, verify row counts |
+| Redis connection failures                 | MEDIUM   | Graceful degradation, retry logic                 |
+| RLS policy errors                         | MEDIUM   | Test with multiple tenants                        |
 
 ---
 

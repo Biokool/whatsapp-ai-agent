@@ -52,10 +52,7 @@ export function isNonEmptyString(
 /**
  * Validate that a value is a positive integer
  */
-export function isPositiveInteger(
-  value: unknown,
-  fieldName: string
-): ValidationError | null {
+export function isPositiveInteger(value: unknown, fieldName: string): ValidationError | null {
   const num = Number(value);
 
   if (Number.isNaN(num) || !Number.isInteger(num) || num <= 0) {
@@ -87,22 +84,22 @@ export function isOneOf(
  * Sanitize text input by removing potentially dangerous characters
  */
 export function sanitizeText(text: string): string {
-  return text
-    .trim()
-    // Remove null bytes
-    .replace(/\0/g, "")
-    // Limit consecutive newlines
-    .replace(/\n{3,}/g, "\n\n")
-    // Remove control characters except newlines and tabs
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+  return (
+    text
+      .trim()
+      // Remove null bytes
+      .replace(/\0/g, "")
+      // Limit consecutive newlines
+      .replace(/\n{3,}/g, "\n\n")
+      // Remove control characters except newlines and tabs
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+  );
 }
 
 /**
  * Validate conversation ID parameter (UUID format)
  */
-export function validateConversationId(
-  id: unknown
-): ValidationResult {
+export function validateConversationId(id: unknown): ValidationResult {
   const errors: string[] = [];
 
   if (id === undefined || id === null) {
@@ -122,9 +119,7 @@ export function validateConversationId(
 /**
  * Validate message content
  */
-export function validateMessageContent(
-  content: unknown
-): ValidationResult {
+export function validateMessageContent(content: unknown): ValidationResult {
   const errors: string[] = [];
 
   if (content === undefined || content === null) {
@@ -152,9 +147,7 @@ export function validateMessageContent(
 /**
  * Validate mode value
  */
-export function validateMode(
-  mode: unknown
-): ValidationResult {
+export function validateMode(mode: unknown): ValidationResult {
   const errors: string[] = [];
 
   if (mode === undefined || mode === null) {
@@ -172,10 +165,7 @@ export function validateMode(
 /**
  * Create a validation error response
  */
-export function validationErrorResponse(
-  errors: string[],
-  status: number = 400
-): Response {
+export function validationErrorResponse(errors: string[], status: number = 400): Response {
   return new Response(
     JSON.stringify({
       ok: false,

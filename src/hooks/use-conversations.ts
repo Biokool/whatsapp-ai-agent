@@ -14,7 +14,12 @@ export function useConversations() {
   return useQuery({
     queryKey: ["conversations"],
     queryFn: fetchConversations,
-    refetchInterval: 2000,
-    staleTime: 1000,
+    refetchInterval: () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return false;
+      }
+      return 5000;
+    },
+    staleTime: 3000,
   });
 }

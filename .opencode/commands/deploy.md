@@ -16,6 +16,7 @@ Pregunta al usuario cual prefiere antes de empezar.
 ## Opcion A · Local con Docker (recomendado)
 
 ### Pre-checks
+
 1. Verifica que Docker Desktop esta corriendo
 2. Verifica que el bot funciona localmente (`npm run start:all` conecta)
 3. Verifica que `/personaliza` esta completo
@@ -23,30 +24,36 @@ Pregunta al usuario cual prefiere antes de empezar.
 ### Pasos
 
 1. Detiene el bot local si esta corriendo:
+
    ```
    # En la terminal, Ctrl+C o:
    docker compose -f docker-compose.local.yml down
    ```
 
 2. Construye la imagen:
+
    ```
    docker compose -f docker-compose.local.yml build
    ```
 
 3. Arranca en background:
+
    ```
    docker compose -f docker-compose.local.yml up -d
    ```
 
 4. Verifica:
+
    ```
    docker compose -f docker-compose.local.yml logs -f
    ```
+
    Deberia mostrar `[bot] conectado como <telefono>`
 
 5. Abre `http://localhost:3000` — el dashboard esta funcionando
 
 ### Comandos utiles
+
 ```
 docker compose -f docker-compose.local.yml down        # Detener
 docker compose -f docker-compose.local.yml logs -f     # Ver logs
@@ -54,12 +61,14 @@ docker compose -f docker-compose.local.yml build       # Reconstruir
 ```
 
 ### Ventajas
+
 - Persiste sesion WhatsApp (carpeta `auth/`)
 - Persiste conversaciones (carpeta `data/`)
 - Se levanta automaticamente al reiniciar Docker Desktop
 - Sin dependencia de Node.js instalado (solo Docker)
 
 ### NOTA: Cloudflare NO aplica en local
+
 Cloudflare Access solo es necesario cuando el dashboard esta expuesto a internet (VPS). En local, el dashboard solo es accesible desde tu maquina.
 
 ---
@@ -73,6 +82,7 @@ EasyPanel lee el codigo desde un repositorio Git, asi que la Parte 3 necesita **
 ### 1. ¿Esta git instalado?
 
 Ejecuta `git --version`.
+
 - Si responde una version → OK, sigue.
 - Si falla:
   - **Windows**: descarga e instala desde `https://git-scm.com/download/win` (deja todas las opciones por defecto). Tras instalar, reinicia terminal y vuelve a `/deploy`.
@@ -98,6 +108,7 @@ Si git no esta instalado o no hay forma de autenticarse, **parate aqui** y resue
 > "Ve a hostinger.es y entra a VPS. El plan **KVM 2** vale para 5-10 agentes simultaneos (~7€/mes). Si vas a usar el VPS solo para ESTE agente, KVM 1 es suficiente (~5€/mes).
 >
 > Una vez compres:
+>
 > - Sistema operativo: **Ubuntu 24.04 con Docker** (NO el de plantillas — Ubuntu limpio con Docker)
 > - Datacenter: el mas cercano a tus clientes
 > - Anota la IP del VPS (la veras en el panel de Hostinger)
@@ -125,20 +136,24 @@ EasyPanel necesita leer el codigo desde un repositorio Git.
 ### Opcion A · Repositorio privado en GitHub (recomendado)
 
 **Pasos comunes (siempre):**
+
 - `git init` en la carpeta del kit (si no hay `.git`)
 - Configura identidad si falta: `git config user.name "..."` y `git config user.email "..."`
 - `git add -A`, luego **VERIFICACION DE SEGURIDAD**: `git status --short` y comprueba que NO aparecen `.env.local`, `data/` ni `auth/` (el `.gitignore` ya los excluye; `.env.example` SI se sube y es correcto)
 - `git commit -m "Initial commit — WhatsApp AI Agent Kit"`
 
 **Si `gh` estaba autenticado:** crea el repo privado Y sube en un solo comando:
+
 ```
 gh repo create <nombre> --private --source=. --remote=origin --push
 ```
 
 **Si NO hay `gh`:**
+
 > "Crea un repositorio nuevo, **privado**, en github.com (sin README). Pasame la URL."
 
 Cuando de la URL:
+
 - `git branch -M main`
 - `git remote add origin <URL>`
 - `git push -u origin main`
@@ -167,6 +182,7 @@ Cuando de la URL:
 > ```
 >
 > Y opcionales (si las usas):
+>
 > ```
 > GOOGLE_SHEETS_WEBHOOK_URL=...
 > CAL_BOOKING_URL=...

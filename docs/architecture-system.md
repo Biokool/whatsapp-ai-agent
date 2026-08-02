@@ -1,12 +1,12 @@
 # Arquitectura del Sistema - WhatsApp AI Agent
 
-> **Documento Ejecutivo** | Versión 1.0 | Julio 2026
+> **Documento Ejecutivo** | Versión 2.0 | Julio 2026
 
 ---
 
 ## Resumen Ejecutivo
 
-El sistema **WhatsApp AI Agent** es una plataforma de automatización de comunicación que integra un agente de inteligencia artificial con WhatsApp Business API a través de Evolution API, orquestado por N8N para flujos de trabajo automatizados.
+El sistema **WhatsApp AI Agent** es una plataforma de automatización de comunicación que integra un agente de inteligencia artificial con WhatsApp Business a través de Baileys, con capacidades RAG (Retrieval-Augmented Generation) para consultar catálogos y documentación técnica.
 
 ---
 
@@ -19,25 +19,25 @@ El sistema **WhatsApp AI Agent** es una plataforma de automatización de comunic
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        EVOLUTION API (Puerto 8081)                         │
-│                     WhatsApp Business API Gateway                          │
+│                        BAILEYS (WhatsApp Web)                               │
+│                     Cliente WhatsApp Personal                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  • Gestión de instancias WhatsApp                                          │
-│  • Envío/recepción de mensajes                                             │
-│  • Webhooks para eventos                                                   │
+│  • Conexión tipo WhatsApp Web (escaneo QR)                                 │
+│  • Recepción/envío de mensajes                                             │
+│  • Resolución LID→teléfono                                                 │
 │  • Gestión de medios (imágenes, documentos, etc.)                          │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          N8N (Puerto 5678)                                 │
-│                    Motor de Orquestación de Flujos                         │
+│                          HANDLER (Message Processing)                       │
+│                    Procesamiento de Mensajes Entrantes                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  • Webhooks entrantes (mensajes de WhatsApp)                               │
-│  • Procesamiento de lenguaje natural                                       │
-│  • Integración con LLM (OpenRouter)                                        │
-│  • Gestión de conversaciones                                               │
-│  • Flujos de automatización personalizables                                │
+│  • Validación de mensajes (no grupos, no broadcast)                         │
+│  • Búsqueda de conversación (getOrCreateConversation)                       │
+│  • Historial reciente para contexto                                         │
+│  • Retrieval RAG (contexto de Knowledge Base)                               │
+│  • Llamada al LLM con contexto enriquecido                                 │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -46,20 +46,21 @@ El sistema **WhatsApp AI Agent** es una plataforma de automatización de comunic
 │                      Inteligencia Artificial                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  • Procesamiento de lenguaje natural                                       │
-│  • Generación de respuestas                                                │
+│  • Generación de respuestas con contexto RAG                               │
 │  • Tool calling (funciones especiales)                                     │
 │  • Modelos: GPT-4o-mini, Claude, Gemini                                    │
 └─────────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      BASE DE DATOS (PostgreSQL)                            │
-│                    Almacenamiento de Datos                                  │
+│                      SUPABASE (PostgreSQL + pgvector)                       │
+│                    Almacenamiento de Datos + Embeddings                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  • Instancias de WhatsApp                                                  │
-│  • Historial de conversaciones                                             │
-│  • Datos de contactos                                                      │
-│  • Configuración del sistema                                               │
+│  • Conversaciones y mensajes                                               │
+│  • Knowledge Bases (bases de conocimiento)                                 │
+│  • Documents (documentos subidos)                                          │
+│  • Document Chunks (fragmentos con embeddings vectoriales)                 │
+│  • Búsqueda por similitud coseno (match_document_chunks)                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -67,124 +68,189 @@ El sistema **WhatsApp AI Agent** es una plataforma de automatización de comunic
 
 ## Componentes del Sistema
 
-### 1. Evolution API
+### 1. Baileys (WhatsApp Web Client)
 
-**Función:** Gateway de WhatsApp Business API
+**Función:** Cliente WhatsApp tipo WhatsApp Web
 
-| Característica | Detalle |
-|----------------|---------|
-| **Versión** | atendai/evolution-api:latest |
-| **Puerto** | 8081 (externo) / 8080 (interno Docker) |
-| **Base de datos** | PostgreSQL 13 |
-| **API Key** | `429683C4C977415CAAFCCE10F7D57E11` |
-| **URL Admin** | http://localhost:8081/manager/ |
+| Característica   | Detalle                       |
+| ---------------- | ----------------------------- |
+| **Versión**      | @whiskeysockets/baileys 7.0+  |
+| **Conexión**     | QR Code (escaneo desde móvil) |
+| **Persistencia** | Archivos en `data/` y `auth/` |
 
 **Responsabilidades:**
-- Gestión de instancias de WhatsApp (crear, eliminar, reconectar)
-- Envío y recepción de mensajes
-- Gestión de medios (imágenes, documentos, audio, video)
-- Webhooks para eventos en tiempo real
-- Autenticación y seguridad
 
-**Endpoints Principales:**
-```
-POST   /instance/create          - Crear instancia
-DELETE /instance/delete/{name}   - Eliminar instancia
-POST   /message/sendText         - Enviar texto
-POST   /message/sendMedia        - Enviar medios
-GET    /instance/connectionState  - Estado de conexión
-POST   /webhook/set              - Configurar webhook
-```
+- Conexión a WhatsApp Web
+- Recepción y envío de mensajes
+- Resolución LID→teléfono (privacidad)
+- Gestión de medios
+- Reconexión automática
 
-### 2. N8N (Next Generation Node)
+### 2. Handler (Message Processor)
 
-**Función:** Motor de orquestación y automatización
-
-| Característica | Detalle |
-|----------------|---------|
-| **Versión** | n8nio/n8n:latest |
-| **Puerto** | 5678 |
-| **Base de datos** | SQLite (interno) |
-| **URL Editor** | http://localhost:5678/workflow/ |
-| **Webhook Base** | http://localhost:5678/webhook/ |
+**Función:** Procesamiento de mensajes entrantes
 
 **Responsabilidades:**
-- Recepción de webhooks de Evolution API
-- Procesamiento y enrutamiento de mensajes
-- Integración con LLM para generación de respuestas
-- Gestión de estado de conversaciones
-- Flujos de automatización personalizables
-- Conexión con servicios externos (Google Sheets, Calendly, etc.)
 
-**Flujo Principal:**
+- Validación de mensajes (filtrar grupos, broadcast, newsletters)
+- Búsqueda/creación de conversaciones
+- Almacenamiento de mensajes
+- Retrieval de contexto RAG
+- Llamada al LLM con contexto enriquecido
+- Envío de respuestas
+
+### 3. LLM Service (OpenRouter)
+
+**Función:** Inteligencia artificial para generación de respuestas
+
+| Característica       | Detalle                   |
+| -------------------- | ------------------------- |
+| **Proveedor**        | OpenRouter                |
+| **Modelo Principal** | openai/gpt-4o-mini        |
+| **API Key**          | Configurada en .env.local |
+
+**Capacidades:**
+
+- Comprensión de mensajes en múltiples idiomas
+- Generación de respuestas contextuales con RAG
+- Tool calling para ejecutar acciones
+- Clasificación de intención del usuario
+
+### 4. Knowledge Service (RAG)
+
+**Función:** Retrieval-Augmented Generation para consultas a documentos
+
+**Componentes:**
+
+| Componente      | Función                              |
+| --------------- | ------------------------------------ |
+| `chunker.ts`    | División de texto en fragmentos      |
+| `embeddings.ts` | Generación de embeddings vectoriales |
+| `ingest.ts`     | Pipeline de ingestión de documentos  |
+| `retrieval.ts`  | Búsqueda de contexto relevante       |
+
+**Pipeline de Ingestión:**
+
 ```
-Webhook Entrada → Validación → Procesamiento LLM → Generación Respuesta → Envío
-       │              │              │                    │                │
-       ▼              ▼              ▼                    ▼                ▼
-   Evolution     Autenticar     OpenRouter          Tool Calling     Evolution
-     API           Token          API                 (si aplica)        API
+PDF Upload → Extract Text → Chunk → Generate Embeddings → Store in pgvector
 ```
 
-### 3. Base de Datos (PostgreSQL)
+**Pipeline de Retrieval:**
 
-**Función:** Almacenamiento persistente de datos
+```
+User Query → Generate Embedding → Vector Similarity Search → Rank → Context
+```
 
-| Característica | Detalle |
-|----------------|---------|
-| **Versión** | PostgreSQL 13 |
-| **Puerto** | 5432 (interno Docker) |
-| **Base de datos** | evolution_db |
-| **Usuario** | postgres |
-| **Contraseña** | typebot |
+### 5. Supabase (PostgreSQL + pgvector)
 
-**Esquema Principal:**
+**Función:** Almacenamiento persistente + embeddings vectoriales
+
+| Característica    | Detalle                       |
+| ----------------- | ----------------------------- |
+| **Proveedor**     | Supabase                      |
+| **Base de datos** | PostgreSQL 15+                |
+| **Extensiones**   | pgvector (embeddings)         |
+| **RLS**           | Row Level Security por tenant |
+
+**Tablas Principales:**
+
 ```sql
--- Instancias de WhatsApp
-CREATE TABLE instances (
-    id UUID PRIMARY KEY,
-    name VARCHAR(255) UNIQUE,
-    phone VARCHAR(20),
-    status VARCHAR(50),
-    created_at TIMESTAMP
-);
-
 -- Conversaciones
 CREATE TABLE conversations (
-    id UUID PRIMARY KEY,
-    instance_id UUID REFERENCES instances(id),
-    contact_phone VARCHAR(20),
-    status VARCHAR(50),
-    created_at TIMESTAMP
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  phone TEXT NOT NULL,
+  name TEXT,
+  jid TEXT,
+  mode TEXT CHECK(mode IN ('AI','HUMAN')),
+  status TEXT CHECK(status IN ('active','closed','archived')),
+  last_message_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Mensajes
 CREATE TABLE messages (
-    id UUID PRIMARY KEY,
-    conversation_id UUID REFERENCES conversations(id),
-    direction VARCHAR(10), -- 'inbound' o 'outbound'
-    content TEXT,
-    media_url VARCHAR(500),
-    created_at TIMESTAMP
+  id UUID PRIMARY KEY,
+  conversation_id UUID NOT NULL,
+  role TEXT CHECK(role IN ('user','assistant','human')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Knowledge Bases
+CREATE TABLE knowledge_bases (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  embedding_model TEXT NOT NULL DEFAULT 'text-embedding-3-small',
+  chunk_size INT NOT NULL DEFAULT 500,
+  chunk_overlap INT NOT NULL DEFAULT 50,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Documents
+CREATE TABLE documents (
+  id UUID PRIMARY KEY,
+  knowledge_base_id UUID NOT NULL,
+  tenant_id UUID NOT NULL,
+  title TEXT NOT NULL,
+  source_type TEXT NOT NULL CHECK (source_type IN ('pdf', 'url', 'text')),
+  source_url TEXT,
+  storage_path TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'ready', 'error')),
+  error_message TEXT,
+  chunk_count INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Document Chunks (con embeddings vectoriales)
+CREATE TABLE document_chunks (
+  id UUID PRIMARY KEY,
+  document_id UUID NOT NULL,
+  knowledge_base_id UUID NOT NULL,
+  tenant_id UUID NOT NULL,
+  content TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}',
+  embedding VECTOR(1536),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Función de búsqueda por similitud
+CREATE OR REPLACE FUNCTION match_document_chunks(
+  p_tenant_id UUID,
+  p_query_embedding VECTOR(1536),
+  p_match_count INT DEFAULT 5
+)
+RETURNS TABLE (
+  id UUID,
+  content TEXT,
+  document_title TEXT,
+  metadata JSONB,
+  similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    dc.id,
+    dc.content,
+    d.title AS document_title,
+    dc.metadata,
+    1 - (dc.embedding <=> p_query_embedding) AS similarity
+  FROM document_chunks dc
+  JOIN documents d ON d.id = dc.document_id
+  WHERE dc.tenant_id = p_tenant_id
+    AND d.status = 'ready'
+  ORDER BY dc.embedding <=> p_query_embedding
+  LIMIT p_match_count;
+END;
+$$;
 ```
-
-### 4. LLM (OpenRouter)
-
-**Función:** Inteligencia artificial para procesamiento de lenguaje natural
-
-| Característica | Detalle |
-|----------------|---------|
-| **Proveedor** | OpenRouter |
-| **Modelo Principal** | openai/gpt-4o-mini |
-| **Modelo Fallback** | anthropic/claude-haiku-4-5 |
-| **API Key** | Configurada en servers.json |
-
-**Capacidades:**
-- Comprensión de mensajes en múltiples idiomas
-- Generación de respuestas contextuales
-- Tool calling para ejecutar acciones
-- Clasificación de intención del usuario
-- Extracción de información estructurada
 
 ---
 
@@ -196,71 +262,65 @@ CREATE TABLE messages (
 1. Usuario envía mensaje por WhatsApp
            │
            ▼
-2. Evolution API recibe el mensaje
+2. Baileys recibe el mensaje
            │
            ▼
-3. Webhook notifica a N8N
-           │
-           ▼
-4. N8N procesa el mensaje:
-   a. Valida la instancia
+3. Handler procesa el mensaje:
+   a. Valida (no grupos, no broadcast)
    b. Busca/crea conversación
    c. Almacena mensaje en BD
-   d. Envía al LLM para procesar
-   e. Genera respuesta
-   f. Ejecuta tools si es necesario
+   d. Recupera contexto RAG (si hay Knowledge Base)
+   e. Envía al LLM con contexto enriquecido
+   f. Genera respuesta
+   g. Ejecuta tools si es necesario
            │
            ▼
-5. N8N envía respuesta a Evolution API
+4. Handler envía respuesta por WhatsApp
            │
            ▼
-6. Evolution API entrega mensaje al usuario
+5. Usuario recibe respuesta
 ```
 
-### Mensaje Saliente (Sistema → WhatsApp)
+### Ingesta de Documentos (PDF → Knowledge Base)
 
 ```
-1. Agente humano escribe respuesta (Dashboard)
+1. Usuario sube PDF via Dashboard
            │
            ▼
-2. Dashboard envía a N8N API
+2. API recibe archivo
            │
            ▼
-3. N8N encola mensaje en BD
+3. Ingest Service procesa:
+   a. Extrae texto del PDF
+   b. Divide en chunks
+   c. Genera embeddings via OpenRouter
+   d. Almacena chunks + embeddings en Supabase
            │
            ▼
-4. Evolution API envía por WhatsApp
-           │
-           ▼
-5. Confirmación de entrega
+4. Documento listo para consultas RAG
 ```
 
 ---
 
-## Endpoints y Conexiones
-
-### Evolution API
-
-| Servicio | URL Local | URL Producción |
-|----------|-----------|----------------|
-| Admin Panel | http://localhost:8081/manager/ | https://api.yourdomain.com/manager/ |
-| API REST | http://localhost:8081 | https://api.yourdomain.com |
-| Webhook | http://localhost:5678/webhook/whatsapp | https://n8n.yourdomain.com/webhook/whatsapp |
-
-### N8N
-
-| Servicio | URL Local | URL Producción |
-|----------|-----------|----------------|
-| Editor | http://localhost:5678/workflow/ | https://n8n.yourdomain.com/workflow/ |
-| API | http://localhost:5678/api/v1 | https://n8n.yourdomain.com/api/v1 |
-| Webhooks | http://localhost:5678/webhook/ | https://n8n.yourdomain.com/webhook/ |
+## Endpoints API
 
 ### Dashboard
 
-| Servicio | URL Local | URL Producción |
-|----------|-----------|----------------|
-| App | http://localhost:3000 | https://app.yourdomain.com |
-| PKM Docs | http://localhost:3456 | https://docs.yourdomain.com |
+| Servicio | URL Local             | URL Producción             |
+| -------- | --------------------- | -------------------------- |
+| App      | http://localhost:3000 | https://app.yourdomain.com |
+
+### API Routes
+
+| Ruta                                  | Método | Descripción                    |
+| ------------------------------------- | ------ | ------------------------------ |
+| `/api/knowledge-bases`                | GET    | Listar Knowledge Bases         |
+| `/api/knowledge-bases`                | POST   | Crear Knowledge Base           |
+| `/api/knowledge-bases/[id]`           | DELETE | Eliminar Knowledge Base        |
+| `/api/knowledge-bases/[id]/documents` | GET    | Listar documentos              |
+| `/api/knowledge-bases/[id]/documents` | POST   | Crear documento                |
+| `/api/documents/[id]`                 | DELETE | Eliminar documento             |
+| `/api/documents/[id]/upload`          | POST   | Subir archivo + iniciar ingest |
 
 ---
 
@@ -268,102 +328,85 @@ CREATE TABLE messages (
 
 ### Autenticación
 
-- **Evolution API:** API Key en header `apiKey`
-- **N8N:** Basic Auth o Token
-- **Dashboard:** Sesión JWT (futuro)
+- **Dashboard:** Basic Auth (configurable en `.env.local`)
+- **Supabase:** Service Role Key (server-side)
+- **OpenRouter:** API Key (LLM calls)
 
 ### Variables Sensibles
 
-| Variable | Ubicación | Descripción |
-|----------|-----------|-------------|
-| `EVOLUTION_API_KEY` | .env | API Key de Evolution |
-| `OPENROUTER_API_KEY` | .env | API Key de LLM |
-| `DB_PASSWORD` | .env | Contraseña PostgreSQL |
-| `N8N_AUTH` | .env | Credenciales N8N |
+| Variable                    | Ubicación  | Descripción                  |
+| --------------------------- | ---------- | ---------------------------- |
+| `OPENROUTER_API_KEY`        | .env.local | API Key de OpenRouter        |
+| `NEXT_PUBLIC_SUPABASE_URL`  | .env.local | URL de Supabase              |
+| `SUPABASE_SERVICE_ROLE_KEY` | .env.local | Service Role Key de Supabase |
+| `DASHBOARD_USER`            | .env.local | Usuario del dashboard        |
+| `DASHBOARD_PASSWORD`        | .env.local | Contraseña del dashboard     |
 
 ---
 
-## Despliegue Local (Docker)
+## Despliegue
 
-### Servicios Activos
-
-```bash
-# Verificar servicios
-docker ps
-
-# Resultado esperado:
-# evolution_api    atendai/evolution-api:latest    Up    0.0.0.0:8081->8080
-# n8n              n8nio/n8n:latest                Up    0.0.0.0:5678->5678
-# postgres_db      postgres:13                     Up    5432/tcp
-# n8n-ngrok        ngrok/ngrok:latest              Up    0.0.0.0:4040->4040
-```
-
-### Comandos Útiles
+### Entorno Local
 
 ```bash
-# Ver logs de Evolution API
-docker logs evolution_api -f
+# Instalar dependencias
+npm install
 
-# Ver logs de N8N
-docker logs n8n -f
+# Ejecutar bot + dashboard
+npm run start:all
 
-# Reiniciar Evolution API
-docker restart evolution_api
-
-# Acceder al shell de PostgreSQL
-docker exec -it postgres_db psql -U postgres -d evolution_db
+# O por separado:
+npm run start:bot    # Bot de WhatsApp
+npm run dev          # Dashboard
 ```
 
----
+### Producción (EasyPanel + Hostinger)
 
-## Switching entre Entornos
+```bash
+# Push a GitHub
+git add .
+git commit -m "cambios"
+git push
 
-El sistema soporta múltiples entornos configurados en `config/servers.json`:
-
-1. **Local** - Desarrollo con Docker local
-2. **Staging** - Pruebas en servidor de pre-producción
-3. **Production** - Servidor de producción
-
-Para cambiar de entorno:
-1. Editar `config/servers.json`
-2. Cambiar `active: true` al entorno deseado
-3. Reiniciar los servicios del dashboard
+# EasyPanel redespliega automáticamente
+```
 
 ---
 
 ## Roadmap
 
-### Fase 1: Configuración Local ✅
-- [x] Evolution API configurada
-- [x] N8N operativo
-- [x] Base de datos conectada
-- [x] LLM integrado
+### Fase 00-05: Core ✅
 
-### Fase 2: Flujos de Trabajo
-- [ ] Configurar webhook en Evolution API
-- [ ] Crear workflow principal en N8N
-- [ ] Integrar tool calling con LLM
-- [ ] Configurar gestos de conversación
+- [x] System Audit
+- [x] Target Architecture
+- [x] Contracts + Configuration
+- [x] Engineering Foundation
+- [x] Data + Multi-Tenancy (Supabase)
+- [x] RAG + Knowledge
 
-### Fase 3: Dashboard
-- [ ] Panel de monitoreo en tiempo real
-- [ ] Gestión de conversaciones
-- [ ] Métricas y analytics
+### Fase 06-10: Features
 
-### Fase 4: Producción
-- [ ] Configurar dominios y SSL
-- [ ] Implementar autenticación
-- [ ] Monitoreo y alertas
-- [ ] Backup automático
+- [ ] Universal Agent + Memory
+- [ ] Tools + Calendar
+- [ ] Omnichannel
+- [ ] N8N Orchestration
+- [ ] CRM + Follow-Up
+
+### Fase 11-14: Production
+
+- [ ] Observability + Self-Validation
+- [ ] Admin Control Plane
+- [ ] Recovery + Controlled Autonomy
+- [ ] Hardening + Production Readiness
 
 ---
 
 ## Contacto Soporte
 
-- **Documentación:** http://localhost:3456
-- **Evolution API Manager:** http://localhost:8081/manager/
-- **N8N Editor:** http://localhost:5678/workflow/
+- **Dashboard:** http://localhost:3000
+- **Documentación:** Ver `docs/` directory
+- **Soporte:** [Comunidad Biokool](https://biokool.mx/)
 
 ---
 
-*Documento generado por PKM - WhatsApp AI Agent*
+_Documento actualizado por AI-BOS - WhatsApp AI Agent_

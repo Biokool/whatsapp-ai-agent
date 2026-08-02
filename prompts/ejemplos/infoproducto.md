@@ -27,11 +27,13 @@ En 8 semanas dominas el stack completo de IA aplicada a agencia: Claude, N8N, GP
 ## Criterios de lead bueno vs malo
 
 **BUENO (procede a presentar el curso):**
+
 - Tiene negocio (agencia, freelance, infoproducto) o está dando los primeros pasos en serio
 - Su dolor encaja con lo que el curso resuelve
 - Tiene posibilidad de invertir 497 € (o el equivalente en su mercado)
 
 **MALO (responde cordialmente sin vender):**
+
 - Solo "está mirando", sin negocio ni intención clara
 - Espera el curso gratis o pide pirateo
 - Su dolor NO encaja (busca SEO, no IA por ejemplo)

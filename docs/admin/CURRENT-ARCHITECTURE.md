@@ -48,16 +48,19 @@
 **Purpose:** WhatsApp protocol implementation
 
 **Files:**
+
 - `client.ts` — Socket management, reconnection
 - `handler.ts` — Message processing
 - `outbox.ts` — Human message delivery
 
 **Dependencies:**
+
 - `@whiskeysockets/baileys` ^7.0.0-rc.9
 - `pino` (logging)
 - `qrcode-terminal` (QR display)
 
 **Data Flow:**
+
 ```
 WhatsApp Server ←→ Baileys Socket ←→ Message Handler ←→ Database
                                          │
@@ -73,25 +76,27 @@ WhatsApp Server ←→ Baileys Socket ←→ Message Handler ←→ Database
 **Purpose:** Dashboard and API
 
 **Routes:**
-| Route | Method | Purpose |
-|-------|--------|---------|
-| `/` | GET | Dashboard page |
-| `/docs` | GET | Documentation viewer |
-| `/api/conversations` | GET | List conversations |
-| `/api/conversations/[id]` | DELETE | Delete conversation |
-| `/api/messages/[id]` | GET | Get messages |
-| `/api/messages/[id]` | POST | Send message |
-| `/api/mode/[id]` | POST | Switch AI/HUMAN mode |
-| `/api/connection/status` | GET | Get connection status |
-| `/api/connection/disconnect` | POST | Disconnect WhatsApp |
-| `/api/docs` | GET | List documentation |
-| `/api/docs/read` | GET | Read documentation file |
+
+| Route                        | Method | Purpose                 |
+| ---------------------------- | ------ | ----------------------- |
+| `/`                          | GET    | Dashboard page          |
+| `/docs`                      | GET    | Documentation viewer    |
+| `/api/conversations`         | GET    | List conversations      |
+| `/api/conversations/[id]`    | DELETE | Delete conversation     |
+| `/api/messages/[id]`         | GET    | Get messages            |
+| `/api/messages/[id]`         | POST   | Send message            |
+| `/api/mode/[id]`             | POST   | Switch AI/HUMAN mode    |
+| `/api/connection/status`     | GET    | Get connection status   |
+| `/api/connection/disconnect` | POST   | Disconnect WhatsApp     |
+| `/api/docs`                  | GET    | List documentation      |
+| `/api/docs/read`             | GET    | Read documentation file |
 
 ### 2.3 SQLite Database (`src/lib/db.ts`)
 
 **Purpose:** Data persistence
 
 **Tables:**
+
 ```sql
 conversations (
   id INTEGER PRIMARY KEY,
@@ -134,12 +139,14 @@ outbox (
 **Purpose:** AI response generation
 
 **Configuration:**
+
 - Provider: OpenRouter
 - Default Model: `openai/gpt-4o-mini`
 - Temperature: 0.4
 - Max Tool Turns: 5
 
 **Tool Calling Loop:**
+
 ```
 User Message
     │
@@ -159,12 +166,13 @@ LLM Completion
 **Purpose:** Business logic execution
 
 **Available Tools:**
-| Tool | Purpose | Status |
-|------|---------|--------|
-| `guardarLead` | Save lead to Google Sheets | UNVERIFIED |
-| `calificar` | Score lead 1-10 | VERIFIED |
-| `agendar` | Generate scheduling link | UNVERIFIED |
-| `derivarHumano` | Switch to HUMAN mode | VERIFIED |
+
+| Tool            | Purpose                    | Status     |
+| --------------- | -------------------------- | ---------- |
+| `guardarLead`   | Save lead to Google Sheets | UNVERIFIED |
+| `calificar`     | Score lead 1-10            | VERIFIED   |
+| `agendar`       | Generate scheduling link   | UNVERIFIED |
+| `derivarHumano` | Switch to HUMAN mode       | VERIFIED   |
 
 ---
 
@@ -249,10 +257,12 @@ LLM Completion
 ### 4.1 Docker Configuration
 
 **Dockerfile:** Multi-stage build
+
 - Stage 1 (builder): Build Next.js app
 - Stage 2 (production): Run with minimal dependencies
 
 **docker-compose.local.yml:**
+
 - Container: `whatsapp-agent`
 - Ports: 3000 (dashboard)
 - Volumes: `data`, `auth`, `prompts`, `docs`
@@ -261,10 +271,12 @@ LLM Completion
 ### 4.2 Environment Configuration
 
 **Required:**
+
 - `OPENROUTER_API_KEY` — LLM authentication
 - `OPENROUTER_MODEL` — LLM model selection
 
 **Optional:**
+
 - `GOOGLE_SHEETS_WEBHOOK_URL` — Lead storage
 - `CAL_BOOKING_URL` — Scheduling
 - `PORT` — Dashboard port (default: 3000)
@@ -277,15 +289,18 @@ LLM Completion
 ### 5.1 Current State
 
 **Authentication:** NONE
+
 - Dashboard accessible to anyone with URL
 - No API route protection
 - No session management
 
 **Authorization:** NONE
+
 - All users have full access
 - No role-based access control
 
 **Secrets:**
+
 - API key in `.env.local` (not committed)
 - API key in `config/servers.json` (RISK)
 - Docker uses env vars (good)
@@ -303,12 +318,12 @@ LLM Completion
 
 ### 6.1 Current Limitations
 
-| Component | Limitation | Impact |
-|-----------|------------|--------|
-| SQLite | Single-writer | Concurrency bottleneck |
-| Baileys | Single session | One WhatsApp account |
-| Next.js | Single process | Limited throughput |
-| Polling | 2s intervals | Suboptimal UX |
+| Component | Limitation     | Impact                 |
+| --------- | -------------- | ---------------------- |
+| SQLite    | Single-writer  | Concurrency bottleneck |
+| Baileys   | Single session | One WhatsApp account   |
+| Next.js   | Single process | Limited throughput     |
+| Polling   | 2s intervals   | Suboptimal UX          |
 
 ### 6.2 Scaling Path
 
@@ -329,16 +344,16 @@ Phase 3: Microservices + Load Balancing
 
 ## 7. Technology Stack
 
-| Layer | Technology | Version | Purpose |
-|-------|------------|---------|---------|
-| Runtime | Node.js | 20+ | JavaScript execution |
-| Framework | Next.js | 16.2.6 | Web framework |
-| UI | React | 19.0.0 | Component library |
-| Styling | Tailwind CSS | 4.0.0 | Utility CSS |
-| Database | SQLite | - | Data persistence |
-| WhatsApp | Baileys | 7.0.0-rc.9 | Protocol implementation |
-| LLM | OpenRouter | - | AI gateway |
-| Container | Docker | - | Deployment |
+| Layer     | Technology   | Version    | Purpose                 |
+| --------- | ------------ | ---------- | ----------------------- |
+| Runtime   | Node.js      | 20+        | JavaScript execution    |
+| Framework | Next.js      | 16.2.6     | Web framework           |
+| UI        | React        | 19.0.0     | Component library       |
+| Styling   | Tailwind CSS | 4.0.0      | Utility CSS             |
+| Database  | SQLite       | -          | Data persistence        |
+| WhatsApp  | Baileys      | 7.0.0-rc.9 | Protocol implementation |
+| LLM       | OpenRouter   | -          | AI gateway              |
+| Container | Docker       | -          | Deployment              |
 
 ---
 

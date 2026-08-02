@@ -12,6 +12,7 @@ export interface Conversation {
   id: string;
   phone: string;
   name: string | null;
+  jid: string | null;
   mode: "AI" | "HUMAN";
   last_message_at: string | null;
   last_message_preview: string | null;

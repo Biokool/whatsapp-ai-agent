@@ -1,0 +1,78 @@
+{
+  "name": "Upload Supabase Simple",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-supabase",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://mvbynpfvxcpvuoazkaxc.supabase.co/storage/v1/object/documents/{{ $json.headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001' }}/{{ $json.headers['x-document-id'] || 'new' }}_{{ $binary.file.fileName || 'document.pdf' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YnlucGZ2eGNwdnVvYXprYXhjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTA3NTA0OCwiZXhwIjoyMTAwNjUxMDQ4fQ.e-B2bTW9ib8mG9iHXVvcihoBxgqT7wVDV1Rv0RXNgp0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $binary.file.mimeType || 'application/pdf' }}"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Upload to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [380, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').item.json;\nconst headers = webhookData.headers || {};\nconst tenantId = headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001';\nconst documentId = headers['x-document-id'] || '';\nconst fileName = $binary.file.fileName || 'document.pdf';\nconst storagePath = `${tenantId}/${documentId}_${fileName}`;\nconst publicUrl = `https://mvbynpfvxcpvuoazkaxc.supabase.co/storage/v1/object/public/documents/${storagePath}`;\n\nreturn [{\n  json: {\n    success: true,\n    documentId,\n    tenantId,\n    filename: fileName,\n    fileUrl: publicUrl,\n    storageProvider: 'supabase',\n    storagePath,\n    timestamp: new Date().toISOString(),\n    message: 'Archivo subido a Supabase Storage'\n  }\n}];"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 280]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Upload to Supabase", "type": "main", "index": 0 }]]
+    },
+    "Upload to Supabase": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

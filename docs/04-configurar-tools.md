@@ -6,11 +6,11 @@ El agente trae 4 tools (acciones que puede ejecutar). Funciona sin configurarlas
 
 Antes de activar tools, asegúrate de que el modelo elegido en `OPENROUTER_MODEL` (en `.env.local`) **soporta tool calling**. Estas son las opciones recomendadas a mayo 2026:
 
-| Modelo | Input $/M tokens | Output $/M tokens | Contexto | Cuándo |
-|---|---|---|---|---|
-| `openai/gpt-4o-mini` | $0.15 | $0.60 | 128K | **Default**. Mejor relación precio/calidad para 2-4 líneas en español |
-| `google/gemini-2.5-flash` | $0.30 | $2.50 | 1M | Si necesitas contexto largo (historial muy extenso) |
-| `anthropic/claude-haiku-4.5` | $1.00 | $5.00 | 200K | Si necesitas tool-use complejo o razonamiento extendido |
+| Modelo                       | Input $/M tokens | Output $/M tokens | Contexto | Cuándo                                                                |
+| ---------------------------- | ---------------- | ----------------- | -------- | --------------------------------------------------------------------- |
+| `openai/gpt-4o-mini`         | $0.15            | $0.60             | 128K     | **Default**. Mejor relación precio/calidad para 2-4 líneas en español |
+| `google/gemini-2.5-flash`    | $0.30            | $2.50             | 1M       | Si necesitas contexto largo (historial muy extenso)                   |
+| `anthropic/claude-haiku-4.5` | $1.00            | $5.00             | 200K     | Si necesitas tool-use complejo o razonamiento extendido               |
 
 **Los modelos `:free`** existen pero tienen rate limit estricto (50 req/día sin créditos, 1.000 req/día con $10+ cargados). Sirven para probar el kit pero **no para clientes reales** — se saturan en cuanto hay 2-3 conversaciones simultáneas.
 
@@ -20,12 +20,12 @@ Para cambiar el modelo: edita `OPENROUTER_MODEL` en `.env.local`, reinicia el bo
 
 ## Las 4 tools
 
-| Tool | Qué hace | Configuración necesaria |
-|---|---|---|
-| `guardarLead` | Guarda lead en Google Sheets | Webhook de Apps Script |
-| `calificar` | Calcula score 1-10 del lead | Ninguna — funciona de serie |
-| `agendar` | Envía link de Cal.com personalizado | URL de Cal.com / Calendly |
-| `derivarHumano` | Pasa la conversación a modo HUMAN | Ninguna — funciona de serie |
+| Tool            | Qué hace                            | Configuración necesaria     |
+| --------------- | ----------------------------------- | --------------------------- |
+| `guardarLead`   | Guarda lead en Google Sheets        | Webhook de Apps Script      |
+| `calificar`     | Calcula score 1-10 del lead         | Ninguna — funciona de serie |
+| `agendar`       | Envía link de Cal.com personalizado | URL de Cal.com / Calendly   |
+| `derivarHumano` | Pasa la conversación a modo HUMAN   | Ninguna — funciona de serie |
 
 ## Configurar `guardarLead` con Google Sheets
 
@@ -47,16 +47,16 @@ function doPost(e) {
 
   sheet.appendRow([
     data.fecha || new Date().toISOString(),
-    data.nombre || '',
-    data.telefono || '',
-    data.negocio || '',
-    data.facturacion || '',
-    data.dolor || ''
+    data.nombre || "",
+    data.telefono || "",
+    data.negocio || "",
+    data.facturacion || "",
+    data.dolor || "",
   ]);
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(
+    ContentService.MimeType.JSON
+  );
 }
 ```
 

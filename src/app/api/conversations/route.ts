@@ -7,7 +7,7 @@ export async function GET(): Promise<NextResponse> {
   try {
     const conversations = await listConversations();
     return NextResponse.json({ conversations });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to list conversations" }, { status: 500 });
   }
 }

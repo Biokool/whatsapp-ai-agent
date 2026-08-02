@@ -1,34 +1,46 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { getEnv } from "@/config/environment";
-import ws from "ws";
 
 let _supabase: SupabaseClient | null = null;
 
 /**
  * Supabase client singleton.
  * Uses service role key for server-side operations (bypasses RLS).
- * For client-side, use the anon key with RLS.
  */
 export function getSupabase(): SupabaseClient {
   if (_supabase) return _supabase;
 
   const env = getEnv();
-  _supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+
+  // Lazy-load ws only when needed (avoids module-level require issues)
+  let wsTransport: any = undefined;
+  try {
+    wsTransport = require("ws");
+  } catch {
+    // ws not available — Realtime won't work but REST API still works
+  }
+
+  const options: any = {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
-    realtime: { transport: ws as never },
-  });
+    db: {
+      schema: "public",
+    },
+  };
+  if (wsTransport) {
+    options.realtime = { transport: wsTransport };
+  }
+
+  _supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, options);
 
   return _supabase;
 }
 
 /**
- * Set the current tenant for RLS policies.
- * Call this at the start of each request.
+ * Reset the Supabase client singleton (for recovery).
  */
-export async function setCurrentTenant(tenantId: string): Promise<void> {
-  const supabase = getSupabase();
-  await supabase.rpc("set_current_tenant", { tenant_id: tenantId });
+export function resetSupabase(): void {
+  _supabase = null;
 }

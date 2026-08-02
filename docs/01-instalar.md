@@ -4,12 +4,12 @@ Esta guía cubre la instalación completa en macOS y Windows. Si usas Claude Cod
 
 ## Requisitos previos
 
-| Requisito | Por qué |
-|---|---|
-| **Node.js 20+** | El kit es Node. Necesita 20 o superior |
-| **VS Code** (opcional pero recomendado) | Para abrir el proyecto con comodidad |
-| **Claude Code** (opcional pero MUY recomendado) | Para el setup guiado |
-| **Cuenta de OpenRouter** | El cerebro del agente. Plan gratis + 5€ de saldo da para meses |
+| Requisito                                       | Por qué                                                        |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| **Node.js 20+**                                 | El kit es Node. Necesita 20 o superior                         |
+| **VS Code** (opcional pero recomendado)         | Para abrir el proyecto con comodidad                           |
+| **Claude Code** (opcional pero MUY recomendado) | Para el setup guiado                                           |
+| **Cuenta de OpenRouter**                        | El cerebro del agente. Plan gratis + 5€ de saldo da para meses |
 
 ## Instalar Node.js
 
@@ -51,12 +51,11 @@ Tarda 1-2 minutos. Verás muchas líneas y al final un resumen tipo `added 500 p
 
 ### Si npm install falla
 
-| Error | Solución |
-|---|---|
+| Error                       | Solución                                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `permission denied` (macOS) | Probablemente intentaste correr con `sudo`. NO uses sudo. Si ya lo hiciste, borra `node_modules` y prueba sin sudo |
-| `cannot find module 'better-sqlite3'` | Falló la compilación. Ejecuta `npm rebuild better-sqlite3` |
-| `Visual Studio not found` (Windows) | Instala Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/ . Después, `npm rebuild better-sqlite3` |
-| `EACCES` (Windows) | Cierra antivirus temporalmente, vuelve a intentar |
+| `EACCES` (Windows)          | Cierra antivirus temporalmente, vuelve a intentar                                                                  |
+| `Supabase connection error` | Verifica que las env vars de Supabase estén configuradas correctamente en `.env.local`                             |
 
 ## Verificar que todo está bien
 

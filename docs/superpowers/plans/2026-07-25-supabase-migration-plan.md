@@ -53,9 +53,11 @@ MODIFY:
 ### Task 1: Install Dependencies
 
 **Files:**
+
 - Modify: `package.json`
 
 **Dependencies to add:**
+
 ```json
 {
   "dependencies": {
@@ -70,17 +72,20 @@ MODIFY:
 ```
 
 - [ ] **Step 1: Install packages**
+
 ```bash
 npm install @supabase/supabase-js ioredis uuid --legacy-peer-deps
 npm install -D @types/uuid --legacy-peer-deps
 ```
 
 - [ ] **Step 2: Verify installation**
+
 ```bash
 npm ls @supabase/supabase-js ioredis uuid
 ```
 
 - [ ] **Step 3: Commit**
+
 ```bash
 git add package.json package-lock.json
 git commit -m "feat: add supabase-js, ioredis, uuid dependencies"
@@ -91,6 +96,7 @@ git commit -m "feat: add supabase-js, ioredis, uuid dependencies"
 ### Task 2: Update Environment Config
 
 **Files:**
+
 - Modify: `src/config/environment.ts`
 
 - [ ] **Step 1: Add Supabase + Redis env vars**
@@ -177,6 +183,7 @@ LLM_RATE_LIMIT_WINDOW_MS=60000
 Add the Supabase URL and keys from your Supabase dashboard (Settings → API).
 
 - [ ] **Step 4: Commit**
+
 ```bash
 git add src/config/environment.ts .env.example
 git commit -m "feat: add Supabase + Redis environment variables"
@@ -187,6 +194,7 @@ git commit -m "feat: add Supabase + Redis environment variables"
 ### Task 3: Create Core Types
 
 **Files:**
+
 - Create: `src/core/types/database.ts`
 
 - [ ] **Step 1: Define all database types**
@@ -283,6 +291,7 @@ export const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 ```
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/core/types/database.ts
 git commit -m "feat: add core database types for Supabase"
@@ -293,6 +302,7 @@ git commit -m "feat: add core database types for Supabase"
 ### Task 4: Create Supabase Client
 
 **Files:**
+
 - Create: `src/infrastructure/database/supabase.ts`
 
 - [ ] **Step 1: Create Supabase client singleton**
@@ -333,6 +343,7 @@ export async function setCurrentTenant(tenantId: string): Promise<void> {
 ```
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/infrastructure/database/supabase.ts
 git commit -m "feat: add Supabase client singleton"
@@ -343,6 +354,7 @@ git commit -m "feat: add Supabase client singleton"
 ### Task 5: Create Redis Client + Connection State
 
 **Files:**
+
 - Create: `src/infrastructure/cache/redis.ts`
 - Create: `src/infrastructure/cache/connection-state.ts`
 
@@ -431,6 +443,7 @@ export async function resetConnectionState(): Promise<void> {
 ```
 
 - [ ] **Step 3: Commit**
+
 ```bash
 git add src/infrastructure/cache/redis.ts src/infrastructure/cache/connection-state.ts
 git commit -m "feat: add Redis client and connection_state cache"
@@ -441,6 +454,7 @@ git commit -m "feat: add Redis client and connection_state cache"
 ### Task 6: Create PostgreSQL Schema
 
 **Files:**
+
 - Create: `src/infrastructure/database/schema.sql`
 
 - [ ] **Step 1: Create full schema**
@@ -633,6 +647,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE conversations;
 ```
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/infrastructure/database/schema.sql
 git commit -m "feat: add PostgreSQL schema for Supabase"
@@ -643,6 +658,7 @@ git commit -m "feat: add PostgreSQL schema for Supabase"
 ### Task 7: Create Migration Script
 
 **Files:**
+
 - Create: `scripts/migrate-sqlite-to-supabase.ts`
 
 - [ ] **Step 1: Create migration script**
@@ -683,10 +699,7 @@ async function migrate() {
   console.log("1. Creating default tenant...");
   const { error: tenantError } = await supabase
     .from("tenants")
-    .upsert(
-      { id: DEFAULT_TENANT_ID, name: "Biokool", slug: "biokool" },
-      { onConflict: "id" }
-    );
+    .upsert({ id: DEFAULT_TENANT_ID, name: "Biokool", slug: "biokool" }, { onConflict: "id" });
   if (tenantError) throw new Error(`Tenant error: ${tenantError.message}`);
   console.log("   ✓ Default tenant ready\n");
 
@@ -778,6 +791,7 @@ migrate()
 ```
 
 - [ ] **Step 3: Commit**
+
 ```bash
 git add scripts/migrate-sqlite-to-supabase.ts package.json
 git commit -m "feat: add SQLite to Supabase migration script"
@@ -788,6 +802,7 @@ git commit -m "feat: add SQLite to Supabase migration script"
 ### Task 8: Rewrite db.ts to Use Supabase
 
 **Files:**
+
 - Modify: `src/lib/db.ts` (complete rewrite)
 
 - [ ] **Step 1: Rewrite db.ts**
@@ -831,18 +846,12 @@ export async function getOrCreateConversation(
   if (existing) {
     // Update name if missing
     if (name && (!existing.name || existing.name === "")) {
-      await supabase
-        .from("conversations")
-        .update({ name })
-        .eq("id", existing.id);
+      await supabase.from("conversations").update({ name }).eq("id", existing.id);
       existing.name = name;
     }
     // Update jid if changed
     if (jid && existing.jid !== jid) {
-      await supabase
-        .from("conversations")
-        .update({ jid })
-        .eq("id", existing.id);
+      await supabase.from("conversations").update({ jid }).eq("id", existing.id);
       existing.jid = jid;
     }
     return existing as Conversation;
@@ -867,11 +876,7 @@ export async function getOrCreateConversation(
 
 export async function getConversationById(id: string): Promise<Conversation | null> {
   const supabase = getSupabase();
-  const { data } = await supabase
-    .from("conversations")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data } = await supabase.from("conversations").select("*").eq("id", id).single();
   return (data as Conversation) ?? null;
 }
 
@@ -907,15 +912,9 @@ export async function listConversations(): Promise<ConversationListItem[]> {
   return result;
 }
 
-export async function setMode(
-  conversationId: string,
-  mode: ConversationMode
-): Promise<void> {
+export async function setMode(conversationId: string, mode: ConversationMode): Promise<void> {
   const supabase = getSupabase();
-  await supabase
-    .from("conversations")
-    .update({ mode })
-    .eq("id", conversationId);
+  await supabase.from("conversations").update({ mode }).eq("id", conversationId);
 }
 
 // ============================================================
@@ -951,10 +950,7 @@ export async function insertMessage(
   return msg.id;
 }
 
-export async function getMessages(
-  conversationId: string,
-  limit = 50
-): Promise<Message[]> {
+export async function getMessages(conversationId: string, limit = 50): Promise<Message[]> {
   const supabase = getSupabase();
   const { data } = await supabase
     .from("messages")
@@ -966,10 +962,7 @@ export async function getMessages(
   return ((data as Message[]) ?? []).reverse();
 }
 
-export async function getRecentHistory(
-  conversationId: string,
-  limit = 20
-): Promise<Message[]> {
+export async function getRecentHistory(conversationId: string, limit = 20): Promise<Message[]> {
   return getMessages(conversationId, limit);
 }
 
@@ -981,16 +974,10 @@ export async function deleteConversation(conversationId: string): Promise<void> 
   const supabase = getSupabase();
 
   // Delete messages first (cascade should handle this, but being explicit)
-  await supabase
-    .from("messages")
-    .delete()
-    .eq("conversation_id", conversationId);
+  await supabase.from("messages").delete().eq("conversation_id", conversationId);
 
   // Delete conversation
-  await supabase
-    .from("conversations")
-    .delete()
-    .eq("id", conversationId);
+  await supabase.from("conversations").delete().eq("id", conversationId);
 }
 
 // ============================================================
@@ -1025,6 +1012,7 @@ export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
 ```
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/lib/db.ts
 git commit -m "feat: rewrite db.ts to use Supabase instead of SQLite"
@@ -1035,6 +1023,7 @@ git commit -m "feat: rewrite db.ts to use Supabase instead of SQLite"
 ### Task 9: Rewrite Baileys Handler
 
 **Files:**
+
 - Modify: `src/lib/baileys/handler.ts`
 
 - [ ] **Step 1: Update imports and make functions async**
@@ -1075,10 +1064,7 @@ export async function handleIncomingMessages(
 
     if (!remoteJid.endsWith("@s.whatsapp.net") && !remoteJid.endsWith("@lid")) continue;
 
-    const text =
-      msg.message?.conversation ??
-      msg.message?.extendedTextMessage?.text ??
-      null;
+    const text = msg.message?.conversation ?? msg.message?.extendedTextMessage?.text ?? null;
 
     if (!text || text.trim() === "") continue;
 
@@ -1129,6 +1115,7 @@ export async function handleIncomingMessages(
 ```
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/lib/baileys/handler.ts
 git commit -m "feat: update Baileys handler for async Supabase calls"
@@ -1139,6 +1126,7 @@ git commit -m "feat: update Baileys handler for async Supabase calls"
 ### Task 10: Replace Outbox with Supabase Realtime
 
 **Files:**
+
 - Modify: `src/lib/baileys/outbox.ts` (complete rewrite)
 
 - [ ] **Step 1: Rewrite outbox to use Supabase Realtime**
@@ -1228,6 +1216,7 @@ export function stopOutboxListener(): void {
 Replace `startOutboxLoop`/`stopOutboxLoop` with `startOutboxListener`/`stopOutboxListener`.
 
 - [ ] **Step 3: Commit**
+
 ```bash
 git add src/lib/baileys/outbox.ts src/lib/baileys/client.ts
 git commit -m "feat: replace outbox polling with Supabase Realtime"
@@ -1238,6 +1227,7 @@ git commit -m "feat: replace outbox polling with Supabase Realtime"
 ### Task 11: Update API Routes
 
 **Files:**
+
 - Modify: `src/app/api/conversations/route.ts`
 - Modify: `src/app/api/conversations/[conversationId]/route.ts`
 - Modify: `src/app/api/messages/[conversationId]/route.ts`
@@ -1251,6 +1241,7 @@ git commit -m "feat: replace outbox polling with Supabase Realtime"
 Each route currently uses sync SQLite calls. Replace with async Supabase calls.
 
 Example for `GET /api/conversations`:
+
 ```typescript
 import { NextResponse } from "next/server";
 import { listConversations } from "@/lib/db";
@@ -1262,10 +1253,7 @@ export async function GET() {
     const conversations = await listConversations();
     return NextResponse.json({ conversations });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to list conversations" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to list conversations" }, { status: 500 });
   }
 }
 ```
@@ -1284,15 +1272,13 @@ export async function GET() {
     const state = await getConnectionState();
     return NextResponse.json(state);
   } catch (error) {
-    return NextResponse.json(
-      { status: "disconnected", qrPng: null, phone: null },
-      { status: 500 }
-    );
+    return NextResponse.json({ status: "disconnected", qrPng: null, phone: null }, { status: 500 });
   }
 }
 ```
 
 - [ ] **Step 3: Commit each route separately**
+
 ```bash
 git add src/app/api/conversations/route.ts
 git commit -m "feat: update conversations API route for Supabase"
@@ -1308,6 +1294,7 @@ git commit -m "feat: update messages API route for Supabase"
 ### Task 12: Update Baileys Client
 
 **Files:**
+
 - Modify: `src/lib/baileys/client.ts`
 
 - [ ] **Step 1: Update imports and connection state calls**
@@ -1319,6 +1306,7 @@ Replace `startOutboxLoop`/`stopOutboxLoop` with `startOutboxListener`/`stopOutbo
 Make all connection state calls async.
 
 - [ ] **Step 2: Commit**
+
 ```bash
 git add src/lib/baileys/client.ts
 git commit -m "feat: update Baileys client for Redis + Supabase Realtime"
@@ -1370,6 +1358,7 @@ npm run dev
 6. Send a human reply
 
 - [ ] **Step 8: Final commit**
+
 ```bash
 git add -A
 git commit -m "feat: Phase 04 — Full Supabase migration complete"

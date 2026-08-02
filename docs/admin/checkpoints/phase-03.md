@@ -89,13 +89,13 @@ human_approval_required: true
 
 ## Test Coverage
 
-| Test File | Tests | Status |
-|-----------|-------|--------|
-| `src/lib/utils.test.ts` | 4 | ✅ Passing |
-| `src/core/types/index.test.ts` | 5 | ✅ Passing |
-| `src/config/environment.test.ts` | 2 | ✅ Passing |
-| `src/lib/validation.test.ts` | 4 | ✅ Passing |
-| **Total** | **15** | **✅ All Passing** |
+| Test File                        | Tests  | Status             |
+| -------------------------------- | ------ | ------------------ |
+| `src/lib/utils.test.ts`          | 4      | ✅ Passing         |
+| `src/core/types/index.test.ts`   | 5      | ✅ Passing         |
+| `src/config/environment.test.ts` | 2      | ✅ Passing         |
+| `src/lib/validation.test.ts`     | 4      | ✅ Passing         |
+| **Total**                        | **15** | **✅ All Passing** |
 
 ---
 

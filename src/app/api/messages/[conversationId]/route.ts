@@ -1,14 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  getConversationById,
-  getMessages,
-  insertMessage,
-} from "@/lib/db";
-import {
-  validateConversationId,
-  validateMessageContent,
-  sanitizeText,
-} from "@/lib/validation";
+import { getConversationById, getMessages, insertMessage } from "@/lib/db";
+import { validateConversationId, validateMessageContent, sanitizeText } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +8,7 @@ interface RouteContext {
   params: Promise<{ conversationId: string }>;
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: RouteContext
-): Promise<NextResponse> {
+export async function GET(_req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { conversationId } = await params;
 
   const validation = validateConversationId(conversationId);
@@ -34,10 +23,7 @@ export async function GET(
   return NextResponse.json({ messages });
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: RouteContext
-): Promise<NextResponse> {
+export async function POST(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { conversationId } = await params;
 
   const idValidation = validateConversationId(conversationId);
@@ -50,20 +36,14 @@ export async function POST(
 
   const conv = await getConversationById(conversationId);
   if (!conv) {
-    return NextResponse.json(
-      { ok: false, error: "Conversation not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ ok: false, error: "Conversation not found" }, { status: 404 });
   }
 
   let body: { content?: string };
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "Invalid JSON body" },
-      { status: 400 }
-    );
+    return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
   }
 
   const contentValidation = validateMessageContent(body.content);

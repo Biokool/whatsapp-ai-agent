@@ -7,6 +7,7 @@ describe("Core Types", () => {
       id: "00000000-0000-0000-0000-000000000001",
       phone: "5215664436277",
       name: "Test User",
+      jid: "5215664436277@s.whatsapp.net",
       mode: "AI",
       last_message_at: new Date().toISOString(),
       last_message_preview: "Hello",

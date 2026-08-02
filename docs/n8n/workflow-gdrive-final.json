@@ -1,0 +1,74 @@
+{
+  "name": "Document Upload GDrive Final",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-gdrive",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryKeys = Object.keys($binary);\nif (binaryKeys.length === 0) {\n  throw new Error('No binary data received');\n}\nconst key = binaryKeys[0];\nconst binaryInfo = $binary[key];\n\nconst headers = $json.headers || {};\nconst tenantId = headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001';\nconst documentId = headers['x-document-id'] || '';\nconst knowledgeBaseId = headers['x-knowledge-base-id'] || '';\n\n// Pass through binary data as-is (keep id for Stream path)\n// The patched getItemBinaryData now uses metadata.mimeType from storage\nreturn [{\n  json: {\n    tenantId,\n    documentId,\n    knowledgeBaseId,\n    binaryKey: key\n  },\n  binary: {\n    [key]: binaryInfo\n  }\n}];"
+      },
+      "name": "Fix MIME Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [380, 280]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "inputDataFieldName": "={{ $json.binaryKey }}",
+        "name": "={{ $binary[$json.binaryKey].fileName || 'document.pdf' }}",
+        "folderId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "name": "Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [680, 280],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "neBYtaMCymhmxubt",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const metadata = $('Fix MIME Type').item.json;\nconst driveResult = $('Google Drive').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: metadata.documentId,\n    tenantId: metadata.tenantId,\n    filename: driveResult.name || '',\n    fileUrl: 'https://drive.google.com/file/d/' + (driveResult.id || '') + '/view',\n    storageProvider: 'gdrive',\n    gdriveFileId: driveResult.id || '',\n    mimeType: driveResult.mimeType || '',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [980, 280]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Fix MIME Type", "type": "main", "index": 0 }]]
+    },
+    "Fix MIME Type": {
+      "main": [[{ "node": "Google Drive", "type": "main", "index": 0 }]]
+    },
+    "Google Drive": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

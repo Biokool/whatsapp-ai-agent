@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
 import ConversationList from "./ConversationList";
 import ConversationPanel from "./ConversationPanel";
+import KnowledgeSection from "./KnowledgeSection";
 import { useConversations } from "@/hooks/use-conversations";
 
 interface DashboardProps {
@@ -26,29 +27,44 @@ export default function Dashboard({ phone }: DashboardProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-navy-950">
       {/* Desktop sidebar */}
-      <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} humanRequiredCount={humanRequiredCount} />
+      <Sidebar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        humanRequiredCount={humanRequiredCount}
+      />
 
       <div className="flex-1 flex flex-col md:ml-20 overflow-hidden">
         <DashboardHeader phone={phone} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
         <div className="flex-1 flex overflow-hidden">
-          {/* ConversationList - hidden on mobile when conversation is selected */}
-          <div className={`${showConversationList ? "flex" : "hidden"} md:flex flex-1 md:flex-none`}>
-            <ConversationList
-              conversations={conversations}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              searchQuery={searchQuery}
-            />
-          </div>
+          {/* Knowledge tab */}
+          {activeTab === "knowledge" && (
+            <div className="flex-1 p-6 overflow-y-auto">
+              <KnowledgeSection />
+            </div>
+          )}
 
-          {/* ConversationPanel - hidden on mobile when no conversation selected */}
-          <div className={`${showConversationList ? "hidden" : "flex"} md:flex flex-1`}>
-            <ConversationPanel
-              conversation={selected}
-              onBack={() => setSelectedId(null)}
-            />
-          </div>
+          {/* Chat tabs */}
+          {activeTab !== "knowledge" && (
+            <>
+              {/* ConversationList - hidden on mobile when conversation is selected */}
+              <div
+                className={`${showConversationList ? "flex" : "hidden"} md:flex md:w-80 lg:w-96 flex-shrink-0`}
+              >
+                <ConversationList
+                  conversations={conversations}
+                  selectedId={selectedId}
+                  onSelect={setSelectedId}
+                  searchQuery={searchQuery}
+                />
+              </div>
+
+              {/* ConversationPanel - hidden on mobile when no conversation selected */}
+              <div className={`${showConversationList ? "hidden" : "flex"} md:flex flex-1`}>
+                <ConversationPanel conversation={selected} onBack={() => setSelectedId(null)} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -56,11 +72,12 @@ export default function Dashboard({ phone }: DashboardProps) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-navy-900 border-t border-navy-500 z-50 px-2 py-1.5 safe-area-bottom">
         <div className="flex justify-around items-center">
           <button
-            onClick={() => { setActiveTab("chats"); setSelectedId(null); }}
+            onClick={() => {
+              setActiveTab("chats");
+              setSelectedId(null);
+            }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "chats"
-                ? "text-ai-green-light"
-                : "text-navy-400"
+              activeTab === "chats" ? "text-ai-green-light" : "text-navy-400"
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">chat</span>
@@ -70,9 +87,7 @@ export default function Dashboard({ phone }: DashboardProps) {
           <button
             onClick={() => setActiveTab("analytics")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "analytics"
-                ? "text-ai-green-light"
-                : "text-navy-400"
+              activeTab === "analytics" ? "text-ai-green-light" : "text-navy-400"
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">insights</span>
@@ -82,9 +97,7 @@ export default function Dashboard({ phone }: DashboardProps) {
           <button
             onClick={() => setActiveTab("funnel")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all relative ${
-              activeTab === "funnel"
-                ? "text-ai-green-light"
-                : "text-navy-400"
+              activeTab === "funnel" ? "text-ai-green-light" : "text-navy-400"
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">filter_alt</span>
@@ -95,11 +108,19 @@ export default function Dashboard({ phone }: DashboardProps) {
           </button>
 
           <button
+            onClick={() => setActiveTab("knowledge")}
+            className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
+              activeTab === "knowledge" ? "text-ai-green-light" : "text-navy-400"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">school</span>
+            <span className="text-[9px] font-medium">Knowledge</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("settings")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "settings"
-                ? "text-ai-green-light"
-                : "text-navy-400"
+              activeTab === "settings" ? "text-ai-green-light" : "text-navy-400"
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">settings</span>

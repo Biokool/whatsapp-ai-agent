@@ -14,11 +14,13 @@ El agente se conecta a WhatsApp como si fueras a `web.whatsapp.com` — escanean
 4. Copia el `.env.example` a `.env.local`:
 
 ### macOS / Linux
+
 ```
 cp .env.example .env.local
 ```
 
 ### Windows (PowerShell)
+
 ```
 Copy-Item .env.example .env.local
 ```
@@ -58,12 +60,12 @@ Desde **otro WhatsApp** (el de un compañero, o un segundo número), escribe "ho
 
 ## Si algo falla
 
-| Síntoma | Solución |
-|---|---|
-| El QR no aparece (queda cargando) | Espera 30 segundos. Si persiste, recarga la página. Si sigue, ejecuta `npm run doctor` |
-| El QR aparece pero al escanear, el móvil dice "no se pudo vincular" | Asegúrate de que tu móvil tiene buena conexión a internet. Vuelve a generar QR recargando la página del navegador |
-| Conecta pero el bot no responde a "hola" | Comprueba que `OPENROUTER_API_KEY` está en `.env.local` y es válida. Reinicia con Ctrl+C y `npm run start:all` |
-| Sale "error 440" en el log | Ya está mitigado en el kit. Si aparece, ejecuta `npm run doctor`. Probablemente sea un dispositivo viejo vinculado en tu WhatsApp |
+| Síntoma                                                             | Solución                                                                                                                          |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| El QR no aparece (queda cargando)                                   | Espera 30 segundos. Si persiste, recarga la página. Si sigue, ejecuta `npm run doctor`                                            |
+| El QR aparece pero al escanear, el móvil dice "no se pudo vincular" | Asegúrate de que tu móvil tiene buena conexión a internet. Vuelve a generar QR recargando la página del navegador                 |
+| Conecta pero el bot no responde a "hola"                            | Comprueba que `OPENROUTER_API_KEY` está en `.env.local` y es válida. Reinicia con Ctrl+C y `npm run start:all`                    |
+| Sale "error 440" en el log                                          | Ya está mitigado en el kit. Si aparece, ejecuta `npm run doctor`. Probablemente sea un dispositivo viejo vinculado en tu WhatsApp |
 
 ## Siguiente paso
 

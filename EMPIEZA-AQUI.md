@@ -56,6 +56,27 @@ Cuando tengas el bot funcionando en tu ordenador, el siguiente paso es desplegar
 
 ---
 
+## Knowledge Base (Catálogo de Productos)
+
+Si tu negocio tiene catálogos, FAQs o documentación técnica, puedes subirlos al Dashboard para que el agente los consulte automáticamente:
+
+1. Abre http://localhost:3000 y ve a la pestaña **Knowledge**
+2. Click **+ Nuevo** → Crea una Knowledge Base (ej: "Catálogo Biokool")
+3. Arrastra un PDF o haz click para subir tu catálogo
+4. El sistema procesará el documento y lo dividirá en chunks
+5. Cuando alguien pregunte por un producto, el agente consultará el catálogo
+
+**Formatos soportados:** PDF, TXT, MD (máximo 10MB)
+
+**Tipos de documentos ideales:**
+
+- Catálogos de productos con precios y especificaciones
+- FAQs y preguntas frecuentes
+- Manuales técnicos
+- Listas de servicios
+
+---
+
 > Cualquier duda → pregúntala en la [comunidad de Biokool](https://biokool.mx/). Allí te ayudamos a aplicarlo a tu caso real.
 
 — El equipo de Biokool

@@ -11,6 +11,7 @@
 ## Executive Summary
 
 The WhatsApp AI Agent Kit is a **functional MVP** that successfully:
+
 - Connects to WhatsApp via Baileys 7.0.0-rc.9
 - Processes incoming messages with OpenRouter LLM (GPT-4o-mini)
 - Persists conversations in SQLite (better-sqlite3)
@@ -26,16 +27,16 @@ The WhatsApp AI Agent Kit is a **functional MVP** that successfully:
 
 ### VERIFIED — File Inventory
 
-| Category | Count | Status |
-|----------|-------|--------|
-| TypeScript source files | 19 | VERIFIED |
-| React components | 12 | VERIFIED |
-| API routes | 8 | VERIFIED |
-| Library modules | 6 | VERIFIED |
-| Tools | 4 | VERIFIED |
-| Scripts | 5 | VERIFIED |
-| Documentation | 29 | VERIFIED |
-| Configuration | 1 | VERIFIED |
+| Category                | Count | Status   |
+| ----------------------- | ----- | -------- |
+| TypeScript source files | 19    | VERIFIED |
+| React components        | 12    | VERIFIED |
+| API routes              | 8     | VERIFIED |
+| Library modules         | 6     | VERIFIED |
+| Tools                   | 4     | VERIFIED |
+| Scripts                 | 5     | VERIFIED |
+| Documentation           | 29    | VERIFIED |
+| Configuration           | 1     | VERIFIED |
 
 ### VERIFIED — Directory Structure
 
@@ -68,12 +69,14 @@ whatsapp-ai-agent/
 **Status:** VERIFIED — Functional
 
 **Schema:**
+
 - `conversations` — id, phone, name, jid, mode, last_message_at, created_at
 - `messages` — id, conversation_id, role, content, created_at
 - `connection_state` — id (singleton), status, qr_string, phone, updated_at
 - `outbox` — id, conversation_id, phone, content, sent, created_at
 
 **Observations:**
+
 - Lazy initialization prevents build-time conflicts (good)
 - WAL mode enabled for concurrent reads (good)
 - Foreign keys enabled (good)
@@ -86,11 +89,13 @@ whatsapp-ai-agent/
 **Status:** VERIFIED — Functional
 
 **Components:**
+
 - `client.ts` — Baileys socket management, reconnection logic
 - `handler.ts` — Message processing, AI/HUMAN mode routing
 - `outbox.ts` — Human message delivery via polling
 
 **Observations:**
+
 - Supports both `@s.whatsapp.net` and `@lid` formats (good)
 - Reconnection logic handles code 440 (good)
 - No message queuing for offline scenarios (gap)
@@ -103,12 +108,14 @@ whatsapp-ai-agent/
 **Status:** VERIFIED — Functional
 
 **Configuration:**
+
 - Provider: OpenRouter
 - Default Model: openai/gpt-4o-mini
 - Temperature: 0.4
 - Max tool turns: 5
 
 **Observations:**
+
 - Tool calling loop with 5-turn limit (good)
 - Fallback response on limit (good)
 - No token counting (gap)
@@ -120,14 +127,15 @@ whatsapp-ai-agent/
 
 **Status:** VERIFIED — Functional (partially configured)
 
-| Tool | Status | Configuration |
-|------|--------|---------------|
-| `guardarLead` | UNVERIFIED | Requires `GOOGLE_SHEETS_WEBHOOK_URL` |
-| `calificar` | VERIFIED | Pure logic, no external deps |
-| `agendar` | UNVERIFIED | Requires `CAL_BOOKING_URL` |
-| `derivarHumano` | VERIFIED | Uses SQLite directly |
+| Tool            | Status     | Configuration                        |
+| --------------- | ---------- | ------------------------------------ |
+| `guardarLead`   | UNVERIFIED | Requires `GOOGLE_SHEETS_WEBHOOK_URL` |
+| `calificar`     | VERIFIED   | Pure logic, no external deps         |
+| `agendar`       | UNVERIFIED | Requires `CAL_BOOKING_URL`           |
+| `derivarHumano` | VERIFIED   | Uses SQLite directly                 |
 
 **Observations:**
+
 - Tools are well-structured with definitions and handlers
 - `calificar` uses hardcoded weights (configurable gap)
 - No tool execution logging (gap)
@@ -139,6 +147,7 @@ whatsapp-ai-agent/
 **Status:** VERIFIED — Functional
 
 **Components:**
+
 - `Dashboard.tsx` — Main layout with mobile support
 - `ConversationList.tsx` — Lead list with search
 - `ConversationPanel.tsx` — Chat view with mode toggle
@@ -152,6 +161,7 @@ whatsapp-ai-agent/
 - `DocsSidebar.tsx` — Documentation navigation
 
 **Observations:**
+
 - Responsive design (mobile + desktop) (good)
 - Real-time updates via polling (functional but not optimal)
 - No authentication/authorization (critical gap)
@@ -214,26 +224,26 @@ whatsapp-ai-agent/
 
 ### 4.1 Environment Variables
 
-| Variable | Status | Notes |
-|----------|--------|-------|
-| `OPENROUTER_API_KEY` | CONFIGURED | Set in `.env.local` |
-| `OPENROUTER_MODEL` | CONFIGURED | Defaults to `gpt-4o-mini` |
-| `GOOGLE_SHEETS_WEBHOOK_URL` | NOT SET | Optional |
-| `CAL_BOOKING_URL` | NOT SET | Optional |
-| `PORT` | CONFIGURED | Defaults to 3000 |
-| `LOG_LEVEL` | CONFIGURED | Defaults to `info` |
+| Variable                    | Status     | Notes                     |
+| --------------------------- | ---------- | ------------------------- |
+| `OPENROUTER_API_KEY`        | CONFIGURED | Set in `.env.local`       |
+| `OPENROUTER_MODEL`          | CONFIGURED | Defaults to `gpt-4o-mini` |
+| `GOOGLE_SHEETS_WEBHOOK_URL` | NOT SET    | Optional                  |
+| `CAL_BOOKING_URL`           | NOT SET    | Optional                  |
+| `PORT`                      | CONFIGURED | Defaults to 3000          |
+| `LOG_LEVEL`                 | CONFIGURED | Defaults to `info`        |
 
 ### 4.2 Configuration Files
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `config/servers.json` | Multi-environment config | VERIFIED |
-| `.env.local` | Environment secrets | VERIFIED |
-| `docker-compose.local.yml` | Docker orchestration | VERIFIED |
-| `Dockerfile` | Multi-stage build | VERIFIED |
-| `tsconfig.json` | TypeScript config | VERIFIED |
-| `next.config.ts` | Next.js config | VERIFIED |
-| `postcss.config.mjs` | Tailwind CSS config | VERIFIED |
+| File                       | Purpose                  | Status   |
+| -------------------------- | ------------------------ | -------- |
+| `config/servers.json`      | Multi-environment config | VERIFIED |
+| `.env.local`               | Environment secrets      | VERIFIED |
+| `docker-compose.local.yml` | Docker orchestration     | VERIFIED |
+| `Dockerfile`               | Multi-stage build        | VERIFIED |
+| `tsconfig.json`            | TypeScript config        | VERIFIED |
+| `next.config.ts`           | Next.js config           | VERIFIED |
+| `postcss.config.mjs`       | Tailwind CSS config      | VERIFIED |
 
 ### 4.3 Secrets Handling
 
@@ -251,37 +261,37 @@ whatsapp-ai-agent/
 
 ### 5.1 User-Facing Documentation
 
-| File | Status | Quality |
-|------|--------|---------|
-| `EMPIEZA-AQUI.md` | VERIFIED | Good |
-| `01-instalar.md` | VERIFIED | Good |
-| `02-conectar-whatsapp.md` | VERIFIED | Good |
-| `03-personalizar-prompt.md` | VERIFIED | Good |
-| `04-configurar-tools.md` | VERIFIED | Good |
-| `05-cloudflare-access.md` | VERIFIED | Good |
-| `06-deploy-hostinger.md` | VERIFIED | Good |
-| `07-errores-comunes.md` | VERIFIED | Good |
-| `08-whatsapp-coexistence.md` | VERIFIED | Good |
+| File                         | Status   | Quality |
+| ---------------------------- | -------- | ------- |
+| `EMPIEZA-AQUI.md`            | VERIFIED | Good    |
+| `01-instalar.md`             | VERIFIED | Good    |
+| `02-conectar-whatsapp.md`    | VERIFIED | Good    |
+| `03-personalizar-prompt.md`  | VERIFIED | Good    |
+| `04-configurar-tools.md`     | VERIFIED | Good    |
+| `05-cloudflare-access.md`    | VERIFIED | Good    |
+| `06-deploy-hostinger.md`     | VERIFIED | Good    |
+| `07-errores-comunes.md`      | VERIFIED | Good    |
+| `08-whatsapp-coexistence.md` | VERIFIED | Good    |
 
 ### 5.2 Technical Documentation
 
-| File | Status | Quality |
-|------|--------|---------|
-| `architecture.md` | EMPTY | Needs content |
-| `architecture-system.md` | VERIFIED | Good |
-| `security.md` | EMPTY | Needs content |
-| `testing.md` | EMPTY | Needs content |
-| `project-state.md` | STALE | Last updated 2026-07-20 |
-| `inventory.md` | STALE | Outdated dependencies |
+| File                     | Status   | Quality                 |
+| ------------------------ | -------- | ----------------------- |
+| `architecture.md`        | EMPTY    | Needs content           |
+| `architecture-system.md` | VERIFIED | Good                    |
+| `security.md`            | EMPTY    | Needs content           |
+| `testing.md`             | EMPTY    | Needs content           |
+| `project-state.md`       | STALE    | Last updated 2026-07-20 |
+| `inventory.md`           | STALE    | Outdated dependencies   |
 
 ### 5.3 AI-BOS Documentation
 
-| File | Status | Quality |
-|------|--------|---------|
-| `AGENTS.md` | VERIFIED | Good |
-| `AI-BOS-STATE.md` | VERIFIED | Current |
+| File                              | Status   | Quality       |
+| --------------------------------- | -------- | ------------- |
+| `AGENTS.md`                       | VERIFIED | Good          |
+| `AI-BOS-STATE.md`                 | VERIFIED | Current       |
 | `AI-BOS-MASTER-IMPLEMENTATION.md` | VERIFIED | Comprehensive |
-| `SKILL.md` | VERIFIED | Good |
+| `SKILL.md`                        | VERIFIED | Good          |
 
 ---
 
@@ -289,44 +299,44 @@ whatsapp-ai-agent/
 
 ### P0 — BLOCKER
 
-| Risk | Description | Impact |
-|------|-------------|--------|
-| `R-001` | No authentication on dashboard | Anyone with URL can access conversations |
-| `R-002` | API key exposed in `config/servers.json` | Secret leaked in config file |
+| Risk    | Description                              | Impact                                   |
+| ------- | ---------------------------------------- | ---------------------------------------- |
+| `R-001` | No authentication on dashboard           | Anyone with URL can access conversations |
+| `R-002` | API key exposed in `config/servers.json` | Secret leaked in config file             |
 
 ### P1 — CRITICAL
 
-| Risk | Description | Impact |
-|------|-------------|--------|
-| `R-003` | No input validation on API routes | Potential injection attacks |
-| `R-004` | No rate limiting on LLM calls | Cost runaway risk |
-| `R-005` | SQLite not suitable for production | Concurrency limits |
+| Risk    | Description                        | Impact                      |
+| ------- | ---------------------------------- | --------------------------- |
+| `R-003` | No input validation on API routes  | Potential injection attacks |
+| `R-004` | No rate limiting on LLM calls      | Cost runaway risk           |
+| `R-005` | SQLite not suitable for production | Concurrency limits          |
 
 ### P2 — HIGH
 
-| Risk | Description | Impact |
-|------|-------------|--------|
-| `R-006` | No message queuing for offline | Messages lost if bot down |
-| `R-007` | No media handling | Limited functionality |
+| Risk    | Description                           | Impact                      |
+| ------- | ------------------------------------- | --------------------------- |
+| `R-006` | No message queuing for offline        | Messages lost if bot down   |
+| `R-007` | No media handling                     | Limited functionality       |
 | `R-008` | Hardcoded tool weights in `calificar` | Not configurable per tenant |
-| `R-009` | No conversation export | Data portability issue |
+| `R-009` | No conversation export                | Data portability issue      |
 
 ### P3 — MEDIUM
 
-| Risk | Description | Impact |
-|------|-------------|--------|
-| `R-010` | Polling instead of WebSocket | Suboptimal UX |
-| `R-011` | No token counting | No cost visibility |
-| `R-012` | Empty documentation files | Maintenance burden |
-| `R-013` | Stale inventory/project-state docs | Confusion |
+| Risk    | Description                        | Impact             |
+| ------- | ---------------------------------- | ------------------ |
+| `R-010` | Polling instead of WebSocket       | Suboptimal UX      |
+| `R-011` | No token counting                  | No cost visibility |
+| `R-012` | Empty documentation files          | Maintenance burden |
+| `R-013` | Stale inventory/project-state docs | Confusion          |
 
 ### P4 — LOW
 
-| Risk | Description | Impact |
-|------|-------------|--------|
+| Risk    | Description                    | Impact                     |
+| ------- | ------------------------------ | -------------------------- |
 | `R-014` | `baileysLogger` at debug level | Verbose logs in production |
-| `R-015` | No soft deletes | Data recovery impossible |
-| `R-016` | No audit trail | Compliance gap |
+| `R-015` | No soft deletes                | Data recovery impossible   |
+| `R-016` | No audit trail                 | Compliance gap             |
 
 ---
 
@@ -403,6 +413,7 @@ whatsapp-ai-agent/
 The WhatsApp AI Agent Kit is a **functional MVP** that demonstrates the core concept. It successfully connects to WhatsApp, processes messages with AI, and provides a dashboard for human oversight.
 
 However, it has **significant gaps** for production use:
+
 - No authentication
 - No multi-tenancy
 - No media handling

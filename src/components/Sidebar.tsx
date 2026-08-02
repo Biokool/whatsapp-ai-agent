@@ -17,7 +17,9 @@ export default function Sidebar({ activeTab, onSelectTab, humanRequiredCount }: 
         <span className="font-geist text-2xl font-extrabold text-ai-green-light tracking-tight group-hover:scale-105 transition-transform">
           BK
         </span>
-        <span className="text-[9px] uppercase tracking-widest text-navy-300 font-bold mt-0.5">Biokool</span>
+        <span className="text-[9px] uppercase tracking-widest text-navy-300 font-bold mt-0.5">
+          Biokool
+        </span>
       </div>
 
       <div className="flex flex-col gap-5 w-full px-2 mt-2">
@@ -61,6 +63,19 @@ export default function Sidebar({ activeTab, onSelectTab, humanRequiredCount }: 
         >
           <span className="material-symbols-outlined text-[24px]">filter_alt</span>
           <span className="text-[10px] mt-1 font-medium">Embudo</span>
+        </button>
+
+        <button
+          onClick={() => onSelectTab("knowledge")}
+          className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
+            activeTab === "knowledge"
+              ? "text-ai-green-light font-bold border-r-2 border-ai-green-light bg-navy-600"
+              : "text-navy-300 hover:bg-navy-700 hover:text-ai-green-light"
+          }`}
+          title="Knowledge Base"
+        >
+          <span className="material-symbols-outlined text-[24px]">school</span>
+          <span className="text-[10px] mt-1 font-medium">Knowledge</span>
         </button>
 
         <button

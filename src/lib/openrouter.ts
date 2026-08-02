@@ -4,7 +4,7 @@ import { toolDefinitions, executeTool } from "./tools";
 import { checkRateLimit } from "./rate-limit";
 import type { Message } from "@/core/types/database";
 
-const MODEL = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
+const MODEL = process.env.OPENROUTER_MODEL ?? "google/gemini-2.0-flash-001";
 
 let _client: OpenAI | null = null;
 
@@ -30,6 +30,7 @@ function getClient(): OpenAI {
 interface GenerateReplyInput {
   history: Message[];
   conversationId: string;
+  ragContext?: string;
 }
 
 /**
@@ -43,11 +44,16 @@ export async function generateReply(input: GenerateReplyInput): Promise<string> 
   // Check rate limit before making LLM call
   const rateLimit = checkRateLimit(input.conversationId);
   if (!rateLimit.allowed) {
-    return `Estoy recibiendo muchas consultas en este momento. Por favor, espera ${rateLimit.retryAfter} segundos antes de继续.`;
+    return `Estoy recibiendo muchas consultas en este momento. Por favor, espera ${rateLimit.retryAfter} segundos antes de continuar.`;
   }
 
   const client = getClient();
-  const systemPrompt = buildSystemPrompt();
+  let systemPrompt = buildSystemPrompt();
+
+  // Add RAG context if available
+  if (input.ragContext && input.ragContext.trim().length > 0) {
+    systemPrompt += `\n\nCONEXTO DEL CATÁLOGO Y DOCUMENTACIÓN:\n${input.ragContext}\n\nUsa esta información para responder preguntas sobre productos, servicios, precios y especificaciones técnicas.`;
+  }
 
   // Mapeo de roles: 'human' (mensajes del dashboard) → 'assistant' para el LLM
   // El LLM los ve como sus propias respuestas previas

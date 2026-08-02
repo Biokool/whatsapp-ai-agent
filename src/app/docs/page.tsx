@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import DocsSidebar from "@/components/DocsSidebar";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
@@ -86,11 +87,6 @@ export default function DocsPage() {
     if (doc) setSelectedDoc(doc);
   }, []);
 
-  const flatFiles = files.flatMap(function flatten(f: DocFile): DocFile[] {
-    if (f.isDirectory) return f.children?.flatMap(flatten) ?? [];
-    return [f];
-  });
-
   return (
     <div className="flex h-screen overflow-hidden bg-navy-950">
       <DocsSidebar
@@ -104,13 +100,13 @@ export default function DocsPage() {
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-navy-800 border-b border-navy-500 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <a
+            <Link
               href="/"
               className="text-navy-300 hover:text-ai-green-light transition-colors"
               title="Volver al Dashboard"
             >
               <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-            </a>
+            </Link>
             <h1 className="font-geist text-lg font-bold text-navy-200">
               {selectedDoc
                 ? selectedDoc.split("/").pop()?.replace(/\.md$/, "").replace(/-/g, " ")

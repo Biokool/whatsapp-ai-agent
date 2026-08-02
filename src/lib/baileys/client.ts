@@ -26,7 +26,7 @@ let handle: { sock: WASocket; shutdown: () => Promise<void> } | null = null;
 let reconnectTimer: NodeJS.Timeout | null = null;
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
-const baileysLogger = pino({ level: "silent" });
+const baileysLogger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "silent" });
 
 function scheduleReconnect(code: number | undefined) {
   if (reconnectTimer) return;
@@ -139,6 +139,89 @@ export async function start(): Promise<void> {
 
   sock.ev.on("messages.upsert", async (event) => {
     await handleIncomingMessages(sock, event);
+  });
+
+  // When contacts sync, resolve LID phone numbers
+  sock.ev.on("contacts.upsert", async (contacts) => {
+    for (const contact of contacts) {
+      if (contact.lid && contact.phoneNumber) {
+        logger.info(
+          `[bot] contact resolved: LID ${contact.lid} → phone ${contact.phoneNumber} (${contact.name ?? contact.notify ?? "?"})`
+        );
+        try {
+          const { getSupabase } = await import("@/infrastructure/database/supabase");
+          const supabase = getSupabase();
+          const { data: convo } = await supabase
+            .from("conversations")
+            .select("id, phone")
+            .eq("jid", `${contact.lid}@lid`)
+            .single();
+          if (convo && convo.phone !== contact.phoneNumber) {
+            await supabase
+              .from("conversations")
+              .update({ phone: contact.phoneNumber })
+              .eq("id", convo.id);
+            logger.info(
+              `[bot] conversation ${convo.id} phone updated: ${convo.phone} → ${contact.phoneNumber}`
+            );
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  });
+
+  // Handle LID-PN mappings from history sync
+  sock.ev.on("messaging-history.set", async (event) => {
+    if (event.lidPnMappings) {
+      for (const mapping of event.lidPnMappings) {
+        if (mapping.lid && mapping.pn) {
+          logger.info(`[bot] LID mapping (history): ${mapping.lid} → ${mapping.pn}`);
+          try {
+            const { getSupabase } = await import("@/infrastructure/database/supabase");
+            const supabase = getSupabase();
+            const { data: convo } = await supabase
+              .from("conversations")
+              .select("id, phone")
+              .eq("jid", `${mapping.lid}@lid`)
+              .single();
+            if (convo && convo.phone !== mapping.pn) {
+              await supabase.from("conversations").update({ phone: mapping.pn }).eq("id", convo.id);
+              logger.info(
+                `[bot] conversation ${convo.id} phone updated: ${convo.phone} → ${mapping.pn}`
+              );
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+    }
+  });
+
+  // Fires naturally when someone messages us — resolves LID to real phone
+  sock.ev.on("lid-mapping.update", async (mapping) => {
+    if (mapping.lid && mapping.pn) {
+      logger.info(`[bot] LID mapping (live): ${mapping.lid} → ${mapping.pn}`);
+      try {
+        const { getSupabase } = await import("@/infrastructure/database/supabase");
+        const supabase = getSupabase();
+        const { data: convo } = await supabase
+          .from("conversations")
+          .select("id, phone")
+          .eq("jid", `${mapping.lid}@lid`)
+          .single();
+        if (convo && convo.phone !== mapping.pn) {
+          await supabase.from("conversations").update({ phone: mapping.pn }).eq("id", convo.id);
+          logger.info(
+            `[bot] conversation ${convo.id} phone updated: ${convo.phone} → ${mapping.pn}`
+          );
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
   });
 
   handle = {

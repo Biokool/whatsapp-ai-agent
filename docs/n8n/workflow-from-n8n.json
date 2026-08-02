@@ -1,0 +1,349 @@
+{
+  "updatedAt": "2026-07-28T17:30:33.228Z",
+  "createdAt": "2026-07-28T17:30:33.053Z",
+  "id": "meF1oK5cOVHgjgeD",
+  "name": "Document Upload Handler",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "document-upload",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "1. Recibir Archivo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "notes": "RECIBE ARCHIVOS VIA POST. Headers: x-tenant-id, x-document-id, x-knowledge-base-id. Body: multipart/form-data con campo \u0027file\u0027",
+      "id": "a2bc8bd1-4158-4c62-9810-d1e67b893314",
+      "webhookId": "1d4a0024-1dc4-4a84-9ec3-852a018107ee"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {};\nconst tenantId = headers[\"x-tenant-id\"] || \"default\";\nconst documentId = headers[\"x-document-id\"] || \"new\";\nconst knowledgeBaseId = headers[\"x-knowledge-base-id\"] || \"default\";\nconst binaryKeys = Object.keys($binary || {});\nif (binaryKeys.length === 0) {\n  return [{ json: { success: false, error: \"No file received\" } }];\n}\nconst binaryKey = binaryKeys[0];\nconst fileData = $binary[binaryKey];\nconst timestamp = new Date().toISOString().replace(/[:.]/g, \"-\");\nconst baseName = fileData.fileName || \"document.pdf\";\nconst driveFileName = tenantId + \"/\" + documentId + \"/\" + timestamp + \"_\" + baseName;\nreturn [{\n  json: {\n    success: true,\n    documentId: documentId,\n    tenantId: tenantId,\n    knowledgeBaseId: knowledgeBaseId,\n    originalName: baseName,\n    driveFileName: driveFileName,\n    mimeType: fileData.mimeType || \"application/octet-stream\",\n    fileSize: fileData.fileSize || 0,\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    file: {\n      data: $binary[binaryKey].data,\n      mimeType: fileData.mimeType || \"application/octet-stream\",\n      fileName: baseName\n    }\n  }\n}];"
+      },
+      "name": "2. Procesar Archivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "notes": "PROCESA EL ARCHIVO. Extrae headers (tenantId, documentId, knowledgeBaseId), valida que exista archivo binario, genera nombre unico para Google Drive con ruta jerarquica tenant/documento/archivo.",
+      "id": "fc4fb01c-81da-414f-b9fd-bd72821c2fa0"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $json.driveFileName }}",
+        "inputDataFieldName": "file",
+        "options": {
+          "ocrLanguage": "es",
+          "useContentAsIndexableText": true
+        }
+      },
+      "name": "3. Subir a Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "neBYtaMCymhmxubt",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "SUBE EL ARCHIVO A GOOGLE DRIVE. Operacion: Upload. Campo binario: file. Opcionales: OCR en espanol, indexado para busqueda. Output: id (fileId), webViewLink (enlace), name (nombre en Drive).",
+      "id": "3cb0a988-e93f-42a2-aba7-a11085d4c7e9"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO document_versions (document_id, tenant_id, version_number, file_url, file_size, storage_provider, storage_path, metadata) VALUES (\u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.documentId }}\u0027, \u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.tenantId }}\u0027, (SELECT COALESCE(MAX(version_number), 0) + 1 FROM document_versions WHERE document_id = \u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.documentId }}\u0027), \u0027{{ $(\u00273. Subir a Google Drive\u0027).item.json.webViewLink }}\u0027, {{ $(\u00272. Procesar Archivo\u0027).item.json.fileSize }}, \u0027gdrive\u0027, \u0027{{ $(\u00273. Subir a Google Drive\u0027).item.json.id }}\u0027, \u0027{\"uploadedVia\": \"n8n\", \"originalName\": \"{{ $(\u00272. Procesar Archivo\u0027).item.json.originalName }}\"}\u0027) RETURNING id, version_number;"
+      },
+      "name": "4. Guardar Version en Supabase",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [850, 300],
+      "credentials": {
+        "postgres": {
+          "id": "ByU42CyK5np0lT7P",
+          "name": "Postgres-NeonTech-Biokool"
+        }
+      },
+      "notes": "GUARDA EL REGISTRO DE VERSION EN SUPABASE (via PostgreSQL). Tabla: document_versions. Calcula version_number incremental. Campos: document_id, tenant_id, file_url (link de Drive), file_size, storage_provider (gdrive), storage_path (ID de Drive), metadata (JSON). Output: id, version_number.",
+      "id": "c3469f0a-fce0-4be6-9ec1-5bc8a9bfa031"
+    },
+    {
+      "parameters": {
+        "jsCode": "const processResult = $(\u00272. Procesar Archivo\u0027).item.json;\nconst driveResult = $(\u00273. Subir a Google Drive\u0027).item.json;\nconst versionResult = $(\u00274. Guardar Version en Supabase\u0027).item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: processResult.documentId,\n    tenantId: processResult.tenantId,\n    filename: processResult.originalName,\n    fileUrl: driveResult.webViewLink,\n    storageProvider: \u0027gdrive\u0027,\n    fileSize: processResult.fileSize,\n    contentType: processResult.mimeType,\n    version: versionResult.version_number,\n    versionId: versionResult.id,\n    gdriveFileId: driveResult.id,\n    timestamp: new Date().toISOString(),\n    message: \u0027Archivo subido a Google Drive y version registrada en Supabase\u0027\n  }\n}];"
+      },
+      "name": "5. Responder al Cliente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "notes": "CONSTRUYE LA RESPUESTA FINAL. Combina resultados de los nodos anteriores en un JSON limpio para el cliente. Output: success, documentId, tenantId, filename, fileUrl (Google Drive), storageProvider, fileSize, contentType, version, versionId, timestamp, message.",
+      "id": "557fa3bd-651a-42da-8ae3-469b6b1f8e07"
+    }
+  ],
+  "connections": {
+    "1. Recibir Archivo": {
+      "main": [
+        [
+          {
+            "node": "2. Procesar Archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Procesar Archivo": {
+      "main": [
+        [
+          {
+            "node": "3. Subir a Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Subir a Google Drive": {
+      "main": [
+        [
+          {
+            "node": "4. Guardar Version en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Guardar Version en Supabase": {
+      "main": [
+        [
+          {
+            "node": "5. Responder al Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "ecab5176-5924-4d91-85e4-1fab74089240",
+  "activeVersionId": "ecab5176-5924-4d91-85e4-1fab74089240",
+  "versionCounter": 1,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-07-28T17:30:33.055Z",
+      "createdAt": "2026-07-28T17:30:33.055Z",
+      "role": "workflow:owner",
+      "workflowId": "meF1oK5cOVHgjgeD",
+      "projectId": "jFFtjeUVlLp3wltA",
+      "project": {
+        "updatedAt": "2026-07-27T21:05:39.583Z",
+        "createdAt": "2026-01-19T00:32:09.687Z",
+        "id": "jFFtjeUVlLp3wltA",
+        "name": "Gerardo Biokool \u003ckoolkat.ventas@gmail.com\u003e",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "3858da21-2020-4fda-9ee5-2c1ba2a920e3"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-07-28T17:02:48.878Z",
+      "createdAt": "2026-07-28T17:02:48.878Z",
+      "id": "88gkmp3LdC8GAA5M",
+      "name": "whatsapp-ai"
+    },
+    {
+      "updatedAt": "2026-07-28T17:02:48.937Z",
+      "createdAt": "2026-07-28T17:02:48.937Z",
+      "id": "id4e8WpgRuQge4dT",
+      "name": "documentos"
+    }
+  ],
+  "parentFolder": null,
+  "activeVersion": {
+    "updatedAt": "2026-07-28T17:30:33.057Z",
+    "createdAt": "2026-07-28T17:30:33.057Z",
+    "versionId": "ecab5176-5924-4d91-85e4-1fab74089240",
+    "workflowId": "meF1oK5cOVHgjgeD",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "document-upload",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "name": "1. Recibir Archivo",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [250, 300],
+        "notes": "RECIBE ARCHIVOS VIA POST. Headers: x-tenant-id, x-document-id, x-knowledge-base-id. Body: multipart/form-data con campo \u0027file\u0027",
+        "id": "a2bc8bd1-4158-4c62-9810-d1e67b893314",
+        "webhookId": "1d4a0024-1dc4-4a84-9ec3-852a018107ee"
+      },
+      {
+        "parameters": {
+          "jsCode": "const headers = $json.headers || {};\nconst tenantId = headers[\"x-tenant-id\"] || \"default\";\nconst documentId = headers[\"x-document-id\"] || \"new\";\nconst knowledgeBaseId = headers[\"x-knowledge-base-id\"] || \"default\";\nconst binaryKeys = Object.keys($binary || {});\nif (binaryKeys.length === 0) {\n  return [{ json: { success: false, error: \"No file received\" } }];\n}\nconst binaryKey = binaryKeys[0];\nconst fileData = $binary[binaryKey];\nconst timestamp = new Date().toISOString().replace(/[:.]/g, \"-\");\nconst baseName = fileData.fileName || \"document.pdf\";\nconst driveFileName = tenantId + \"/\" + documentId + \"/\" + timestamp + \"_\" + baseName;\nreturn [{\n  json: {\n    success: true,\n    documentId: documentId,\n    tenantId: tenantId,\n    knowledgeBaseId: knowledgeBaseId,\n    originalName: baseName,\n    driveFileName: driveFileName,\n    mimeType: fileData.mimeType || \"application/octet-stream\",\n    fileSize: fileData.fileSize || 0,\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    file: {\n      data: $binary[binaryKey].data,\n      mimeType: fileData.mimeType || \"application/octet-stream\",\n      fileName: baseName\n    }\n  }\n}];"
+        },
+        "name": "2. Procesar Archivo",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [450, 300],
+        "notes": "PROCESA EL ARCHIVO. Extrae headers (tenantId, documentId, knowledgeBaseId), valida que exista archivo binario, genera nombre unico para Google Drive con ruta jerarquica tenant/documento/archivo.",
+        "id": "fc4fb01c-81da-414f-b9fd-bd72821c2fa0"
+      },
+      {
+        "parameters": {
+          "operation": "upload",
+          "name": "={{ $json.driveFileName }}",
+          "inputDataFieldName": "file",
+          "options": {
+            "ocrLanguage": "es",
+            "useContentAsIndexableText": true
+          }
+        },
+        "name": "3. Subir a Google Drive",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 2,
+        "position": [650, 300],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "neBYtaMCymhmxubt",
+            "name": "Google Drive account"
+          }
+        },
+        "notes": "SUBE EL ARCHIVO A GOOGLE DRIVE. Operacion: Upload. Campo binario: file. Opcionales: OCR en espanol, indexado para busqueda. Output: id (fileId), webViewLink (enlace), name (nombre en Drive).",
+        "id": "3cb0a988-e93f-42a2-aba7-a11085d4c7e9"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "=INSERT INTO document_versions (document_id, tenant_id, version_number, file_url, file_size, storage_provider, storage_path, metadata) VALUES (\u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.documentId }}\u0027, \u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.tenantId }}\u0027, (SELECT COALESCE(MAX(version_number), 0) + 1 FROM document_versions WHERE document_id = \u0027{{ $(\u00272. Procesar Archivo\u0027).item.json.documentId }}\u0027), \u0027{{ $(\u00273. Subir a Google Drive\u0027).item.json.webViewLink }}\u0027, {{ $(\u00272. Procesar Archivo\u0027).item.json.fileSize }}, \u0027gdrive\u0027, \u0027{{ $(\u00273. Subir a Google Drive\u0027).item.json.id }}\u0027, \u0027{\"uploadedVia\": \"n8n\", \"originalName\": \"{{ $(\u00272. Procesar Archivo\u0027).item.json.originalName }}\"}\u0027) RETURNING id, version_number;"
+        },
+        "name": "4. Guardar Version en Supabase",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [850, 300],
+        "credentials": {
+          "postgres": {
+            "id": "ByU42CyK5np0lT7P",
+            "name": "Postgres-NeonTech-Biokool"
+          }
+        },
+        "notes": "GUARDA EL REGISTRO DE VERSION EN SUPABASE (via PostgreSQL). Tabla: document_versions. Calcula version_number incremental. Campos: document_id, tenant_id, file_url (link de Drive), file_size, storage_provider (gdrive), storage_path (ID de Drive), metadata (JSON). Output: id, version_number.",
+        "id": "c3469f0a-fce0-4be6-9ec1-5bc8a9bfa031"
+      },
+      {
+        "parameters": {
+          "jsCode": "const processResult = $(\u00272. Procesar Archivo\u0027).item.json;\nconst driveResult = $(\u00273. Subir a Google Drive\u0027).item.json;\nconst versionResult = $(\u00274. Guardar Version en Supabase\u0027).item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: processResult.documentId,\n    tenantId: processResult.tenantId,\n    filename: processResult.originalName,\n    fileUrl: driveResult.webViewLink,\n    storageProvider: \u0027gdrive\u0027,\n    fileSize: processResult.fileSize,\n    contentType: processResult.mimeType,\n    version: versionResult.version_number,\n    versionId: versionResult.id,\n    gdriveFileId: driveResult.id,\n    timestamp: new Date().toISOString(),\n    message: \u0027Archivo subido a Google Drive y version registrada en Supabase\u0027\n  }\n}];"
+        },
+        "name": "5. Responder al Cliente",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1050, 300],
+        "notes": "CONSTRUYE LA RESPUESTA FINAL. Combina resultados de los nodos anteriores en un JSON limpio para el cliente. Output: success, documentId, tenantId, filename, fileUrl (Google Drive), storageProvider, fileSize, contentType, version, versionId, timestamp, message.",
+        "id": "557fa3bd-651a-42da-8ae3-469b6b1f8e07"
+      }
+    ],
+    "connections": {
+      "1. Recibir Archivo": {
+        "main": [
+          [
+            {
+              "node": "2. Procesar Archivo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "2. Procesar Archivo": {
+        "main": [
+          [
+            {
+              "node": "3. Subir a Google Drive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "3. Subir a Google Drive": {
+        "main": [
+          [
+            {
+              "node": "4. Guardar Version en Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "4. Guardar Version en Supabase": {
+        "main": [
+          [
+            {
+              "node": "5. Responder al Cliente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "Gerardo Biokool",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-07-28T17:30:33.379Z",
+        "id": 7,
+        "workflowId": "meF1oK5cOVHgjgeD",
+        "versionId": "ecab5176-5924-4d91-85e4-1fab74089240",
+        "event": "activated",
+        "userId": "3858da21-2020-4fda-9ee5-2c1ba2a920e3"
+      }
+    ]
+  },
+  "scopes": [
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "checksum": "025e0b26e590a67105a1e7060a5fa76efe09f1a53dfdabc9314ca340568de082"
+}

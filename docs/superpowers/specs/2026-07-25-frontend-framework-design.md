@@ -119,16 +119,16 @@ src/
 
 ### 3.1 Single Responsibility — Each Component Has One Job
 
-| Component | Responsibility | Does NOT |
-|-----------|---------------|----------|
-| `ConnectionGate` | Gate based on connection status | Fetch data, render dashboard |
-| `QRScreen` | Display QR code | Handle connection logic |
-| `ConversationList` | List conversations, handle selection | Display messages, send messages |
-| `ConversationPanel` | Display messages, send input | List conversations, manage connection |
-| `MessageBubble` | Render single message | Manage conversation state |
-| `ModeToggle` | Switch AI/Human mode | Display messages |
-| `MetricsCards` | Display summary metrics | Fetch data (uses hook) |
-| `ConversationChart` | Render chart | Fetch data (uses hook) |
+| Component           | Responsibility                       | Does NOT                              |
+| ------------------- | ------------------------------------ | ------------------------------------- |
+| `ConnectionGate`    | Gate based on connection status      | Fetch data, render dashboard          |
+| `QRScreen`          | Display QR code                      | Handle connection logic               |
+| `ConversationList`  | List conversations, handle selection | Display messages, send messages       |
+| `ConversationPanel` | Display messages, send input         | List conversations, manage connection |
+| `MessageBubble`     | Render single message                | Manage conversation state             |
+| `ModeToggle`        | Switch AI/Human mode                 | Display messages                      |
+| `MetricsCards`      | Display summary metrics              | Fetch data (uses hook)                |
+| `ConversationChart` | Render chart                         | Fetch data (uses hook)                |
 
 ### 3.2 Open/Closed — Extend Without Modification
 
@@ -140,7 +140,7 @@ src/
 type MessageRole = "user" | "assistant" | "human" | "system";
 
 // MessageBubble.tsx — handles all roles via props
-<MessageBubble role={message.role} content={message.content} />
+<MessageBubble role={message.role} content={message.content} />;
 
 // To add a new role (e.g., "tool"), extend the type and add styling
 // No existing code changes needed
@@ -177,7 +177,7 @@ interface MessageBubbleProps {
 function useConversations() {
   return useQuery({
     queryKey: ["conversations"],
-    queryFn: () => fetch("/api/conversations").then(r => r.json()),
+    queryFn: () => fetch("/api/conversations").then((r) => r.json()),
     refetchInterval: 2000, // Polling
   });
 }
@@ -263,16 +263,14 @@ export function useModeToggle() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode }),
-      }).then(r => r.json()),
+      }).then((r) => r.json()),
 
     // Optimistic update
     onMutate: async ({ conversationId, mode }) => {
       await queryClient.cancelQueries(queryKeys.conversations.all);
       const previous = queryClient.getQueryData(queryKeys.conversations.all);
       queryClient.setQueryData(queryKeys.conversations.all, (old: any) =>
-        old?.map((c: any) =>
-          c.id === conversationId ? { ...c, mode } : c
-        )
+        old?.map((c: any) => (c.id === conversationId ? { ...c, mode } : c))
       );
       return { previous };
     },
@@ -307,7 +305,9 @@ const columns = [
   {
     accessorKey: "status",
     header: "Estado",
-    cell: ({ row }) => <Badge variant={row.original.status === "active" ? "default" : "secondary"} />,
+    cell: ({ row }) => (
+      <Badge variant={row.original.status === "active" ? "default" : "secondary"} />
+    ),
   },
 ];
 
@@ -321,9 +321,9 @@ export function ConversationTable({ data }) {
   return (
     <Table>
       <TableHeader>
-        {table.getHeaderGroups().map(headerGroup => (
+        {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
+            {headerGroup.headers.map((header) => (
               <TableHead key={header.id}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
               </TableHead>
@@ -332,9 +332,9 @@ export function ConversationTable({ data }) {
         ))}
       </TableHeader>
       <TableBody>
-        {table.getRowModel().rows.map(row => (
+        {table.getRowModel().rows.map((row) => (
           <TableRow key={row.id}>
-            {row.getVisibleCells().map(cell => (
+            {row.getVisibleCells().map((cell) => (
               <TableCell key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </TableCell>
@@ -381,13 +381,19 @@ export function SettingsForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FormField control={form.control} name="businessName" render={({ field }) => (
-        <FormItem>
-          <FormLabel>Nombre del Negocio</FormLabel>
-          <FormControl><Input {...field} /></FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
+      <FormField
+        control={form.control}
+        name="businessName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nombre del Negocio</FormLabel>
+            <FormControl>
+              <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       {/* ... more fields */}
       <Button type="submit">Guardar</Button>
     </form>
@@ -401,63 +407,63 @@ export function SettingsForm() {
 
 ### Phase 2A: Foundation (No Breaking Changes)
 
-| Step | Action | Files |
-|------|--------|-------|
-| 1 | Install shadcn/ui CLI | `npx shadcn@latest init` |
-| 2 | Add base components | `button`, `card`, `input`, `badge`, `table` |
-| 3 | Add TanStack Query provider | `src/app/layout.tsx`, `src/lib/query-client.ts` |
-| 4 | Create first query hook | `src/hooks/use-connection.ts` |
-| 5 | Refactor ConnectionGate to use hook | `src/components/ConnectionGate.tsx` |
-| 6 | Verify connection flow works | Manual test |
+| Step | Action                              | Files                                           |
+| ---- | ----------------------------------- | ----------------------------------------------- |
+| 1    | Install shadcn/ui CLI               | `npx shadcn@latest init`                        |
+| 2    | Add base components                 | `button`, `card`, `input`, `badge`, `table`     |
+| 3    | Add TanStack Query provider         | `src/app/layout.tsx`, `src/lib/query-client.ts` |
+| 4    | Create first query hook             | `src/hooks/use-connection.ts`                   |
+| 5    | Refactor ConnectionGate to use hook | `src/components/ConnectionGate.tsx`             |
+| 6    | Verify connection flow works        | Manual test                                     |
 
 ### Phase 2B: Refactor Existing Components
 
-| Step | Action | Files |
-|------|--------|-------|
-| 1 | Refactor ConversationList | Use `useConversations` hook |
-| 2 | Refactor ConversationPanel | Use `useMessages` hook |
-| 3 | Refactor ModeToggle | Use `useModeToggle` mutation |
-| 4 | Refactor DashboardHeader | Use `useConnection` hook |
-| 5 | Refactor QRScreen | Use `useConnection` hook |
-| 6 | Move components to `features/` | Reorganize directory |
-| 7 | Verify all functionality works | Manual test |
+| Step | Action                         | Files                        |
+| ---- | ------------------------------ | ---------------------------- |
+| 1    | Refactor ConversationList      | Use `useConversations` hook  |
+| 2    | Refactor ConversationPanel     | Use `useMessages` hook       |
+| 3    | Refactor ModeToggle            | Use `useModeToggle` mutation |
+| 4    | Refactor DashboardHeader       | Use `useConnection` hook     |
+| 5    | Refactor QRScreen              | Use `useConnection` hook     |
+| 6    | Move components to `features/` | Reorganize directory         |
+| 7    | Verify all functionality works | Manual test                  |
 
 ### Phase 2C: Add New Features
 
-| Step | Action | Files |
-|------|--------|-------|
-| 1 | Add Analytics page | `src/app/dashboard/analytics/page.tsx` |
-| 2 | Add Funnel/CRM page | `src/app/dashboard/funnel/page.tsx` |
-| 3 | Add Settings page | `src/app/dashboard/settings/page.tsx` |
-| 4 | Add TanStack Table | Conversation table |
-| 5 | Add Recharts | Metrics charts |
-| 6 | Add React Hook Form | Settings form |
-| 7 | Verify all new features | Manual test |
+| Step | Action                  | Files                                  |
+| ---- | ----------------------- | -------------------------------------- |
+| 1    | Add Analytics page      | `src/app/dashboard/analytics/page.tsx` |
+| 2    | Add Funnel/CRM page     | `src/app/dashboard/funnel/page.tsx`    |
+| 3    | Add Settings page       | `src/app/dashboard/settings/page.tsx`  |
+| 4    | Add TanStack Table      | Conversation table                     |
+| 5    | Add Recharts            | Metrics charts                         |
+| 6    | Add React Hook Form     | Settings form                          |
+| 7    | Verify all new features | Manual test                            |
 
 ---
 
 ## 8. SOLID Principles Compliance
 
-| Principle | Implementation | Verification |
-|-----------|---------------|--------------|
-| **Single Responsibility** | Each component has ONE job. Each hook has ONE concern. | Code review: no component does multiple things |
-| **Open/Closed** | New message types = extend type + add styling. No existing code changes. | Add a test message type without modifying MessageBubble |
-| **Liskov Substitution** | All UI components follow shadcn/ui patterns. Can swap Button variants freely. | Replace `variant="default"` with `variant="destructive"` — works |
-| **Interface Segregation** | Each component has minimal props. No "god props" object. | TypeScript errors if you pass unnecessary props |
-| **Dependency Inversion** | Components use hooks, not fetch() directly. Hooks abstract data source. | Mock the hook in tests — component still works |
+| Principle                 | Implementation                                                                | Verification                                                     |
+| ------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **Single Responsibility** | Each component has ONE job. Each hook has ONE concern.                        | Code review: no component does multiple things                   |
+| **Open/Closed**           | New message types = extend type + add styling. No existing code changes.      | Add a test message type without modifying MessageBubble          |
+| **Liskov Substitution**   | All UI components follow shadcn/ui patterns. Can swap Button variants freely. | Replace `variant="default"` with `variant="destructive"` — works |
+| **Interface Segregation** | Each component has minimal props. No "god props" object.                      | TypeScript errors if you pass unnecessary props                  |
+| **Dependency Inversion**  | Components use hooks, not fetch() directly. Hooks abstract data source.       | Mock the hook in tests — component still works                   |
 
 ---
 
 ## 9. Anti-Patterns Avoided
 
-| Anti-Pattern | How We Avoid It |
-|--------------|-----------------|
-| Overengineering | Add components only when needed (YAGNI) |
-| Premature optimization | TanStack Query handles caching automatically |
-| Duplicated logic | Shared hooks, shared UI components |
-| Monolithic workflows | Each feature is independent (conversations, analytics, funnel) |
-| Hardcoded configuration | Environment variables via `src/config/environment.ts` |
-| Hidden dependencies | Explicit imports, clear component boundaries |
+| Anti-Pattern            | How We Avoid It                                                |
+| ----------------------- | -------------------------------------------------------------- |
+| Overengineering         | Add components only when needed (YAGNI)                        |
+| Premature optimization  | TanStack Query handles caching automatically                   |
+| Duplicated logic        | Shared hooks, shared UI components                             |
+| Monolithic workflows    | Each feature is independent (conversations, analytics, funnel) |
+| Hardcoded configuration | Environment variables via `src/config/environment.ts`          |
+| Hidden dependencies     | Explicit imports, clear component boundaries                   |
 
 ---
 

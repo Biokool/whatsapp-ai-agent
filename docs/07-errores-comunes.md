@@ -75,6 +75,7 @@ Si AÚN aparece:
 **Causa**: WhatsApp ha desplegado en 2025-2026 un nuevo formato de direcciones, **LID** (identificador de privacidad). Las cuentas con LID activado reciben los mensajes con dirección `@lid` en vez del clásico `@s.whatsapp.net`. Las versiones antiguas del kit solo aceptaban el formato clásico y descartaban los `@lid` en silencio.
 
 **Solución**: ya está corregido en el código del kit (`src/lib/baileys/handler.ts` acepta ambos formatos). Si tienes una copia antigua y te pasa esto:
+
 1. Asegúrate de tener la última versión del kit
 2. Comprueba si tu cuenta usa LID: abre `auth/creds.json` y busca el campo `lid` dentro de `me`. Si existe, tu cuenta usa LID
 3. Reinicia el bot (`npm run start:bot`) — no necesitas escanear el QR otra vez
@@ -93,21 +94,16 @@ Detalle técnico completo en `errores-sesion.md` (#14).
 
 ## Errores de instalación
 
-### `npm install` falla con `better-sqlite3`
+### `npm install` falla con `Supabase connection error`
 
-**Síntoma**: error de compilación de C++ durante `npm install`.
+**Síntoma**: error de conexión a Supabase durante la instalación.
 
-**Causa**: better-sqlite3 se compila nativamente. Si tu sistema no tiene las dependencias, falla.
+**Causa**: las variables de entorno de Supabase no están configuradas.
 
-**Solución macOS**: instala Xcode Command Line Tools:
+**Solución**: verifica que `.env.local` tenga las siguientes variables:
 
-```
-xcode-select --install
-```
-
-**Solución Windows**: instala Visual Studio Build Tools desde https://visualstudio.microsoft.com/visual-cpp-build-tools/ — durante la instalación, marca **Desktop development with C++**.
-
-Después: `npm rebuild better-sqlite3`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ### `Cannot find module 'tsx'` en producción
 

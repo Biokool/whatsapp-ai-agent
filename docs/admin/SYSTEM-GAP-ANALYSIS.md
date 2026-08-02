@@ -29,6 +29,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Authentication required for all access
 
 **Gap:**
+
 - No login mechanism
 - No session management
 - No API route protection
@@ -36,6 +37,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** CRITICAL — Complete data exposure
 
 **Remediation:**
+
 - Add basic auth (env-based) for MVP
 - Add JWT/session-based auth for production
 - Add API key authentication for external access
@@ -49,6 +51,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Role-based access control
 
 **Gap:**
+
 - No user roles (admin, viewer, operator)
 - No permission system
 - No resource ownership checks
@@ -56,6 +59,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Unauthorized actions possible
 
 **Remediation:**
+
 - Add user roles
 - Add permission checks
 - Add resource ownership validation
@@ -69,6 +73,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Sanitized input throughout
 
 **Gap:**
+
 - No XSS prevention
 - No SQL injection prevention (parameterized queries help, but...)
 - No content sanitization
@@ -76,6 +81,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Potential injection attacks
 
 **Remediation:**
+
 - Add input validation with Zod
 - Add HTML sanitization
 - Add content security policy
@@ -89,6 +95,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Rate-limited API calls
 
 **Gap:**
+
 - No per-user rate limiting
 - No per-IP rate limiting
 - No LLM call rate limiting
@@ -96,6 +103,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Cost runaway, DoS vulnerability
 
 **Remediation:**
+
 - Add rate limiting middleware
 - Add per-conversation LLM limits
 - Add global rate limits
@@ -111,6 +119,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Multi-tenant AI-BOS platform
 
 **Gap:**
+
 - No tenant concept in database
 - No tenant isolation
 - No tenant configuration
@@ -118,6 +127,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** CRITICAL — Cannot serve multiple businesses
 
 **Remediation:**
+
 - Add `tenant_id` to all tables
 - Add tenant isolation middleware
 - Add tenant configuration system
@@ -131,6 +141,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Clean separation of concerns
 
 **Gap:**
+
 - Business logic in database layer
 - WhatsApp-specific code in core
 - No port/adapter pattern
@@ -138,6 +149,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Difficult to extend and maintain
 
 **Remediation:**
+
 - Extract domain logic
 - Add port/adapter interfaces
 - Add dependency injection
@@ -151,6 +163,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Channel-agnostic core
 
 **Gap:**
+
 - Baileys directly coupled to handler
 - No channel adapter interface
 - No normalization layer
@@ -158,6 +171,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Cannot add new channels without modifying core
 
 **Remediation:**
+
 - Add channel adapter interface
 - Add message normalization
 - Add channel-agnostic handler
@@ -171,6 +185,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Provider-agnostic LLM layer
 
 **Gap:**
+
 - OpenAI client directly used
 - No provider interface
 - No fallback mechanism
@@ -178,6 +193,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Cannot switch providers without code changes
 
 **Remediation:**
+
 - Add LLM provider interface
 - Add provider factory
 - Add fallback mechanism
@@ -191,6 +207,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Modular deployment
 
 **Gap:**
+
 - Bot and dashboard in same process
 - No service separation
 - No independent scaling
@@ -198,6 +215,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Cannot scale components independently
 
 **Remediation:**
+
 - Separate bot and dashboard services
 - Add service discovery
 - Add load balancing
@@ -213,6 +231,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Multi-modal support
 
 **Gap:**
+
 - No image processing
 - No document handling
 - No audio transcription
@@ -221,6 +240,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Limited functionality
 
 **Remediation:**
+
 - Add image OCR/description
 - Add document parsing
 - Add audio transcription
@@ -235,6 +255,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Reliable message delivery
 
 **Gap:**
+
 - No persistent queue
 - No retry mechanism
 - No delivery guarantees
@@ -243,6 +264,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Message loss risk
 
 **Remediation:**
+
 - Add Redis/RabbitMQ queue
 - Add retry with backoff
 - Add delivery status tracking
@@ -257,6 +279,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Persistent conversation memory
 
 **Gap:**
+
 - No long-term memory
 - No conversation summarization
 - No context persistence
@@ -265,6 +288,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Poor conversational experience
 
 **Remediation:**
+
 - Add conversation summarization
 - Add persistent memory
 - Add context window management
@@ -279,6 +303,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Comprehensive analytics
 
 **Gap:**
+
 - No message metrics
 - No lead scoring analytics
 - No conversion tracking
@@ -287,6 +312,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — No visibility into system performance
 
 **Remediation:**
+
 - Add message metrics
 - Add lead analytics
 - Add conversion tracking
@@ -303,6 +329,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Comprehensive monitoring
 
 **Gap:**
+
 - No health checks
 - No metrics collection
 - No alerting
@@ -311,6 +338,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — No visibility into system health
 
 **Remediation:**
+
 - Add health check endpoints
 - Add Prometheus metrics
 - Add alerting rules
@@ -325,6 +353,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Automated CI/CD
 
 **Gap:**
+
 - No automated testing
 - No automated builds
 - No automated deployment
@@ -333,6 +362,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Slow and risky deployments
 
 **Remediation:**
+
 - Add GitHub Actions
 - Add automated testing
 - Add automated deployment
@@ -347,6 +377,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Automated backups
 
 **Gap:**
+
 - No database backups
 - No configuration backups
 - No session backups
@@ -355,6 +386,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Data loss risk
 
 **Remediation:**
+
 - Add automated database backups
 - Add configuration backups
 - Add session backups
@@ -371,6 +403,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Configurable data retention
 
 **Gap:**
+
 - No retention policies
 - No automatic cleanup
 - No data archiving
@@ -378,6 +411,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Storage bloat, compliance risk
 
 **Remediation:**
+
 - Add retention policies
 - Add automatic cleanup
 - Add data archiving
@@ -391,6 +425,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Comprehensive data export
 
 **Gap:**
+
 - No conversation export
 - No lead export
 - No analytics export
@@ -399,6 +434,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Data portability issue
 
 **Remediation:**
+
 - Add CSV/JSON export
 - Add analytics export
 - Add GDPR compliance features
@@ -412,6 +448,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Comprehensive validation
 
 **Gap:**
+
 - No schema validation
 - No business rule validation
 - No referential integrity checks
@@ -419,6 +456,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Data quality issues
 
 **Remediation:**
+
 - Add schema validation
 - Add business rules
 - Add integrity checks
@@ -434,6 +472,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Supabase/PostgreSQL
 
 **Gap:**
+
 - No Supabase client
 - No PostgreSQL driver
 - No connection pooling
@@ -442,6 +481,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** HIGH — Cannot scale to production
 
 **Remediation:**
+
 - Add Supabase client
 - Add PostgreSQL driver
 - Add connection pooling
@@ -456,6 +496,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Functional n8n integration
 
 **Gap:**
+
 - No webhook handlers
 - No workflow triggers
 - No data synchronization
@@ -463,6 +504,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** MEDIUM — Orchestration gap
 
 **Remediation:**
+
 - Add webhook handlers
 - Add workflow triggers
 - Add data sync
@@ -478,6 +520,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Target State:** Comprehensive documentation
 
 **Gap:**
+
 - Empty security docs
 - Empty testing docs
 - Empty architecture docs
@@ -486,6 +529,7 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 **Impact:** LOW — Maintenance burden
 
 **Remediation:**
+
 - Complete security documentation
 - Complete testing documentation
 - Complete architecture documentation
@@ -495,66 +539,78 @@ The WhatsApp AI Agent Kit has **22 identified gaps** across 8 categories:
 
 ## Gap Summary
 
-| Category | Count | Critical | High | Medium | Low |
-|----------|-------|----------|------|--------|-----|
-| Security | 4 | 1 | 3 | 0 | 0 |
-| Architecture | 5 | 1 | 3 | 1 | 0 |
-| Functionality | 4 | 0 | 2 | 2 | 0 |
-| Operations | 3 | 0 | 1 | 2 | 0 |
-| Data | 3 | 0 | 0 | 3 | 0 |
-| Integration | 2 | 0 | 1 | 1 | 0 |
-| Documentation | 1 | 0 | 0 | 0 | 1 |
-| **Total** | **22** | **2** | **10** | **9** | **1** |
+| Category      | Count  | Critical | High   | Medium | Low   |
+| ------------- | ------ | -------- | ------ | ------ | ----- |
+| Security      | 4      | 1        | 3      | 0      | 0     |
+| Architecture  | 5      | 1        | 3      | 1      | 0     |
+| Functionality | 4      | 0        | 2      | 2      | 0     |
+| Operations    | 3      | 0        | 1      | 2      | 0     |
+| Data          | 3      | 0        | 0      | 3      | 0     |
+| Integration   | 2      | 0        | 1      | 1      | 0     |
+| Documentation | 1      | 0        | 0      | 0      | 1     |
+| **Total**     | **22** | **2**    | **10** | **9**  | **1** |
 
 ---
 
 ## Gap Closure Roadmap
 
 ### Phase 01: Target Architecture
+
 - AG-001 (Multi-tenancy)
 - AG-002 (Immutable Core)
 - AG-003 (Channel Abstraction)
 - AG-004 (Provider Abstraction)
 
 ### Phase 02: Contracts + Configuration
+
 - SG-003 (Input Sanitization)
 - DG-001 (Data Validation)
 
 ### Phase 03: Engineering Foundation
+
 - OG-002 (CI/CD)
 - DG-001 (Documentation)
 
 ### Phase 04: Data + Multi-Tenancy
+
 - IG-001 (Supabase Integration)
 - DG-001 (Data Retention)
 
 ### Phase 05: RAG + Knowledge
+
 - FG-003 (Conversation Context)
 
 ### Phase 06: Universal Agent + Memory
+
 - SG-004 (Rate Limiting)
 - FG-004 (Analytics)
 
 ### Phase 07: Tools + Calendar
+
 - FG-001 (Media Handling)
 - DG-002 (Data Export)
 
 ### Phase 08: Omnichannel
+
 - FG-002 (Message Queue)
 - AG-005 (Monolithic Deployment)
 
 ### Phase 09: N8N Orchestration
+
 - IG-002 (n8n Integration)
 
 ### Phase 11: Observability
+
 - OG-001 (Monitoring)
 - OG-003 (Backup Strategy)
 
 ### Phase 12: Admin Control Plane
+
 - SG-001 (Authentication)
 - SG-002 (Authorization)
 
 ### Phase 14: Hardening
+
 - All remaining gaps
 
 ---

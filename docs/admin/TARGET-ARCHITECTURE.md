@@ -290,28 +290,17 @@ interface ProcessMessageUseCase {
 
 // Lead Management
 interface QualifyLeadUseCase {
-  execute(input: {
-    tenantId: string;
-    conversationId: string;
-  }): Promise<Lead>;
+  execute(input: { tenantId: string; conversationId: string }): Promise<Lead>;
 }
 
 // Appointment Scheduling
 interface ScheduleAppointmentUseCase {
-  execute(input: {
-    tenantId: string;
-    leadId: string;
-    preferredTime?: Date;
-  }): Promise<Appointment>;
+  execute(input: { tenantId: string; leadId: string; preferredTime?: Date }): Promise<Appointment>;
 }
 
 // Human Escalation
 interface EscalateToHumanUseCase {
-  execute(input: {
-    tenantId: string;
-    conversationId: string;
-    reason: string;
-  }): Promise<void>;
+  execute(input: { tenantId: string; conversationId: string; reason: string }): Promise<void>;
 }
 
 // Knowledge Query

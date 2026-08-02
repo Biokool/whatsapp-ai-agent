@@ -69,3 +69,79 @@ Cualquier cambio en `negocio.md` requiere reiniciar el bot.
 ## Siguiente paso
 
 Sigue a [04-configurar-tools.md](04-configurar-tools.md) para conectar Google Sheets y Cal.com.
+
+---
+
+## Knowledge Base (Documentación del Negocio)
+
+Además del prompt, puedes subir **catálogos, FAQs, documentación técnica o páginas web** para que el agente los consulte automáticamente.
+
+### Cómo funciona
+
+1. **Sube documentos o agrega URLs** al Dashboard (pestaña Knowledge)
+2. El sistema los procesa y genera embeddings vectoriales
+3. Cuando alguien pregunta algo relevante, el agente consulta los documentos
+4. La respuesta incluye información de tus catálogos
+
+### Tipos de fuentes de conocimiento
+
+| Tipo                            | Ejemplo                                | Por qué                               |
+| ------------------------------- | -------------------------------------- | ------------------------------------- |
+| **Catálogo de productos (PDF)** | Lista de productos con precios y specs | El agente puede citar precios exactos |
+| **FAQ (TXT/MD)**                | Preguntas frecuentes de clientes       | Respuestas consistentes y rápidas     |
+| **Manual técnico (PDF)**        | Instrucciones de uso o instalación     | Soporte técnico automatizado          |
+| **Lista de servicios (TXT)**    | Descripción de servicios con precios   | Cotizaciones automáticas              |
+| **Páginas web (URL)**           | Documentación online, blog, wiki       | Contenido siempre actualizado         |
+
+### Formatos soportados
+
+**Archivos:**
+
+- **PDF** (recomendado para catálogos)
+- **TXT** (texto plano)
+- **MD** (Markdown)
+
+**URLs:**
+
+- Cualquier página web pública
+- Documentación online
+- Wikis y blogs
+
+**Tamaño máximo:** 10MB por archivo
+
+### Cómo agregar conocimiento
+
+#### Opción 1: Subir archivo
+
+1. Abre http://localhost:3000
+2. Ve a la pestaña **Knowledge** (icono 🎓 en el sidebar)
+3. Click **+ Nuevo** para crear una Knowledge Base
+4. Escribe un nombre descriptivo (ej: "Catálogo Biokool 2026")
+5. Click en la KB para expandirla
+6. Arrastra un PDF o haz click para seleccionar
+7. Espera a que el status cambie a **Listo** con el conteo de chunks
+
+#### Opción 2: Agregar URL
+
+1. En la KB expandida, haz click en **+ Agregar desde URL**
+2. Escribe la URL de la página web (ej: `https://biokool.mx/productos`)
+3. Haz click en **Agregar**
+4. El sistema extraerá el contenido y lo procesará
+5. Espera a que el status cambie a **Listo**
+
+### Tips para mejores resultados
+
+- **Documentos bien estructurados** funcionan mejor
+- **Incluye precios y especificaciones** en tablas o listas
+- **Evita PDFs escaneados** (imágenes) — el sistema extrae texto
+- **Divide documentos grandes** en archivos separados por tema
+- **Nombra claramente** cada Knowledge Base para organizar
+- **Para URLs**: usa páginas con contenido estático (evita páginas que cambian mucho)
+
+### Ejemplo de uso
+
+**Pregunta del usuario:** "¿Cuánto cuesta el sistema de climatización Biokool X200?"
+
+**Sin Knowledge Base:** "No tengo información sobre precios. Te recomiendo contactar a un vendedor."
+
+**Con Knowledge Base:** "El sistema de climatización Biokool X200 tiene un precio de $15,999 MXN. Incluye compresor inverter de 3 toneladas, 2 evaporadores y control WiFi. La instalación tiene un costo adicional de $3,500 MXN."

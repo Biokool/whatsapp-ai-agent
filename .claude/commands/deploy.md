@@ -33,6 +33,7 @@ EasyPanel lee el código desde un repositorio Git, así que la Parte 3 necesita 
 ### 1. ¿Está git instalado?
 
 Ejecuta `git --version`.
+
 - Si responde una versión → OK, sigue.
 - Si falla:
   - **macOS**: ejecuta `xcode-select --install` (abre un instalador del sistema con git). Alternativa: `https://git-scm.com/download/mac`. Tras instalar, reinicia VS Code.
@@ -47,7 +48,7 @@ Para hacer `push` a un repo **privado** necesitas credenciales. Comprueba si est
 - **`gh` instalado pero NO logueado** → guía al usuario: `gh auth login` (elige GitHub.com → HTTPS → "Login with a web browser", pega el código). Repite `gh auth status` para confirmar.
 - **`gh` NO instalado** → dos opciones:
   - **Recomendado**: instalar la GitHub CLI (`brew install gh` en Mac con Homebrew; `winget install GitHub.cli` en Windows; o `https://cli.github.com`) y luego `gh auth login`.
-  - **Plan B sin `gh`** (token): el usuario crea un **Personal Access Token** en `https://github.com/settings/personal-access-tokens/new` (fine-grained, solo el repo del agente, permiso *Contents: Read and write*). Luego configuras el remoto con el token embebido en la URL HTTPS para poder hacer push. Guárdalo con cuidado.
+  - **Plan B sin `gh`** (token): el usuario crea un **Personal Access Token** en `https://github.com/settings/personal-access-tokens/new` (fine-grained, solo el repo del agente, permiso _Contents: Read and write_). Luego configuras el remoto con el token embebido en la URL HTTPS para poder hacer push. Guárdalo con cuidado.
 
 ### 3. No avances a la Parte 3 sin esto
 
@@ -60,6 +61,7 @@ Si git no está instalado o no hay forma de autenticarse, **párate aquí** y re
 > "Ve a hostinger.es y entra a VPS. El plan **KVM 2** vale para 5-10 agentes simultáneos (~7€/mes). Si vas a usar el VPS solo para ESTE agente, KVM 1 es suficiente (~5€/mes).
 >
 > Una vez compres:
+>
 > - Sistema operativo: **Ubuntu 24.04 con Docker** (NO el de plantillas — Ubuntu limpio con Docker)
 > - Datacenter: el más cercano a tus clientes
 > - Anota la IP del VPS (la verás en el panel de Hostinger)
@@ -87,21 +89,26 @@ EasyPanel necesita leer el código desde un repositorio Git. Hay dos opciones:
 ### Opción A · Repositorio privado en GitHub (recomendado)
 
 **Pasos comunes (siempre):**
+
 - `git init` en la carpeta del kit (si no hay `.git`)
 - Configura identidad si falta: `git config user.name "..."` y `git config user.email "..."`
 - `git add -A`, luego **VERIFICACIÓN DE SEGURIDAD**: `git status --short` y comprueba que NO aparecen `.env.local`, `data/` ni `auth/` (el `.gitignore` ya los excluye; `.env.example` SÍ se sube y es correcto, es solo plantilla)
 - `git commit -m "Initial commit — WhatsApp AI Agent Kit"`
 
 **Si en la Parte 0 `gh` estaba autenticado (camino fácil):** crea el repo privado Y sube en un solo comando, sin que el usuario toque github.com:
+
 ```
 gh repo create <nombre> --private --source=. --remote=origin --push
 ```
+
 Confirma con el usuario el nombre del repo antes (es un recurso permanente en su cuenta). Luego verifica que es privado y que no subió secretos: `gh repo view <nombre> --json visibility`.
 
 **Si NO hay `gh` (plan B con token):**
+
 > "Crea un repositorio nuevo, **privado**, en github.com (sin README). Pásame la URL."
 
 Cuando dé la URL:
+
 - `git branch -M main`
 - `git remote add origin <URL>`
 - `git push -u origin main` — pedirá autenticación; usa el Personal Access Token de la Parte 0 (como contraseña, o embebido en la URL HTTPS)
@@ -157,7 +164,7 @@ Si el usuario prefiere otra plataforma Git, el flujo es idéntico. Adapta los co
 
 ### Deploy
 
-> "Ahora sí: click en **Deploy**. Tarda 3-5 minutos (el build de better-sqlite3 es lo más lento). Cuando termine, abre el dominio en el navegador.
+> "Ahora sí: click en **Deploy**. Tarda 3-5 minutos. Cuando termine, abre el dominio en el navegador.
 >
 > Verás el QR de WhatsApp como en local. Escanéalo desde el móvil del negocio.
 >
@@ -166,9 +173,10 @@ Si el usuario prefiere otra plataforma Git, el flujo es idéntico. Adapta los co
 ### Si el build falla
 
 Pide al usuario que copie el log y consulta `errores-sesion.md`. Los errores típicos:
-- `better-sqlite3 build error` → faltó python3/gcc en nixpacks. Pero el `nixpacks.toml` ya los declara — extraño
+
 - `Node version mismatch` → el VPS tiene Node viejo. Revisa que el `.nvmrc` está en el repo
 - `npm ERR! Cannot find module 'tsx'` → tsx está en devDependencies en vez de dependencies (no debería pasar, pero verifica)
+- `Supabase connection error` → verifica que las env vars de Supabase estén configuradas correctamente
 
 ## Parte 5 · Cloudflare Access (proteger el dashboard)
 

@@ -11,8 +11,8 @@ Función **oficial de Meta**, lanzada el **6 de mayo de 2025**. Permite usar la 
 WhatsApp Business** (la del móvil) y la **WhatsApp Cloud API** sobre el **mismo número, a
 la vez**, sin perder contactos ni historial de chats.
 
-- Los mensajes se **espejan en ambos lados** en tiempo real (Meta lo llama *Messaging
-  Echoes*, vía webhooks): lo que respondes a mano desde el móvil aparece en la API, y lo
+- Los mensajes se **espejan en ambos lados** en tiempo real (Meta lo llama _Messaging
+  Echoes_, vía webhooks): lo que respondes a mano desde el móvil aparece en la API, y lo
   que envía la API/un bot aparece en la app.
 - Antes esto era imposible: o tenías el número en la app, o lo migrabas a la API y perdías
   el chat normal. Ahora **conviven**. Ese es el avance real.
@@ -48,13 +48,13 @@ por mucho que YCloud u otro BSP lo anuncie. Vigilar si Meta lo abre en la UE má
 Este kit va por **Baileys** (WhatsApp Web no oficial). Coexistence es la vía **oficial**. Son
 caminos distintos:
 
-| | **Este kit (Baileys)** | **Coexistence (API oficial)** |
-|---|---|---|
-| Tecnología | WhatsApp Web no oficial | API oficial de Meta |
-| Coste | Gratis | Mensajes API se pagan |
-| Riesgo | Zona gris en los ToS | 100% aprobado por Meta |
-| En la UE | Funciona | **Bloqueado hoy** |
-| Montaje | El propio usuario, 15 min | Vía BSP, con verificación |
+|            | **Este kit (Baileys)**    | **Coexistence (API oficial)** |
+| ---------- | ------------------------- | ----------------------------- |
+| Tecnología | WhatsApp Web no oficial   | API oficial de Meta           |
+| Coste      | Gratis                    | Mensajes API se pagan         |
+| Riesgo     | Zona gris en los ToS      | 100% aprobado por Meta        |
+| En la UE   | Funciona                  | **Bloqueado hoy**             |
+| Montaje    | El propio usuario, 15 min | Vía BSP, con verificación     |
 
 **Recomendación**: para aprender, probar y dar servicio con el agente IA → seguir con el kit
 (Baileys). Para outbound masivo legal y serio → API oficial (ver también `docs/07` sección de

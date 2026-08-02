@@ -11,7 +11,6 @@ import boxen from "boxen";
 
 const { prompt } = enquirer;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function ask<T>(config: any): Promise<T> {
   const result = (await prompt(config)) as T;
   return result;
@@ -23,10 +22,6 @@ function info(msg: string): void {
 
 function ok(msg: string): void {
   console.log(chalk.green("✓"), msg);
-}
-
-function warn(msg: string): void {
-  console.log(chalk.yellow("⚠"), msg);
 }
 
 function fail(msg: string): void {
@@ -80,7 +75,7 @@ async function main(): Promise<void> {
   const envLocalPath = path.resolve(process.cwd(), ".env.local");
   const envExamplePath = path.resolve(process.cwd(), ".env.example");
 
-  let currentEnv: Record<string, string> = {};
+  const currentEnv: Record<string, string> = {};
   if (fs.existsSync(envLocalPath)) {
     const text = fs.readFileSync(envLocalPath, "utf-8");
     for (const line of text.split(/\r?\n/)) {

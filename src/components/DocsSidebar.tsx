@@ -34,7 +34,12 @@ function getIcon(name: string, isDir: boolean): string {
   return "description";
 }
 
-function TreeItem({ file, selectedPath, onSelect, depth = 0 }: {
+function TreeItem({
+  file,
+  selectedPath,
+  onSelect,
+  depth = 0,
+}: {
   file: DocFile;
   selectedPath: string | null;
   onSelect: (path: string) => void;
@@ -82,24 +87,23 @@ function TreeItem({ file, selectedPath, onSelect, depth = 0 }: {
   );
 }
 
-export default function DocsSidebar({ files, selectedPath, onSelect, isOpen, onToggle }: DocsSidebarProps) {
+export default function DocsSidebar({
+  files,
+  selectedPath,
+  onSelect,
+  isOpen,
+  onToggle,
+}: DocsSidebarProps) {
   return (
     <>
       <button
         onClick={onToggle}
         className="md:hidden fixed top-4 left-4 z-50 bg-navy-700 text-navy-200 p-2 rounded-lg border border-navy-500"
       >
-        <span className="material-symbols-outlined text-[20px]">
-          {isOpen ? "close" : "menu"}
-        </span>
+        <span className="material-symbols-outlined text-[20px]">{isOpen ? "close" : "menu"}</span>
       </button>
 
-      {isOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={onToggle}
-        />
-      )}
+      {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
 
       <aside
         className={`fixed md:static top-0 left-0 h-full w-72 bg-navy-900 border-r border-navy-500 flex flex-col z-40 transition-transform duration-200 ${
@@ -108,7 +112,9 @@ export default function DocsSidebar({ files, selectedPath, onSelect, isOpen, onT
       >
         <div className="p-4 border-b border-navy-500">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-ai-green-light text-[24px]">menu_book</span>
+            <span className="material-symbols-outlined text-ai-green-light text-[24px]">
+              menu_book
+            </span>
             <h2 className="font-geist text-lg font-bold text-navy-200">Documentacion</h2>
           </div>
           <p className="text-xs text-navy-400 mt-1">{files.length} archivos</p>

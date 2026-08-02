@@ -1,0 +1,121 @@
+{
+  "name": "Document Upload v3",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Upload to Google Drive\nWebhook → Google Drive → Postgres → Response",
+        "height": 200,
+        "width": 300,
+        "color": 4
+      },
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-120, 120]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-document",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "1. Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280],
+      "notes": "RECIBE ARCHIVOS VIA POST multipart/form-data"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $binary.file.fileName || 'document.pdf' }}",
+        "inputDataFieldName": "file",
+        "options": {}
+      },
+      "name": "2. Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [380, 280],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "neBYtaMCymhmxubt",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "SUBE ARCHIVO A GOOGLE DRIVE. Binary pasa DIRECTO del webhook."
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('1. Webhook').item.json;\nconst headers = webhookData.headers || {};\nconst tenantId = headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001';\nconst documentId = headers['x-document-id'] || '';\nconst knowledgeBaseId = headers['x-knowledge-base-id'] || '';\nconst gdriveFolder = headers['x-gdrive-folder'] || 'Biokool';\nconst driveResult = $('2. Google Drive').item.json;\n\nreturn [{\n  json: {\n    documentId,\n    tenantId,\n    knowledgeBaseId,\n    gdriveFolder,\n    gdriveFileId: driveResult.id || '',\n    gdriveFileName: driveResult.name || '',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "3. Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 280]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=CREATE TABLE IF NOT EXISTS document_versions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), document_id UUID NOT NULL, tenant_id UUID NOT NULL, version_number INT NOT NULL DEFAULT 1, file_url TEXT NOT NULL, file_size INT, file_hash TEXT, storage_provider TEXT NOT NULL DEFAULT 'gdrive', storage_path TEXT, metadata JSONB DEFAULT '{}', created_at TIMESTAMPTZ NOT NULL DEFAULT now());"
+      },
+      "name": "4a. Create Table",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [980, 180],
+      "credentials": {
+        "postgres": {
+          "id": "ByU42CyK5np0lT7P",
+          "name": "Postgres-NeonTech-Biokool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO document_versions (document_id, tenant_id, version_number, file_url, file_size, storage_provider, storage_path, metadata) VALUES ('{{ $('3. Metadata').item.json.documentId }}', '{{ $('3. Metadata').item.json.tenantId }}', (SELECT COALESCE(MAX(version_number), 0) + 1 FROM document_versions WHERE document_id = '{{ $('3. Metadata').item.json.documentId }}'), 'https://drive.google.com/file/d/{{ $('3. Metadata').item.json.gdriveFileId }}/view', 0, 'gdrive', '{{ $('3. Metadata').item.json.gdriveFileId }}', '{\"uploadedVia\": \"n8n\"}') RETURNING id, version_number;"
+      },
+      "name": "4b. Save Version",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [980, 380],
+      "credentials": {
+        "postgres": {
+          "id": "ByU42CyK5np0lT7P",
+          "name": "Postgres-NeonTech-Biokool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const metadata = $('3. Metadata').item.json;\nconst driveResult = $('2. Google Drive').item.json;\nconst versionResult = $('4b. Save Version').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: metadata.documentId,\n    tenantId: metadata.tenantId,\n    filename: driveResult.name || '',\n    fileUrl: 'https://drive.google.com/file/d/' + metadata.gdriveFileId + '/view',\n    storageProvider: 'gdrive',\n    version: versionResult ? versionResult.version_number : 1,\n    versionId: versionResult ? versionResult.id : null,\n    gdriveFileId: metadata.gdriveFileId,\n    gdriveFolder: metadata.gdriveFolder,\n    timestamp: new Date().toISOString(),\n    message: 'Archivo subido a Google Drive y version registrada'\n  }\n}];"
+      },
+      "name": "5. Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1280, 280]
+    }
+  ],
+  "connections": {
+    "1. Webhook": {
+      "main": [[{ "node": "2. Google Drive", "type": "main", "index": 0 }]]
+    },
+    "2. Google Drive": {
+      "main": [[{ "node": "3. Metadata", "type": "main", "index": 0 }]]
+    },
+    "3. Metadata": {
+      "main": [[{ "node": "4a. Create Table", "type": "main", "index": 0 }]]
+    },
+    "4a. Create Table": {
+      "main": [[{ "node": "4b. Save Version", "type": "main", "index": 0 }]]
+    },
+    "4b. Save Version": {
+      "main": [[{ "node": "5. Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

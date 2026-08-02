@@ -18,20 +18,20 @@ Este documento es la **fuente única de verdad funcional y técnica** para la co
 
 Define:
 
-* arquitectura objetivo
-* orden de implementación
-* alcance de cada fase
-* dependencias
-* prompts ejecutables
-* validaciones
-* pruebas
-* criterios de aceptación
-* checkpoints
-* gates de aprobación
-* reglas de autonomía
-* estrategia de observabilidad
-* estrategia de recuperación
-* eficiencia de contexto y tokens
+- arquitectura objetivo
+- orden de implementación
+- alcance de cada fase
+- dependencias
+- prompts ejecutables
+- validaciones
+- pruebas
+- criterios de aceptación
+- checkpoints
+- gates de aprobación
+- reglas de autonomía
+- estrategia de observabilidad
+- estrategia de recuperación
+- eficiencia de contexto y tokens
 
 Este documento debe utilizarse junto con:
 
@@ -96,30 +96,30 @@ La arquitectura debe permitir crecimiento sin obligar a construir desde el prime
 
 AI-BOS debe proporcionar una plataforma genérica para automatizar la operación de negocios mediante:
 
-* atención al cliente
-* agentes de IA
-* RAG
-* bases de conocimiento
-* memoria contextual
-* CRM
-* seguimiento de leads
-* agenda
-* automatización
-* workflows
-* comunicación omnicanal
-* observabilidad
-* administración
+- atención al cliente
+- agentes de IA
+- RAG
+- bases de conocimiento
+- memoria contextual
+- CRM
+- seguimiento de leads
+- agenda
+- automatización
+- workflows
+- comunicación omnicanal
+- observabilidad
+- administración
 
 Debe poder adaptarse a negocios como:
 
-* restaurantes
-* despachos de abogados
-* clínicas
-* empresas de servicios
-* comercios
-* soporte técnico
-* profesionales independientes
-* empresas B2B
+- restaurantes
+- despachos de abogados
+- clínicas
+- empresas de servicios
+- comercios
+- soporte técnico
+- profesionales independientes
+- empresas B2B
 
 El conocimiento específico del negocio debe residir en:
 
@@ -171,16 +171,16 @@ El AI-BOS debe tener un núcleo estable independiente de proveedores.
 
 El núcleo no debe depender directamente de:
 
-* WhatsApp
-* Telegram
-* Messenger
-* Instagram
-* Google Calendar
-* Cal.com
-* n8n
-* Supabase
-* un proveedor LLM
-* un proveedor de embeddings
+- WhatsApp
+- Telegram
+- Messenger
+- Instagram
+- Google Calendar
+- Cal.com
+- n8n
+- Supabase
+- un proveedor LLM
+- un proveedor de embeddings
 
 Arquitectura:
 
@@ -210,26 +210,26 @@ Los proveedores deben poder reemplazarse sin reescribir el núcleo.
 
 Todo código nuevo debe respetar:
 
-* SOLID
-* DRY
-* KISS
-* separation of concerns
-* dependency inversion
-* modularity
-* testability
-* observability
-* least privilege
+- SOLID
+- DRY
+- KISS
+- separation of concerns
+- dependency inversion
+- modularity
+- testability
+- observability
+- least privilege
 
 No aplicar abstracciones innecesarias.
 
 La arquitectura debe evitar:
 
-* overengineering
-* premature optimization
-* duplicated logic
-* monolithic workflows
-* hardcoded configuration
-* hidden dependencies
+- overengineering
+- premature optimization
+- duplicated logic
+- monolithic workflows
+- hardcoded configuration
+- hidden dependencies
 
 ---
 
@@ -261,11 +261,11 @@ Sin embargo, no se debe implementar inicialmente complejidad innecesaria.
 
 No construir desde el inicio:
 
-* billing multi-tenant
-* jerarquías empresariales complejas
-* provisioning automático
-* organizaciones anidadas
-* roles avanzados innecesarios
+- billing multi-tenant
+- jerarquías empresariales complejas
+- provisioning automático
+- organizaciones anidadas
+- roles avanzados innecesarios
 
 Principio:
 
@@ -303,10 +303,10 @@ PROVIDER
 
 No almacenar secretos en:
 
-* código
-* workflows
-* prompts
-* repositorio
+- código
+- workflows
+- prompts
+- repositorio
 
 ---
 
@@ -619,13 +619,13 @@ COMMUNITY
 
 No inventar:
 
-* APIs
-* endpoints
-* parámetros
-* SDKs
-* versiones
-* modelos
-* configuraciones
+- APIs
+- endpoints
+- parámetros
+- SDKs
+- versiones
+- modelos
+- configuraciones
 
 ---
 
@@ -695,10 +695,10 @@ Ninguna.
 
 ## No hacer
 
-* refactor
-* migraciones
-* eliminación
-* cambios arquitectónicos
+- refactor
+- migraciones
+- eliminación
+- cambios arquitectónicos
 
 ## Prompt
 
@@ -1153,6 +1153,46 @@ Actualizar AI-BOS-STATE.md.
 
 Detenerse.
 ```
+
+## Status: ✅ COMPLETED (2026-07-26)
+
+Phase 05 has been successfully implemented with the following deliverables:
+
+### Database
+
+- pgvector extension enabled
+- Tables: knowledge_bases, documents, document_chunks
+- Vector similarity search function: match_document_chunks
+- RLS policies for multi-tenant isolation
+
+### RAG Pipeline
+
+- Text chunking (chunker.ts)
+- Embedding generation via OpenRouter (embeddings.ts)
+- Document ingestion pipeline (ingest.ts)
+- Context retrieval service (retrieval.ts)
+
+### Dashboard UI
+
+- Knowledge tab in sidebar
+- Knowledge Base management (create, list, delete)
+- Document management (list, upload, delete)
+- Drag-and-drop upload zone
+- Status indicators (pending, processing, ready, error)
+
+### API Routes
+
+- /api/knowledge-bases (GET, POST)
+- /api/knowledge-bases/[id] (DELETE)
+- /api/knowledge-bases/[id]/documents (GET, POST)
+- /api/documents/[id] (DELETE)
+- /api/documents/[id]/upload (POST)
+
+### Integration
+
+- RAG context injected into LLM system prompt
+- Handler retrieves relevant chunks before each LLM call
+- Graceful fallback when no documents available
 
 ---
 
@@ -2016,14 +2056,14 @@ Prioridad:
 
 Reducir costos mediante:
 
-* contexto mínimo
-* caching cuando sea adecuado
-* reutilización de resultados
-* evitar llamadas duplicadas
-* modelos adecuados al tipo de tarea
-* workflows eficientes
-* retrieval eficiente
-* evitar procesamiento innecesario
+- contexto mínimo
+- caching cuando sea adecuado
+- reutilización de resultados
+- evitar llamadas duplicadas
+- modelos adecuados al tipo de tarea
+- workflows eficientes
+- retrieval eficiente
+- evitar procesamiento innecesario
 
 ---
 
@@ -2104,11 +2144,11 @@ y evolucionar progresivamente.
 
 No activar autonomía avanzada hasta contar con:
 
-* suficiente observabilidad
-* historial de errores
-* validaciones
-* rollback
-* auditoría
+- suficiente observabilidad
+- historial de errores
+- validaciones
+- rollback
+- auditoría
 
 ---
 
@@ -2498,15 +2538,15 @@ La complejidad debe crecer únicamente cuando el negocio y la operación lo just
 
 Este documento es la fuente maestra para:
 
-* orden de implementación
-* objetivos
-* alcance
-* dependencias
-* prompts de ejecución
-* validaciones
-* checkpoints
-* gates
-* estrategia de contexto
+- orden de implementación
+- objetivos
+- alcance
+- dependencias
+- prompts de ejecución
+- validaciones
+- checkpoints
+- gates
+- estrategia de contexto
 
 Las instrucciones permanentes del agente se encuentran en:
 

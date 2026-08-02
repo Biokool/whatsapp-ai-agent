@@ -55,6 +55,7 @@ Cloudflare Access actúa como un **portero** delante de tu dashboard. Antes de q
 Para usuarios no técnicos, **recomendamos Email One-Time PIN** (Cloudflare envía un código de 6 dígitos por email cada vez que se entra). Es el método que Cloudflare deja activado por defecto en cuentas nuevas y NO requiere configurar nada extra — funciona directamente.
 
 **Cómo funciona el flujo OTP**:
+
 1. El usuario abre tu dashboard
 2. Cloudflare le pide email
 3. Cloudflare manda un código de 6 dígitos al email

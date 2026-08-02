@@ -107,32 +107,32 @@ human_approval_required: true
 
 ## SOLID Compliance
 
-| Principle | Implementation |
-|-----------|---------------|
+| Principle                 | Implementation                                         |
+| ------------------------- | ------------------------------------------------------ |
 | **Single Responsibility** | Each hook has ONE concern. Each component has ONE job. |
-| **Open/Closed** | New message types = extend type, no code changes. |
-| **Interface Segregation** | Each component has minimal props. |
-| **Dependency Inversion** | Components use hooks, not fetch() directly. |
+| **Open/Closed**           | New message types = extend type, no code changes.      |
+| **Interface Segregation** | Each component has minimal props.                      |
+| **Dependency Inversion**  | Components use hooks, not fetch() directly.            |
 
 ---
 
 ## Dependencies Added
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| @tanstack/react-query | ^5.0.0 | Server state management |
-| @tanstack/react-table | ^8.0.0 | Data tables |
-| recharts | ^2.0.0 | Charts |
-| zod | ^3.0.0 | Schema validation |
-| react-hook-form | ^7.0.0 | Form management |
-| @hookform/resolvers | ^5.0.0 | Zod integration |
-| class-variance-authority | ^0.7.0 | Component variants |
-| clsx | ^2.0.0 | Class merging |
-| tailwind-merge | ^2.0.0 | Tailwind dedup |
-| lucide-react | ^0.0.0 | Icons |
-| @radix-ui/react-dialog | latest | Dialog primitive |
-| @radix-ui/react-dropdown-menu | latest | Dropdown primitive |
-| @radix-ui/react-slot | latest | Slot primitive |
+| Package                       | Version | Purpose                 |
+| ----------------------------- | ------- | ----------------------- |
+| @tanstack/react-query         | ^5.0.0  | Server state management |
+| @tanstack/react-table         | ^8.0.0  | Data tables             |
+| recharts                      | ^2.0.0  | Charts                  |
+| zod                           | ^3.0.0  | Schema validation       |
+| react-hook-form               | ^7.0.0  | Form management         |
+| @hookform/resolvers           | ^5.0.0  | Zod integration         |
+| class-variance-authority      | ^0.7.0  | Component variants      |
+| clsx                          | ^2.0.0  | Class merging           |
+| tailwind-merge                | ^2.0.0  | Tailwind dedup          |
+| lucide-react                  | ^0.0.0  | Icons                   |
+| @radix-ui/react-dialog        | latest  | Dialog primitive        |
+| @radix-ui/react-dropdown-menu | latest  | Dropdown primitive      |
+| @radix-ui/react-slot          | latest  | Slot primitive          |
 
 ---
 

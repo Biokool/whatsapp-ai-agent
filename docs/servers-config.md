@@ -22,6 +22,7 @@
 ## Comandos Rápidos
 
 ### Verificar Estado
+
 ```powershell
 # Ver todos los contenedores
 docker ps
@@ -34,6 +35,7 @@ netstat -ano | findstr "8081 5678 3000"
 ```
 
 ### Acceder a Servicios
+
 ```powershell
 # Evolution API Manager
 Start-Process "http://localhost:8081/manager/"
@@ -49,6 +51,7 @@ Start-Process "http://localhost:3456"
 ```
 
 ### Logs en Tiempo Real
+
 ```powershell
 # Evolution API
 docker logs evolution_api -f --tail 50
@@ -61,6 +64,7 @@ docker logs postgres_db -f --tail 50
 ```
 
 ### Reiniciar Servicios
+
 ```powershell
 # Reiniciar todo
 docker restart evolution_api n8n postgres_db
@@ -74,18 +78,21 @@ docker restart evolution_api
 ## API Keys y Credenciales
 
 ### Evolution API
+
 ```
 API Key: 429683C4C977415CAAFCCE10F7D57E11
 Instance: aimalobato (o la que crees)
 ```
 
 ### OpenRouter (LLM)
+
 ```
 API Key: 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
 Modelo: openai/gpt-4o-mini
 ```
 
 ### PostgreSQL
+
 ```
 Host: localhost (o postgres_db en Docker)
 Port: 5432
@@ -162,12 +169,14 @@ curl http://localhost:5678/api/v1/workflows \
 ## Flujo de Configuración
 
 ### Paso 1: Verificar Servicios Docker
+
 ```powershell
 docker ps
 # Esperado: evolution_api, n8n, postgres_db corriendo
 ```
 
 ### Paso 2: Acceder a Evolution API
+
 ```
 1. Abrir http://localhost:8081/manager/
 2. Crear instancia "aimalobato"
@@ -176,6 +185,7 @@ docker ps
 ```
 
 ### Paso 3: Configurar Webhook en N8N
+
 ```
 1. Abrir http://localhost:5678/workflow/
 2. Importar workflow de WhatsApp
@@ -184,6 +194,7 @@ docker ps
 ```
 
 ### Paso 4: Configurar Webhook en Evolution
+
 ```bash
 curl -X POST http://localhost:8081/webhook/set/aimalobato \
   -H "Content-Type: application/json" \
@@ -195,6 +206,7 @@ curl -X POST http://localhost:8081/webhook/set/aimalobato \
 ```
 
 ### Paso 5: Probar el Sistema
+
 ```
 1. Enviar mensaje a tu número de WhatsApp
 2. Verificar en N8N que el webhook recibió el evento
@@ -207,18 +219,21 @@ curl -X POST http://localhost:8081/webhook/set/aimalobato \
 ## Troubleshooting
 
 ### Evolution API no responde
+
 ```powershell
 docker restart evolution_api
 docker logs evolution_api --tail 20
 ```
 
 ### N8N no carga
+
 ```powershell
 docker restart n8n
 docker logs n8n --tail 20
 ```
 
 ### QR no aparece
+
 ```powershell
 # Verificar estado de instancia
 curl http://localhost:8081/instance/connectionState/aimalobato \
@@ -230,6 +245,7 @@ curl -X DELETE http://localhost:8081/instance/delete/aimalobato \
 ```
 
 ### Webhook no recibe eventos
+
 ```powershell
 # Verificar que N8N está activo
 curl http://localhost:5678/healthz
@@ -243,13 +259,13 @@ curl http://localhost:8081/webhook/find/aimalobato \
 
 ## Archivos Importantes
 
-| Archivo | Descripción |
-|---------|-------------|
-| `config/servers.json` | Configuración de servidores (local/remote) |
-| `.env.local` | Variables de entorno del bot |
-| `docs/architecture-system.md` | Documentación completa de arquitectura |
-| `docs/servers-config.md` | Este archivo |
+| Archivo                       | Descripción                                |
+| ----------------------------- | ------------------------------------------ |
+| `config/servers.json`         | Configuración de servidores (local/remote) |
+| `.env.local`                  | Variables de entorno del bot               |
+| `docs/architecture-system.md` | Documentación completa de arquitectura     |
+| `docs/servers-config.md`      | Este archivo                               |
 
 ---
 
-*Última actualización: Julio 2026*
+_Última actualización: Julio 2026_

@@ -7,17 +7,17 @@ project:
   name: "WhatsApp AI Agent Kit"
   type: "AI Business Operating System"
   master_version: "2.0.0"
-  last_updated: "2026-07-25"
+  last_updated: "2026-08-02"
 ```
 
 ## Estado de Ejecución
 
 ```yaml
 execution:
-  current_phase: "03"
-  last_completed_phase: "03"
-  status: "PHASE_03_COMPLETED_AWAITING_APPROVAL"
-  phases_completed: ["00", "01", "02", "03"]
+  current_phase: "05"
+  last_completed_phase: "05"
+  status: "PHASE_05_COMPLETED"
+  phases_completed: ["00", "01", "02", "03", "04", "05"]
   phases_in_progress: []
 ```
 
@@ -25,8 +25,8 @@ execution:
 
 ```yaml
 validation:
-  last_validated_phase: "03"
-  last_validation_date: "2026-07-25"
+  last_validated_phase: "05"
+  last_validation_date: "2026-08-02"
   total_tests_executed: 15
   total_tests_passed: 15
   total_tests_failed: 0
@@ -36,10 +36,10 @@ validation:
 
 ```yaml
 approval:
-  approved_phase: null
-  approved_by: null
-  approval_date: null
-  pending_approvals: ["03"]
+  approved_phase: "05"
+  approved_by: "human"
+  approval_date: "2026-08-02"
+  pending_approvals: []
 ```
 
 ## Master Document
@@ -82,36 +82,42 @@ risks:
   - id: "R-005"
     severity: "P1"
     description: "SQLite not suitable for production"
-    status: "OPEN"
+    status: "RESOLVED"
+    resolution: "Migrated to Supabase (PostgreSQL + pgvector)"
+  - id: "R-006"
+    severity: "P1"
+    description: "n8n sube documentos a Google Drive como text/plain vacíos (bug MIME)"
+    status: "RESOLVED"
+    resolution: "typeVersion 2→3 en workflow_entity + workflow_history snapshot; patch bug V1 línea 2233; verificado E2E (mimeType application/pdf, size real, RAG ready)"
 ```
 
 ## Próxima Acción
 
 ```yaml
-next_action: "Esperar aprobación humana para PHASE 04"
+next_action: "Phase 06: Universal Agent + Memory"
 next_action_date: null
-dependencies: ["human_approval_phase_03"]
+dependencies: []
 ```
 
 ## Resumen de Fases
 
-| Fase | Nombre | Estado | Checkpoint |
-|------|--------|--------|------------|
-| 00 | System Audit | COMPLETED | docs/admin/checkpoints/phase-00.md |
-| 01 | Target Architecture | COMPLETED | docs/admin/checkpoints/phase-01.md |
-| 02 | Contracts + Configuration | COMPLETED | docs/admin/checkpoints/phase-02.md |
-| 03 | Engineering Foundation | COMPLETED | docs/admin/checkpoints/phase-03.md |
-| 04 | Data + Multi-Tenancy | PENDIENTE | - |
-| 05 | RAG + Knowledge | PENDIENTE | - |
-| 06 | Universal Agent + Memory | PENDIENTE | - |
-| 07 | Tools + Calendar | PENDIENTE | - |
-| 08 | Omnichannel | PENDIENTE | - |
-| 09 | N8N Orchestration | PENDIENTE | - |
-| 10 | CRM + Follow-Up | PENDIENTE | - |
-| 11 | Observability + Self-Validation | PENDIENTE | - |
-| 12 | Admin Control Plane | PENDIENTE | - |
-| 13 | Recovery + Controlled Autonomy | PENDIENTE | - |
-| 14 | Hardening + Production Readiness | PENDIENTE | - |
+| Fase | Nombre                           | Estado    | Checkpoint                         |
+| ---- | -------------------------------- | --------- | ---------------------------------- |
+| 00   | System Audit                     | COMPLETED | docs/admin/checkpoints/phase-00.md |
+| 01   | Target Architecture              | COMPLETED | docs/admin/checkpoints/phase-01.md |
+| 02   | Contracts + Configuration        | COMPLETED | docs/admin/checkpoints/phase-02.md |
+| 03   | Engineering Foundation           | COMPLETED | docs/admin/checkpoints/phase-03.md |
+| 04   | Data + Multi-Tenancy             | COMPLETED | docs/admin/checkpoints/phase-04.md |
+| 05   | RAG + Knowledge                  | COMPLETED | docs/admin/checkpoints/phase-05.md |
+| 06   | Universal Agent + Memory         | PENDIENTE | -                                  |
+| 07   | Tools + Calendar                 | PENDIENTE | -                                  |
+| 08   | Omnichannel                      | PENDIENTE | -                                  |
+| 09   | N8N Orchestration                | PENDIENTE | -                                  |
+| 10   | CRM + Follow-Up                  | PENDIENTE | -                                  |
+| 11   | Observability + Self-Validation  | PENDIENTE | -                                  |
+| 12   | Admin Control Plane              | PENDIENTE | -                                  |
+| 13   | Recovery + Controlled Autonomy   | PENDIENTE | -                                  |
+| 14   | Hardening + Production Readiness | PENDIENTE | -                                  |
 
 ## Artefactos Generados
 
@@ -147,6 +153,29 @@ artifacts:
     - ".husky/pre-commit"
     - ".github/workflows/ci.yml"
     - ".gitignore"
+  phase_04:
+    - "src/infrastructure/database/schema.sql"
+    - "src/infrastructure/database/supabase.ts"
+    - "src/infrastructure/database/migrations/005_rag_tables.sql"
+    - "src/infrastructure/database/migrations/006_n8n_integration.sql"
+  phase_05:
+    - "src/infrastructure/database/migrations/005_rag_tables.sql"
+    - "src/core/types/rag.ts"
+    - "src/lib/rag/chunker.ts"
+    - "src/lib/rag/embeddings.ts"
+    - "src/lib/rag/ingest.ts"
+    - "src/lib/rag/retrieval.ts"
+    - "src/app/api/knowledge-bases/route.ts"
+    - "src/app/api/knowledge-bases/[id]/route.ts"
+    - "src/app/api/knowledge-bases/[id]/documents/route.ts"
+    - "src/app/api/documents/[id]/route.ts"
+    - "src/app/api/documents/[id]/upload/route.ts"
+    - "src/hooks/use-knowledge-bases.ts"
+    - "src/hooks/use-documents.ts"
+    - "src/components/UploadZone.tsx"
+    - "src/components/DocumentList.tsx"
+    - "src/components/KnowledgeBaseCard.tsx"
+    - "src/components/KnowledgeSection.tsx"
 ```
 
 ## Estadísticas
@@ -154,12 +183,12 @@ artifacts:
 ```yaml
 statistics:
   total_phases: 15
-  phases_completed: 4
-  phases_pending: 11
-  completion_percentage: 26.67
-  risks_identified: 5
+  phases_completed: 6
+  phases_pending: 9
+  completion_percentage: 40.0
+  risks_identified: 6
   risks_open: 1
-  risks_resolved: 4
+  risks_resolved: 5
   technical_debt_items: 16
   system_gaps: 22
   tests_total: 15

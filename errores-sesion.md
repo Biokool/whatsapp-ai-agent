@@ -25,6 +25,7 @@ Las primeras 10 entradas documentan los errores que el equipo de Biokool pisó c
 **Cuándo se vio**: en TODOS los primeros intentos cuando pasábamos un `browser` fingerprint custom (ej. `["Mi App", "Chrome", "1.0"]`).
 
 **Corrección doble**:
+
 1. Usar fingerprint conocido: `Browsers.macOS("Desktop")` en `makeWASocket`
 2. Backoff específico para code 440: 15 segundos en lugar de los 5 segundos para el resto de codes
 
@@ -126,6 +127,7 @@ nixPkgs = ["nodejs_22", "npm-10_x", "python3", "gcc", "gnumake"]
 **Causa**: Nixpacks defaulteaba a Node 18. Next.js 16, Baileys 6.7+ y Tailwind 4 necesitan Node 20+.
 
 **Corrección**: fix doble:
+
 1. `engines.node >= 20.9.0` en `package.json`
 2. `.nvmrc` con `22`
 3. `nixpacks.toml` con `NIXPACKS_NODE_VERSION = "22"` Y `nodejs_22` en `nixPkgs`
@@ -171,12 +173,14 @@ nixPkgs = ["nodejs_22", "npm-10_x", "python3", "gcc", "gnumake"]
 **Causa**: Meta anunció el cambio gradual a per-message a inicios de 2024 con efecto julio 2025. El modelo viejo dejó de aplicar.
 
 **Corrección (mayo 2026)**:
+
 - **Service messages** (respuestas dentro de la ventana de 24h iniciada por el usuario): **gratis ilimitadas globalmente**
 - **Marketing / Utility / Authentication**: per-message desde el primer envío, con precio por país
 - **Ventana Click-to-WhatsApp (72h)**: si el usuario llega por un anuncio de Meta (Facebook/Instagram), TODA la mensajería es gratis durante 72h — incluido marketing
 - **Utility templates** dentro de service window (24h iniciada por usuario) → **gratis** desde finales de 2024
 
 **Precios España mayo 2026** (orientativos, verificar en Meta Business Manager):
+
 - Marketing: ~€0.05/mensaje
 - Utility/Authentication: ~€0.017/mensaje
 - Service: gratis
@@ -192,12 +196,14 @@ nixPkgs = ["nodejs_22", "npm-10_x", "python3", "gcc", "gnumake"]
 **Cuándo se vio**: monitorización de issues GitHub de Baileys + reportes de comunidad (mayo 2026).
 
 **Causa**: WhatsApp añadió vectores de detección con ML que pesan:
+
 - Reply-ratio bajo (<10%): muchos mensajes salientes, pocas respuestas
 - Contact-graph distance: mensajes a desconocidos
 - Patrones temporales robóticos
 - Volumen alto sin pausas humanas
 
 **Corrección**:
+
 - Documentar explícitamente los vectores en `docs/07-errores-comunes.md` (sección "Riesgo de ban" al principio)
 - Marcar como CRÍTICO usar números secundarios, nunca personales
 - Para outbound a escala recomendar siempre Meta API oficial
@@ -216,13 +222,15 @@ nixPkgs = ["nodejs_22", "npm-10_x", "python3", "gcc", "gnumake"]
 **Causa**: el `node_modules` quedó en un estado parcial/corrupto. npm intenta "retirar" (renombrar a `.node_modules.*`) los paquetes existentes y restaurarlos si algo falla; cuando ese estado intermedio está inconsistente, el propio rollback peta en `path.relative` al recibir `undefined`. El mensaje de error oculta la causa real (instalación previa a medias), no es un bug que el usuario pueda "arreglar" reintentando el mismo comando.
 
 **Corrección**: NO repetir `npm install` tal cual (vuelve a fallar). Borrar el `node_modules` parcial y reinstalar desde el `package-lock.json` intacto:
+
 ```
 rm -rf node_modules .node_modules.*   # (Claude Code lo ejecuta; en kit-code usar rimraf/fs.rmSync)
 npm install
 ```
+
 Si persistiera, añadir `npm cache verify`. Validar después con `npm run typecheck` (debe salir exit 0).
 
-**Patrón aprendido**: un fallo de npm en fase de *reify/rollback* casi siempre significa `node_modules` corrupto, no un problema de dependencias. Reflejo: limpiar `node_modules` y reinstalar, nunca reintentar el mismo `install` a ciegas. Para Claude Code en `/setup`: si `npm install` falla, leer el stack — si menciona `reify`/`rollback`, limpiar y reinstalar antes que cualquier otra cosa.
+**Patrón aprendido**: un fallo de npm en fase de _reify/rollback_ casi siempre significa `node_modules` corrupto, no un problema de dependencias. Reflejo: limpiar `node_modules` y reinstalar, nunca reintentar el mismo `install` a ciegas. Para Claude Code en `/setup`: si `npm install` falla, leer el stack — si menciona `reify`/`rollback`, limpiar y reinstalar antes que cualquier otra cosa.
 
 ---
 
@@ -237,6 +245,7 @@ Si persistiera, añadir `npm cache verify`. Validar después con `npm run typech
 **Cómo se diagnosticó**: el logger interno de Baileys está en `silent` (correcto, es ruidoso), así que un mensaje descartado no deja rastro. Se confirmó con un log temporal al principio de `handleIncomingMessages` que volcaba `event.type` y los `remoteJid` crudos de cada upsert → apareció `type=notify n=1 jids=[<id>@lid]`, confirmando el formato LID.
 
 **Corrección** (en `src/lib/baileys/handler.ts`):
+
 1. Aceptar AMBOS formatos 1:1:
    ```ts
    if (!remoteJid.endsWith("@s.whatsapp.net") && !remoteJid.endsWith("@lid")) continue;
@@ -249,6 +258,7 @@ Si persistiera, añadir `npm cache verify`. Validar después con `npm run typech
    La respuesta de la IA se envía al `remoteJid` original (Baileys 6.7+ envía bien a jids `@lid`), así que responder en automático funciona igual.
 
 **Segundo bug, misma raíz — la respuesta del HUMANO desde el panel no llegaba**: el camino de salida humana es panel → tabla `outbox` → loop del bot (`src/lib/baileys/outbox.ts`). Ese loop reconstruía el destino como `` `${item.phone}@s.whatsapp.net` `` (hardcodeado). Para un contacto LID, `phone` es el número LID, así que enviaba a `<lid>@s.whatsapp.net` — dirección inexistente. Lo engañoso: **Baileys NO lanza error** al enviar a ese JID, lo marca como `sent=1` y loguea "outbox enviado", pero el contacto nunca lo recibe (fallo silencioso). Corrección:
+
 1. Nueva columna `jid TEXT` en la tabla `conversations` (con migración `ALTER TABLE` para DBs existentes) que guarda el `remoteJid` completo del contacto.
 2. `handler.ts` rellena ese `jid` en cada mensaje entrante (`getOrCreateConversation(phone, pushName, remoteJid)`), lo que además backfillea filas antiguas.
 3. `outbox.ts` envía a `getConversationById(item.conversation_id).jid` con fallback a `` `${phone}@s.whatsapp.net` `` para filas legacy.
@@ -270,6 +280,7 @@ Si persistiera, añadir `npm cache verify`. Validar después con `npm run typech
 **Causa**: doble. (1) `start:all` usa `next start` (producción), que exige un build previo que no existía. (2) El build en sí: las rutas API abren la base de datos en el momento de importarse (`src/lib/db.ts` hace `new Database()` + `db.exec(CREATE TABLE...)` + `INSERT OR IGNORE` a nivel de módulo). Durante "Collecting page data", Next importa esas rutas en varios workers a la vez; todos intentan escribir en `messages.db` simultáneamente y, sin `busy_timeout` configurado, SQLite corta en seco con SQLITE_BUSY (WAL permite varios lectores pero un solo escritor; sin timeout, el segundo escritor no espera, falla).
 
 **Corrección** (dos partes):
+
 1. **El arreglo de fondo — init perezoso de la DB** (`src/lib/db.ts`): se reescribió para que la conexión, el esquema y los `prepare()` NO se creen al importar el módulo, sino la primera vez que se llama a una función (patrón `build()` + `ctx()` memoizado). Durante `next build`, importar las rutas API ya NO abre la DB (los handlers no se ejecutan al compilar), así que el lock es imposible **por diseño**. Verificable: tras un build, `data/messages.db` ni siquiera se crea.
 2. **Red de seguridad en runtime**: `db.pragma("busy_timeout = 5000")` para la contención normal entre bot y dashboard ya en ejecución. OJO: el `busy_timeout` por sí solo NO arreglaba el build — era no determinista (un build pasaba y el siguiente fallaba), porque la carrera al inicializar el WAL de un archivo nuevo entre ~10 workers no la cubre. El init perezoso es lo que lo resuelve de verdad.
 3. En el flujo `/setup`, compilar (`npm run build`) en la fase de instalación, antes de `start:all`. Fallback local: `npm run start:bot` + `npm run dev` (dev no necesita build).
@@ -288,6 +299,7 @@ Si persistiera, añadir `npm cache verify`. Validar después con `npm run typech
 **Causa**: el archivo `tsconfig.tsbuildinfo` (caché de compilación incremental de TypeScript) se había **versionado por error** en el repo. Nixpacks añade en su Dockerfile un cache mount de BuildKit con `target=/app/tsconfig.tsbuildinfo` para acelerar builds. Pero como el `COPY . /app/.` ya había colocado ahí un archivo regular, BuildKit no puede crear el mountpoint sobre un fichero existente → "not a directory". Es un choque entre el artefacto versionado y el cache mount.
 
 **Corrección**:
+
 1. Añadir `*.tsbuildinfo` al `.gitignore`.
 2. Sacarlo del repo: `git rm --cached tsconfig.tsbuildinfo` (se regenera solo en local; no debe versionarse).
 3. Commit + push y redesplegar. El build pasa.
@@ -298,21 +310,74 @@ Si persistiera, añadir `npm cache verify`. Validar después con `npm run typech
 
 ---
 
+## #17 · n8n sube archivos a Google Drive como `text/plain` vacío (bug MIME)
+
+**Qué pasó**: un PDF subido vía el webhook `upload-document` del workflow `Document Upload Handler` aparecía en Google Drive como archivo vacío (`mimeType: "text/plain"`, `size: "0"`). El upload "completaba" sin error y devolvía un `fileId` válido, así que el RAG y las versiones registraban la subida como exitosa pero el fichero en la nube estaba roto. Verificación empírica: `GET drive/v3/files/{id}?fields=mimeType,size` devolvía `text/plain` + `0`.
+
+**Cuándo se vio**: producción (Biokool), tras montar el pipeline App → webhook n8n → GDrive → Postgres. Los archivos con extensión `.pdf` y `Content-Type: application/pdf` se subían vacíos.
+
+**Causa raíz triple**:
+
+1. **typeVersion del nodo Google Drive.** El nodo del workflow declaraba parámetros de la versión V2 (`inputDataFieldName: "file"`) pero con `typeVersion` 2, que en n8n ejecuta la implementación **V1** (`GoogleDriveV1.node.js`). V1 no conoce `inputDataFieldName` (esa UI/parametría es de V2), así que caía en su rama "no binary" (`binaryData=false`) → subía un fichero de texto con el contenido vacío → GDrive lo clasificaba como `text/plain` de 0 bytes.
+2. **n8n ejecuta el webhook desde la snapshot publicada.** Los webhooks activos NO se ejecutan desde `workflow_entity.nodes` sino desde la fila de `workflow_history` (snapshot, `versionId`). Editar el nodo en la UI solo actualiza `workflow_entity.nodes`; la ejecución del webhook sigue usando la snapshot vieja hasta que se actualice también la fila de historial. Por eso el `typeVersion` no "hacía efecto" en las ejecuciones.
+3. **Bug real de n8n en V1** (`GoogleDriveV1.node.js` dist, línea 2233): `if (metadata.mimeType) mimeType = binaryData.mimeType;` — asignaba el mime del `binaryData` (indefinido en la rama streaming) en lugar de `metadata.mimeType`. Con ese bug, incluso el V1 "con binario" perdía el mime correcto.
+
+**Corrección**:
+
+1. `typeVersion` 2 → **3** en el nodo GDrive, en `workflow_entity.nodes` Y en la snapshot de `workflow_history` (versionId `afc396e7-12d4-4af0-82f4-6d887e5261c0`). Con typeVersion 3 n8n ejecuta `GoogleDriveV2.node.js` → `actions/file/upload.operation.js` → `helpers/utils.getItemBinaryData`, que detecta `binaryData.id` (modo streaming v2) y usa `metadata.fileSize/fileName/mimeType` correctamente.
+2. Parche al dist del contenedor del bug de V1 (línea 2233): `mimeType = metadata.mimeType;` (aunque ya no se usa en producción, evitaba fallos silenciosos en cualquier workflow con typeVersion 1/2).
+3. Verificado E2E: el `fileId` devuelto ahora reporta `mimeType: "application/pdf"` y `size: 381` (bytes reales del PDF), la cadena continúa a Postgres (`document_versions` en NeonTech vía n8n y en Supabase vía la app), y el RAG termina con `documents.status = ready` + chunks insertados y recuperables por `match_document_chunks`.
+
+**Detalle del entorno (Docker)**: el contenedor n8n usa **pnpm** y los ficheros de `node_modules` son **root-owned**. Los parches al dist se aplican escribiendo el script localmente, `docker cp` al contenedor y ejecutándolo con `docker exec -u root n8n node <script>`. PowerShell rompe el JS inline en `docker exec sh -c`, así que nunca se pasa JS inline. Los parches se pierden si se recrea el contenedor: o se re-aplican, o se actualiza n8n a una versión con el fix upstream.
+
+**Patrón aprendido**: con n8n, "cambié el nodo pero no hace efecto" casi siempre significa que la ejecución del webhook usa la **snapshot publicada en `workflow_history`**, no `workflow_entity.nodes`. Al editar nodos de un workflow activo, actualizar AMBAS filas (o usar el botón "Publish" / API con `versionId`). Y al subir binarios, respetar el `typeVersion` del nodo frente a los parámetros de UI que se ven en el editor — los parámetros V2 con runtime V1 se ignoran en silencio.
+
+---
+
+## #18 · El frontend se queda en "Procesando..." aunque el documento ya está `ready`
+
+**Qué pasó**: tras subir un PDF, el ciclo completo se ejecutaba bien (GDrive `application/pdf`, `document_versions`, chunks RAG, `documents.status = ready`), pero la UI del dashboard seguía mostrando "Procesando..." de forma indefinida. El usuario tenía que recargar la página para ver "Listo".
+
+**Cuándo se vio**: producción (Biokool), subiendo FICHA TECNICA KOOLKAT.pdf. El ingest completo tardaba ~3-9s.
+
+**Causa**: el estado en DB y en la API era correcto (`ready`); el fallo era **100% client-side**, por la combinación de dos opciones de TanStack Query:
+
+1. `src/components/providers.tsx`: `refetchOnWindowFocus: false` → al volver a la pestaña del navegador **no se re-consultaba** la API.
+2. `src/hooks/use-documents.ts`: el `refetchInterval` devolvía `false` cuando `document.visibilityState === "hidden"` → si la pestaña perdía foco durante el ingest (muy común: el usuario sube el archivo y cambia de pestaña mientras procesa), el polling **se apagaba y nunca se reanudaba** (por el punto 1).
+
+Resultado: el status quedaba congelado en "Procesando..." hasta recargar la página.
+
+**Cómo se diagnosticó**: se verificó que la API `/api/knowledge-bases/{id}/documents` devolvía `status: "ready"` y que Supabase tenía `ready` + 8 chunks. El bug no estaba en backend ni en la API — solo en el refresco del cliente.
+
+**Corrección**:
+
+1. `providers.tsx`: `refetchOnWindowFocus: true` (volver a la pestaña re-consulta queries stale).
+2. `use-documents.ts`: eliminar el check de `visibilityState === "hidden"` y añadir `refetchIntervalInBackground: true` (el polling sigue aunque la pestaña esté oculta).
+
+**Verificación**: subida E2E vía la ruta real del frontend → `pending → processing → ready` en ~3s, visible por polling continuo. Datos de prueba limpiados tras validar.
+
+**Patrón aprendido**: con TanStack Query, `refetchOnWindowFocus: false` + un `refetchInterval` condicionado a `visibilityState === "hidden"` es una combinación que congela la UI cuando la pestaña pierde foco. Para estados asíncronos largos (procesamiento de documentos, subidas), el polling debe seguir en background (`refetchIntervalInBackground: true`) y la app debe re-consultar al volver al foco.
+
+---
+
 ## Resumen de causas raíz
 
 Mirando los 10 errores en conjunto:
 
-| Causa raíz | Errores | Patrón general |
-|---|---|---|
-| WhatsApp Web protocol cambia | #1, #2, #3, #12, #14 | Confiar en Baileys actualizado + browser fingerprint conocido + leer disconnect codes con calma + aceptar nuevos formatos de JID (@lid) |
-| State machines mal manejadas | #4 | API defensiva: mostrar datos si existen, no solo si el estado es "perfecto" |
-| Carga de entorno | #5 | Side-effect modules antes que cualquier otro import |
-| Diferencias entre plataformas | #6, #7, #8 | Declarar explícitamente versiones + toolchain en cada entorno de deploy |
-| Falsos amigos comerciales | #9 | "Gratis ilimitado" en realidad no existe — comunicar costes reales temprano |
-| Seguridad por defecto | #10 | Cualquier panel expuesto necesita auth, sin excepciones |
-| Estado local corrupto | #13 | Fallo de npm en reify/rollback = `node_modules` a medias → limpiar y reinstalar, no reintentar |
-| Concurrencia SQLite | #15 | WAL no basta: sin `busy_timeout` hay SQLITE_BUSY cuando varios procesos/workers escriben. Y `next start` exige `next build` antes |
-| Artefactos versionados | #16 | Nunca subir `*.tsbuildinfo`/`.next`/`node_modules` — rompen los cache mounts de Nixpacks en el deploy |
+| Causa raíz                    | Errores              | Patrón general                                                                                                                          |
+| ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| WhatsApp Web protocol cambia  | #1, #2, #3, #12, #14 | Confiar en Baileys actualizado + browser fingerprint conocido + leer disconnect codes con calma + aceptar nuevos formatos de JID (@lid) |
+| State machines mal manejadas  | #4                   | API defensiva: mostrar datos si existen, no solo si el estado es "perfecto"                                                             |
+| Carga de entorno              | #5                   | Side-effect modules antes que cualquier otro import                                                                                     |
+| Diferencias entre plataformas | #6, #7, #8           | Declarar explícitamente versiones + toolchain en cada entorno de deploy                                                                 |
+| Falsos amigos comerciales     | #9                   | "Gratis ilimitado" en realidad no existe — comunicar costes reales temprano                                                             |
+| Seguridad por defecto         | #10                  | Cualquier panel expuesto necesita auth, sin excepciones                                                                                 |
+| Estado local corrupto         | #13                  | Fallo de npm en reify/rollback = `node_modules` a medias → limpiar y reinstalar, no reintentar                                          |
+| Concurrencia SQLite           | #15                  | WAL no basta: sin `busy_timeout` hay SQLITE_BUSY cuando varios procesos/workers escriben. Y `next start` exige `next build` antes       |
+| Artefactos versionados        | #16                  | Nunca subir `*.tsbuildinfo`/`.next`/`node_modules` — rompen los cache mounts de Nixpacks en el deploy                                   |
+| Snapshot vs nodos en n8n      | #17                  | Los webhooks activos se ejecutan desde la snapshot de `workflow_history`, no de `workflow_entity.nodes`. typeVersion/params: mantener sincronizados ambos o la edición "no hace efecto". Y los parámetros de UI de una versión no se respetan si el runtime del nodo es otra versión |
+| Binarios en n8n               | #17                  | Nunca interponer un nodo `Code` entre el webhook y el nodo de subida si puede transformar el binario; subir directo con `binaryData: true` y respetar `typeVersion` para que `getItemBinaryData` use streaming (`binaryData.id`) y el `metadata.mimeType` real |
+| Estado UI congelado           | #18                  | `refetchOnWindowFocus: false` + `refetchInterval` que se apaga con `visibilityState === "hidden"` congela estados asíncronos largos al perder el foco. Usar `refetchIntervalInBackground: true` y `refetchOnWindowFocus: true` |
 
 ---
 
@@ -335,6 +400,7 @@ Cuando encuentres un error nuevo:
 ```
 
 Cada error nuevo idealmente se traduce también en:
+
 1. Una mitigación en el código (para que no pase a futuros usuarios)
 2. Una entrada en `docs/07-errores-comunes.md` (para que el usuario lo encuentre buscando)
 3. Una regla absoluta en `CLAUDE.md` si aplica (para que Claude Code no caiga en el mismo error)

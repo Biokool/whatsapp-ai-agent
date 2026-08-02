@@ -1,0 +1,123 @@
+{
+  "name": "Document Upload Supabase Storage",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Upload to Supabase Storage\nWebhook → HTTP Request (Supabase Storage) → Postgres → Response",
+        "height": 200,
+        "width": 300,
+        "color": 4
+      },
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-120, 120]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-supabase",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280],
+      "notes": "RECIBE ARCHIVOS VIA POST multipart/form-data"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://mvbynpfvxcpvuoazkaxc.supabase.co/storage/v1/object/documents/{{ $('Webhook').item.json.headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001' }}/{{ $('Webhook').item.json.headers['x-document-id'] || 'new' }}_{{ $binary.file.fileName || 'document.pdf' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YnlucGZ2eGNwdnVvYXprYXhjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTA3NTA0OCwiZXhwIjoyMTAwNjUxMDQ4fQ.e-B2bTW9ib8mG9iHXVvcihoBxgqT7wVDV1Rv0RXNgp0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $binary.file.mimeType || 'application/pdf' }}"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "raw",
+        "bodyParameters": {
+          "parameters": []
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Upload to Supabase Storage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [380, 280],
+      "notes": "SUBE ARCHIVO A SUPABASE STORAGE VIA HTTP REQUEST"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').item.json;\nconst headers = webhookData.headers || {};\nconst tenantId = headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001';\nconst documentId = headers['x-document-id'] || '';\nconst fileName = $binary.file.fileName || 'document.pdf';\nconst storagePath = `${tenantId}/${documentId}_${fileName}`;\nconst publicUrl = `https://mvbynpfvxcpvuoazkaxc.supabase.co/storage/v1/object/public/documents/${storagePath}`;\n\nreturn [{\n  json: {\n    documentId,\n    tenantId,\n    fileName,\n    storagePath,\n    publicUrl,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "name": "Extract Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 280]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO document_versions (document_id, tenant_id, version_number, file_url, file_size, storage_provider, storage_path, metadata) VALUES ('{{ $('Extract Metadata').item.json.documentId }}', '{{ $('Extract Metadata').item.json.tenantId }}', (SELECT COALESCE(MAX(version_number), 0) + 1 FROM document_versions WHERE document_id = '{{ $('Extract Metadata').item.json.documentId }}'), '{{ $('Extract Metadata').item.json.publicUrl }}', 0, 'supabase', '{{ $('Extract Metadata').item.json.storagePath }}', '{\"uploadedVia\": \"n8n-supabase\"}') RETURNING id, version_number;"
+      },
+      "name": "Save Version",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [980, 280],
+      "credentials": {
+        "postgres": {
+          "id": "ByU42CyK5np0lT7P",
+          "name": "Postgres-NeonTech-Biokool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const metadata = $('Extract Metadata').item.json;\nconst versionResult = $('Save Version').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: metadata.documentId,\n    tenantId: metadata.tenantId,\n    filename: metadata.fileName,\n    fileUrl: metadata.publicUrl,\n    storageProvider: 'supabase',\n    version: versionResult ? versionResult.version_number : 1,\n    versionId: versionResult ? versionResult.id : null,\n    storagePath: metadata.storagePath,\n    timestamp: new Date().toISOString(),\n    message: 'Archivo subido a Supabase Storage y version registrada'\n  }\n}];"
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1280, 280]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Upload to Supabase Storage", "type": "main", "index": 0 }]]
+    },
+    "Upload to Supabase Storage": {
+      "main": [[{ "node": "Extract Metadata", "type": "main", "index": 0 }]]
+    },
+    "Extract Metadata": {
+      "main": [[{ "node": "Save Version", "type": "main", "index": 0 }]]
+    },
+    "Save Version": {
+      "main": [[{ "node": "Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

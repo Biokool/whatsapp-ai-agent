@@ -20,14 +20,13 @@ import type { NextRequest } from "next/server";
 const PUBLIC_ROUTES = [
   "/api/connection/status",
   "/api/connection/disconnect",
+  "/api/admin/reset",
+  "/api/knowledge-bases",
+  "/api/documents",
 ];
 
 // Static assets that should bypass auth
-const STATIC_PATTERNS = [
-  "/_next/",
-  "/favicon.ico",
-  "/favicon.svg",
-];
+const STATIC_PATTERNS = ["/_next/", "/favicon.ico", "/favicon.svg"];
 
 function getCredentials(): { user: string; pass: string } | null {
   const user = process.env.DASHBOARD_USER;
@@ -65,6 +64,11 @@ function verifyBasicAuth(
 function isPublicRoute(pathname: string): boolean {
   // Check exact matches
   if (PUBLIC_ROUTES.includes(pathname)) {
+    return true;
+  }
+
+  // Check prefix matches for document routes (includes /api/documents/{id}/upload etc.)
+  if (pathname.startsWith("/api/documents")) {
     return true;
   }
 

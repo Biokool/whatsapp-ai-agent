@@ -9,8 +9,7 @@ export async function GET(): Promise<NextResponse> {
     const state = await getConnectionState();
 
     const shouldShowQr =
-      !!state.qr_string &&
-      (state.status === "qr" || state.status === "connecting");
+      !!state.qr_string && (state.status === "qr" || state.status === "connecting");
 
     if (shouldShowQr && state.qr_string) {
       const qrPng = await QRCode.toDataURL(state.qr_string, {
@@ -29,7 +28,7 @@ export async function GET(): Promise<NextResponse> {
       status: state.status,
       phone: state.phone,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ status: "disconnected", qrPng: null, phone: null }, { status: 500 });
   }
 }

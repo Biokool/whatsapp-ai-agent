@@ -1,19 +1,7 @@
-import {
-  guardarLeadDefinition,
-  guardarLeadHandler,
-} from "./guardar-lead";
-import {
-  calificarDefinition,
-  calificarHandler,
-} from "./calificar";
-import {
-  agendarDefinition,
-  agendarHandler,
-} from "./agendar";
-import {
-  derivarHumanoDefinition,
-  derivarHumanoHandler,
-} from "./derivar-humano";
+import { guardarLeadDefinition, guardarLeadHandler } from "./guardar-lead";
+import { calificarDefinition, calificarHandler } from "./calificar";
+import { agendarDefinition, agendarHandler } from "./agendar";
+import { derivarHumanoDefinition, derivarHumanoHandler } from "./derivar-humano";
 
 // ============================================================
 // Tipos compartidos
@@ -56,14 +44,10 @@ type GenericHandler = (
 const handlers: Record<string, GenericHandler> = {
   guardarLead: (args) =>
     guardarLeadHandler(args as unknown as Parameters<typeof guardarLeadHandler>[0]),
-  calificar: (args) =>
-    calificarHandler(args as unknown as Parameters<typeof calificarHandler>[0]),
-  agendar: (args) =>
-    agendarHandler(args as unknown as Parameters<typeof agendarHandler>[0]),
+  calificar: (args) => calificarHandler(args as unknown as Parameters<typeof calificarHandler>[0]),
+  agendar: (args) => agendarHandler(args as unknown as Parameters<typeof agendarHandler>[0]),
   derivarHumano: (args) =>
-    derivarHumanoHandler(
-      args as unknown as Parameters<typeof derivarHumanoHandler>[0]
-    ),
+    derivarHumanoHandler(args as unknown as Parameters<typeof derivarHumanoHandler>[0]),
 };
 
 export async function executeTool(

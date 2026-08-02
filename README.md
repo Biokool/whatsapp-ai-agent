@@ -12,6 +12,7 @@ Te entrega un **agente de IA conectado a WhatsApp** que:
 
 - Recibe los mensajes que escriben a tu número de empresa
 - Los responde automáticamente con un modelo de IA (GPT, Claude, Gemini... a elegir)
+- **Consulta catálogos, FAQs y documentación técnica** (RAG + Knowledge Base)
 - Califica leads haciendo las preguntas que tú definas
 - Guarda los leads en Google Sheets
 - Agenda llamadas con Cal.com cuando el lead encaja
@@ -23,14 +24,14 @@ Todo corre en **tu ordenador** primero (para probar) y luego en **tu propio serv
 
 ## Lo que necesitas
 
-| Requisito | Para qué | Coste |
-|---|---|---|
-| **Node.js 20+** | Motor del kit | Gratis |
-| **VS Code** | Editor donde abres el kit | Gratis |
+| Requisito                     | Para qué                           | Coste                                                                    |
+| ----------------------------- | ---------------------------------- | ------------------------------------------------------------------------ |
+| **Node.js 20+**               | Motor del kit                      | Gratis                                                                   |
+| **VS Code**                   | Editor donde abres el kit          | Gratis                                                                   |
 | **Claude Code** (recomendado) | El setup guiado se hace desde aquí | **Requiere suscripción Claude Pro/Max o API pay-per-use** (~$20/mes Pro) |
-| **Cuenta OpenRouter** | El cerebro de IA del agente | Gratis + 5€ de saldo (suficiente para meses) |
-| **VPS (opcional)** | Si quieres tenerlo 24/7 | 5,49-7,99 €/mes en Hostinger |
-| **WhatsApp del negocio** | Un número, NO el personal | Gratis o 10€/mes una SIM aparte |
+| **Cuenta OpenRouter**         | El cerebro de IA del agente        | Gratis + 5€ de saldo (suficiente para meses)                             |
+| **VPS (opcional)**            | Si quieres tenerlo 24/7            | 5,49-7,99 €/mes en Hostinger                                             |
+| **WhatsApp del negocio**      | Un número, NO el personal          | Gratis o 10€/mes una SIM aparte                                          |
 
 > **Nota Windows**: si trabajas en Windows, instala también [Git for Windows](https://git-scm.com/download/win) o [WSL2](https://learn.microsoft.com/es-es/windows/wsl/install). Claude Code necesita un shell con Bash.
 
@@ -55,6 +56,7 @@ Si prefieres CLI: `npm install && npm run wizard`
 En Claude Code: `/personaliza`. Te hace 6 preguntas y deja el agente adaptado a TU caso. Sin tocar código.
 
 ¿Quieres un ejemplo? Mira `prompts/ejemplos/`:
+
 - `agencia-ia.md` — servicios B2B (agencia)
 - `ecommerce.md` — tienda online
 - `infoproducto.md` — venta de cursos
@@ -65,12 +67,12 @@ En Claude Code: `/personaliza`. Te hace 6 preguntas y deja el agente adaptado a 
 
 Una vez instalado, abre la carpeta en VS Code + Claude Code y escribe cualquiera de estas en lenguaje natural:
 
-- *"empieza"* / *"qué hago"* → Claude te sugiere `/setup`
-- *"personaliza el agente"* → Claude lanza `/personaliza`
-- *"desplegar a producción"* → Claude lanza `/deploy`
-- *"el bot no responde"* → Claude ejecuta `npm run doctor` y diagnostica
-- *"quiero cambiar el modelo"* → Claude edita `.env.local`
-- *"añade una tool que consulte stock"* → Claude crea una tool nueva por ti
+- _"empieza"_ / _"qué hago"_ → Claude te sugiere `/setup`
+- _"personaliza el agente"_ → Claude lanza `/personaliza`
+- _"desplegar a producción"_ → Claude lanza `/deploy`
+- _"el bot no responde"_ → Claude ejecuta `npm run doctor` y diagnostica
+- _"quiero cambiar el modelo"_ → Claude edita `.env.local`
+- _"añade una tool que consulte stock"_ → Claude crea una tool nueva por ti
 
 ---
 
@@ -93,6 +95,7 @@ Sí. Una instancia del kit por número de WhatsApp. Si vendes esto a clientes, u
 
 **¿Esto se puede vender a clientes?**
 Sí, esa es exactamente la idea. Tarifas de mercado a 2026:
+
 - **Diagnóstico**: 150-300 €
 - **Implementación con tools**: 800-1.500 €
 - **Mantenimiento mensual**: 80-200 €/mes
@@ -132,10 +135,11 @@ whatsapp-ai-agent-kit/
 │   ├── app/                 ← Next.js 16 (dashboard + APIs)
 │   ├── components/               ← UI (ConnectionGate, QRScreen, Dashboard...)
 │   └── lib/
-│       ├── db.ts                 ← SQLite + WAL + helpers tipados
-│       ├── baileys/              ← Cliente WhatsApp Web (10 lecciones aplicadas)
-│       ├── openrouter.ts         ← LLM con tool calling
+│       ├── db.ts                 ← Supabase data layer
+│       ├── baileys/              ← Cliente WhatsApp Web
+│       ├── openrouter.ts         ← LLM con tool calling + RAG context
 │       ├── system-prompt.ts      ← Lee prompts/negocio.md automáticamente
+│       ├── rag/                  ← RAG pipeline (ingest, retrieval, embeddings)
 │       └── tools/                ← guardarLead · calificar · agendar · derivarHumano
 │
 ├── scripts/
@@ -168,9 +172,10 @@ whatsapp-ai-agent-kit/
 ## Stack técnico
 
 - **Next.js 16** + React 19 + Tailwind 4 (dashboard)
-- **@whiskeysockets/baileys** 6.7+ (WhatsApp Web)
-- **better-sqlite3** + WAL (base de datos local)
+- **@whiskeysockets/baileys** 7.0+ (WhatsApp Web)
+- **Supabase** + pgvector (base de datos + embeddings vectoriales)
 - **OpenRouter** SDK (hub de modelos de IA)
+- **pdf-parse** (extracción de texto de PDFs)
 - **tsx + concurrently** (arrancar bot + dashboard juntos)
 - **Nixpacks** (deploy sin Docker)
 
@@ -185,6 +190,7 @@ Construido por **el equipo de Biokool** ([canal de YouTube](https://www.youtube.
 Este kit ha sido desarrollado **íntegramente por el equipo de Biokool**: arquitectura, código, documentación y todas las lecciones aprendidas pisando los errores uno a uno hasta dejarlo blindado y cross-platform, con una experiencia de instalación guiada por Claude Code.
 
 Stack open-source:
+
 - [Baileys](https://github.com/WhiskeySockets/Baileys) — cliente WhatsApp Web
 - [Next.js](https://nextjs.org/) — framework React
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) — SQLite para Node
@@ -198,10 +204,12 @@ Stack open-source:
 Kit **exclusivo para alumnos de Biokool**. No es de uso libre ni código abierto.
 
 **Lo que SÍ puedes hacer** (como cliente de Biokool):
+
 - Usarlo para tus propios proyectos y negocio.
 - Montar agentes para tus clientes y **cobrar por ello** (es justo el modelo que enseñamos).
 
 **Lo que NO puedes hacer:**
+
 - Compartir, revender, redistribuir o publicar el kit (ni su código) fuera de Biokool.
 - Pasárselo a alguien que no sea alumno.
 

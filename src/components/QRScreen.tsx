@@ -9,11 +9,31 @@ interface QRScreenProps {
 
 export default function QRScreen({ status, qrPng }: QRScreenProps) {
   const [elapsed, setElapsed] = useState(0);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  async function handleReset() {
+    if (!confirm("Esto borrará la sesión de WhatsApp y generará un QR nuevo. Continuar?")) return;
+    setResetting(true);
+    try {
+      const res = await fetch("/api/admin/reset", { method: "POST" });
+      const data = await res.json();
+      if (data.ok) {
+        // Reload after a short delay so the bot restarts
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        alert("Error al resetear: " + (data.error ?? "desconocido"));
+        setResetting(false);
+      }
+    } catch {
+      alert("Error de red al intentar resetear.");
+      setResetting(false);
+    }
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
@@ -28,7 +48,11 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
         {qrPng && (
           <div className="bg-white p-4 rounded-xl flex items-center justify-center mb-6">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrPng} alt="Código QR para conectar WhatsApp" className="w-full h-auto max-w-xs" />
+            <img
+              src={qrPng}
+              alt="Código QR para conectar WhatsApp"
+              className="w-full h-auto max-w-xs"
+            />
           </div>
         )}
 
@@ -51,14 +75,30 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
           <ol className="list-decimal list-inside space-y-1">
             <li>Abre WhatsApp en tu móvil</li>
             <li>Configuración → Dispositivos vinculados</li>
-            <li>Toca <strong>Vincular un dispositivo</strong></li>
+            <li>
+              Toca <strong>Vincular un dispositivo</strong>
+            </li>
             <li>Escanea el QR de esta pantalla</li>
           </ol>
         </div>
 
-        {elapsed > 60 && (
-          <div className="mt-6 p-3 bg-amber-950/50 border border-amber-900 rounded-lg text-sm text-amber-200">
-            ¿Llevas más de 1 minuto? El QR puede haber caducado. Recarga la página.
+        {(elapsed > 30 || status === "disconnected") && (
+          <div className="mt-6 space-y-3">
+            {elapsed > 60 && (
+              <div className="p-3 bg-amber-950/50 border border-amber-900 rounded-lg text-sm text-amber-200">
+                ¿Llevas más de 1 minuto? El QR puede haber caducado.
+              </div>
+            )}
+            <button
+              onClick={handleReset}
+              disabled={resetting}
+              className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {resetting ? "Reseteando sesión..." : "Resetear sesión (QR nuevo)"}
+            </button>
+            <p className="text-[11px] text-neutral-600 text-center">
+              Borra la sesión guardada y genera un QR fresco
+            </p>
           </div>
         )}
       </div>

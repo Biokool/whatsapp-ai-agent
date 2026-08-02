@@ -33,7 +33,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+
+# --- PATCH: whatsapp-rust-bridge (0.5.4) fue republicado sin el export "require" ---
+# Baileys v7 lo importa desde CJS (tsx). El export map solo tiene "import", lo que
+# rompe el arranque del bot con ERR_PACKAGE_PATH_NOT_EXPORTED. Se añade la condición
+# "require" apuntando al mismo dist/index.js (mismo fix que el node_modules local).
+RUN node -e "const fs=require('fs');const p='node_modules/whatsapp-rust-bridge/package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));if(j.exports&&j.exports['.']&&!j.exports['.'].require){j.exports['.'].require=j.exports['.'].import;fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');console.log('patched whatsapp-rust-bridge exports with require');}"
 
 COPY --from=builder /app/.next ./.next
 COPY src ./src

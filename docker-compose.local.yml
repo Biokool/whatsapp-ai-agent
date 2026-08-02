@@ -4,10 +4,12 @@
 # Uso: docker compose -f docker-compose.local.yml up -d
 #
 # Esto levanta:
-#   - WhatsApp AI Agent (bot + dashboard) en puerto 3000
+#   - Bot de WhatsApp (SÓLO el bot Baileys). El dashboard/web corre
+#     en el host con `npm run dev` (puerto 3000), así que aquí NO se
+#     publica el puerto 3000 para evitar conflicto con el host.
 #
-# NO incluye PostgreSQL/Redis/Evolution API — ya corren por separado.
-# Cloudflare NO aplica en local (solo para VPS con acceso publico).
+# El bot persiste en Supabase (conversations/messages) y en la sesión
+# de WhatsApp de ./auth (bind mount). Usa el mismo .env.local del host.
 # ============================================================
 
 services:
@@ -16,9 +18,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: npm run start:bot
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     volumes:
       - ./data:/app/data
       - ./auth:/app/auth
@@ -27,7 +28,6 @@ services:
       - ./.env.local:/app/.env.local:ro
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - LOG_LEVEL=info
+      - LOG_LEVEL=debug
     networks:
       - default

@@ -40,7 +40,11 @@ console.log(`${COLORS.bold}1. Variables de entorno${COLORS.reset}`);
 {
   const envLocal = path.resolve(process.cwd(), ".env.local");
   const exists = fs.existsSync(envLocal);
-  check(".env.local existe", exists, "Ejecuta /setup en Claude Code o copia .env.example a .env.local");
+  check(
+    ".env.local existe",
+    exists,
+    "Ejecuta /setup en Claude Code o copia .env.example a .env.local"
+  );
 
   if (exists) {
     const hasKey = !!process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== "";
@@ -183,9 +187,13 @@ if (issues.length === 0) {
   console.log(`${COLORS.green}${COLORS.bold}Diagnóstico OK.${COLORS.reset} El kit está sano.`);
   process.exit(0);
 } else {
-  console.log(`${COLORS.red}${COLORS.bold}${issues.length} problema(s) detectado(s).${COLORS.reset}`);
+  console.log(
+    `${COLORS.red}${COLORS.bold}${issues.length} problema(s) detectado(s).${COLORS.reset}`
+  );
   console.log(`${COLORS.dim}Sigue las flechas amarillas (→) para arreglarlos.${COLORS.reset}`);
   console.log("");
-  console.log(`Si te quedas atascado, escribe ${COLORS.bold}/setup${COLORS.reset} en Claude Code o pide ayuda en las sesiones del domingo.`);
+  console.log(
+    `Si te quedas atascado, escribe ${COLORS.bold}/setup${COLORS.reset} en Claude Code o pide ayuda en las sesiones del domingo.`
+  );
   process.exit(1);
 }

@@ -4,13 +4,13 @@ Aquí vive la "personalidad" de tu agente. En vez de tocar código TypeScript, e
 
 ## Archivos
 
-| Archivo | Para qué |
-|---|---|
-| `negocio.md` | **EL TUYO.** Se autorrellena con `/personaliza`. Si no existe, el agente usa un prompt genérico |
-| `negocio.example.md` | Plantilla vacía con las 6 secciones que el agente espera |
-| `ejemplos/agencia-ia.md` | Ejemplo completo: agencia de IA que califica leads |
-| `ejemplos/ecommerce.md` | Ejemplo completo: tienda online con consulta de stock |
-| `ejemplos/infoproducto.md` | Ejemplo completo: vendedor de cursos online |
+| Archivo                    | Para qué                                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `negocio.md`               | **EL TUYO.** Se autorrellena con `/personaliza`. Si no existe, el agente usa un prompt genérico |
+| `negocio.example.md`       | Plantilla vacía con las 6 secciones que el agente espera                                        |
+| `ejemplos/agencia-ia.md`   | Ejemplo completo: agencia de IA que califica leads                                              |
+| `ejemplos/ecommerce.md`    | Ejemplo completo: tienda online con consulta de stock                                           |
+| `ejemplos/infoproducto.md` | Ejemplo completo: vendedor de cursos online                                                     |
 
 ## Cómo crear/cambiar tu `negocio.md`
 

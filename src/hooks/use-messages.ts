@@ -15,7 +15,12 @@ export function useMessages(conversationId: string | null) {
     queryKey: ["messages", conversationId],
     queryFn: () => fetchMessages(conversationId!),
     enabled: !!conversationId,
-    refetchInterval: 2000,
-    staleTime: 1000,
+    refetchInterval: () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return false;
+      }
+      return 3000;
+    },
+    staleTime: 2000,
   });
 }

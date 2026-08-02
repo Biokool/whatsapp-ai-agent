@@ -8,7 +8,11 @@ interface DashboardHeaderProps {
   onSearchChange: (query: string) => void;
 }
 
-export default function DashboardHeader({ phone, searchQuery, onSearchChange }: DashboardHeaderProps) {
+export default function DashboardHeader({
+  phone,
+  searchQuery,
+  onSearchChange,
+}: DashboardHeaderProps) {
   const [disconnecting, setDisconnecting] = useState(false);
 
   async function handleDisconnect() {
@@ -65,14 +69,18 @@ export default function DashboardHeader({ phone, searchQuery, onSearchChange }: 
             className="relative text-navy-300 hover:text-ai-green-light transition-colors p-1 md:p-1.5 rounded-lg hover:bg-navy-700"
             title="Notificaciones"
           >
-            <span className="material-symbols-outlined text-[18px] md:text-[22px]">notifications</span>
+            <span className="material-symbols-outlined text-[18px] md:text-[22px]">
+              notifications
+            </span>
             <span className="absolute top-0.5 right-0.5 md:top-1 md:right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-ai-green-light rounded-full ai-glow" />
           </button>
         </div>
 
         <div className="flex items-center gap-1.5 md:gap-2">
           <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-navy-600 border border-navy-500 flex items-center justify-center ring-2 ring-ai-green-light/30">
-            <span className="material-symbols-outlined text-ai-green-light text-[14px] md:text-[18px]">person</span>
+            <span className="material-symbols-outlined text-ai-green-light text-[14px] md:text-[18px]">
+              person
+            </span>
           </div>
           {phone && (
             <div className="hidden lg:block">

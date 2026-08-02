@@ -3,6 +3,7 @@
 ## Activación
 
 Activa cuando el usuario solicite:
+
 - Ejecutar una fase del AI-BOS
 - Ver el estado del proyecto
 - Continuar el desarrollo del sistema

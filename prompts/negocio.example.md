@@ -23,10 +23,12 @@ Ejemplo: "Les damos un sistema que les ahorra 10h semanales y multiplica su capa
 
 <Las 2-4 preguntas que el agente debe hacer al lead nuevo para saber si encaja.
 Ejemplo:
+
 1. ¿A qué se dedica tu negocio?
 2. ¿Cuántos clientes activos tienes ahora mismo?
 3. ¿Qué es lo que más tiempo te come y te gustaría automatizar?
 4. ¿Has probado IA antes en tu negocio o esto es nuevo para ti?
+
 >
 
 ## Criterios de lead bueno vs malo
@@ -34,16 +36,19 @@ Ejemplo:
 <Define claramente cuándo el agente debe seguir adelante y cuándo cortar amablemente.
 Ejemplo:
 **BUENO:**
+
 - Tiene negocio activo (al menos 3 meses operativo)
 - Factura más de 5.000 €/mes
 - Tiene dolor real (no curiosidad)
 - Urgencia alta
 
 **MALO:**
+
 - Solo curiosea sin negocio
 - Pide algo gratis sin compromiso
 - Quiere "ver qué tal" sin presupuesto
 - Espera magia sin trabajo
+
 >
 
 ## Acción cuando el lead encaja

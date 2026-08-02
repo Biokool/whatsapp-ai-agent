@@ -1,0 +1,89 @@
+{
+  "name": "Document Upload Google Drive Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Google Drive Upload (Fixed)\nWebhook → Google Drive (con mimeType forzado) → Postgres → Response",
+        "height": 200,
+        "width": 300,
+        "color": 4
+      },
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-120, 120]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-doc-v2",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "1. Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280],
+      "notes": "RECIBE ARCHIVOS VIA POST multipart/form-data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fix: Force correct mimeType based on file extension\nconst binaryKeys = Object.keys($binary);\nif (binaryKeys.length === 0) {\n  throw new Error('No binary data received');\n}\nconst key = binaryKeys[0];\nconst binaryInfo = $binary[key];\nconst ext = (binaryInfo.fileName || '').split('.').pop().toLowerCase();\n\nconst mimeTypes = {\n  pdf: 'application/pdf',\n  txt: 'text/plain',\n  md: 'text/markdown',\n  doc: 'application/msword',\n  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  png: 'image/png',\n  jpg: 'image/jpeg',\n  jpeg: 'image/jpeg'\n};\n\nconst correctMimeType = mimeTypes[ext] || 'application/octet-stream';\n\n// Get headers for metadata\nconst headers = $json.headers || {};\nconst tenantId = headers['x-tenant-id'] || '00000000-0000-0000-0000-000000000001';\nconst documentId = headers['x-document-id'] || '';\nconst knowledgeBaseId = headers['x-knowledge-base-id'] || '';\n\n// Create new item with corrected binary data\nconst items = [{\n  json: {\n    tenantId,\n    documentId,\n    knowledgeBaseId,\n    binaryKey: key\n  },\n  binary: {\n    [key]: {\n      ...binaryInfo,\n      mimeType: correctMimeType\n    }\n  }\n}];\n\nreturn items;"
+      },
+      "name": "2. Fix MIME Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [380, 280],
+      "notes": "FIX: Corrige el mimeType basado en la extension del archivo"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "inputDataFieldName": "={{ $json.binaryKey }}",
+        "name": "={{ $binary[$json.binaryKey].fileName || 'document.pdf' }}",
+        "folderId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "name": "3. Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [680, 280],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "neBYtaMCymhmxubt",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "SUBE ARCHIVO A GOOGLE DRIVE con mimeType corregido"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('1. Webhook').item.json;\nconst headers = webhookData.headers || {};\nconst metadata = $('2. Fix MIME Type').item.json;\nconst driveResult = $('3. Google Drive').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    documentId: metadata.documentId,\n    tenantId: metadata.tenantId,\n    filename: driveResult.name || '',\n    fileUrl: 'https://drive.google.com/file/d/' + (driveResult.id || '') + '/view',\n    storageProvider: 'gdrive',\n    gdriveFileId: driveResult.id || '',\n    timestamp: new Date().toISOString(),\n    message: 'Archivo subido a Google Drive con mimeType corregido'\n  }\n}];"
+      },
+      "name": "4. Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [980, 280]
+    }
+  ],
+  "connections": {
+    "1. Webhook": {
+      "main": [[{ "node": "2. Fix MIME Type", "type": "main", "index": 0 }]]
+    },
+    "2. Fix MIME Type": {
+      "main": [[{ "node": "3. Google Drive", "type": "main", "index": 0 }]]
+    },
+    "3. Google Drive": {
+      "main": [[{ "node": "4. Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

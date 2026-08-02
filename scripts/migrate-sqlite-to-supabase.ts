@@ -1,7 +1,6 @@
 import dotenv from "dotenv";
 import path from "node:path";
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
-import Database from "better-sqlite3";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import fs from "node:fs";
@@ -26,7 +25,20 @@ if (!fs.existsSync(SQLITE_PATH)) {
   process.exit(1);
 }
 
-const sqlite = new Database(SQLITE_PATH, { readonly: true });
+// Cargar better-sqlite3 de forma dinámica (script legacy) igual que doctor.ts
+function loadSqlite() {
+  try {
+    const Database = require("better-sqlite3") as any;
+    return new Database(SQLITE_PATH, { readonly: true });
+  } catch {
+    console.error(
+      "better-sqlite3 no está disponible. Instálalo con: npm install -D better-sqlite3"
+    );
+    process.exit(1);
+  }
+}
+
+const sqlite = loadSqlite();
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   realtime: { transport: ws as never },
 });

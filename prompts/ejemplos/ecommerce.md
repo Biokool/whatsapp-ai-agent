@@ -27,11 +27,13 @@ Las licencias originales que necesitas, al mejor precio del mercado, con entrega
 ## Criterios de lead bueno vs malo
 
 **BUENO (procede a vender):**
+
 - Pregunta por un producto concreto que vendemos
 - Su uso encaja con lo que ofrecemos (personal/equipo dentro del rango)
 - Acepta el precio que le indicamos
 
 **MALO (responde cordialmente sin venta):**
+
 - Pregunta por un producto que NO vendemos
 - Pide descuento extra del 50%+ (margen no llega)
 - Quiere licencia "para revender" (NO vendemos al por mayor)

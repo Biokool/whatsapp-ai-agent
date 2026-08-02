@@ -5,7 +5,7 @@ import Dashboard from "./Dashboard";
 import { useConnection } from "@/hooks/use-connection";
 
 export default function ConnectionGate() {
-  const { data, isLoading, error } = useConnection();
+  const { data } = useConnection();
 
   const status = data?.status ?? "unknown";
   const qrPng = data?.qrPng ?? null;

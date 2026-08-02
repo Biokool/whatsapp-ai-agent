@@ -9,10 +9,7 @@ interface RouteContext {
   params: Promise<{ conversationId: string }>;
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: RouteContext
-): Promise<NextResponse> {
+export async function POST(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { conversationId } = await params;
 
   const idValidation = validateConversationId(conversationId);
@@ -27,10 +24,7 @@ export async function POST(
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "Invalid JSON body" },
-      { status: 400 }
-    );
+    return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
   }
 
   const modeValidation = validateMode(body.mode);

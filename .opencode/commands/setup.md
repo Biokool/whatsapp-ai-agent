@@ -35,12 +35,12 @@ Solo ahora di al usuario:
 1. Ejecuta `npm install` en la raiz del proyecto. Muestra al usuario "Instalando dependencias (1-2 minutos)..."
    - Si falla con `ERR_INVALID_ARG_TYPE`: es un node_modules corrupto. Borra `node_modules` con `rimraf` y vuelve a ejecutar `npm install`
 2. **Validacion**: ejecuta `npm run typecheck`. Si falla, NO continues — pide al usuario el error literal
-3. **Especifico Windows**: si `better-sqlite3` falla compilando, guia al usuario a instalar Visual Studio Build Tools. Despues `npm rebuild better-sqlite3`
-4. **Compila el panel**: ejecuta `npm run build`. Muestra "Compilando el panel (~1 minuto)..."
+3. **Compila el panel**: ejecuta `npm run build`. Muestra "Compilando el panel (~1 minuto)..."
 
 ## Fase C · Configuracion OpenRouter
 
 1. Pregunta:
+
    > "¿Ya tienes cuenta de OpenRouter? OpenRouter es la pasarela que el agente usa para hablar con modelos de IA. Plan gratuito + 5€ de saldo te dan para meses."
    >
    > 1. Si, ya tengo
@@ -49,9 +49,11 @@ Solo ahora di al usuario:
 2. Si responde 2: explica brevemente y dale el link: `https://openrouter.ai/keys`. Espera a que diga "listo"
 
 3. Pidele la API key:
+
    > "Pegame tu API key de OpenRouter. Empieza por `sk-or-v1-`. La guardo automaticamente en `.env.local`."
 
 4. **Crea/edita `.env.local`** con la API key. Si el archivo ya existe, conserva las demas variables:
+
    ```
    OPENROUTER_API_KEY=<la-que-pego-el-usuario>
    OPENROUTER_MODEL=openai/gpt-4o-mini
@@ -62,6 +64,7 @@ Solo ahora di al usuario:
 ## Fase D · Conexion WhatsApp
 
 1. Avisa al usuario:
+
    > "Ahora voy a arrancar el bot y el panel. Cuando aparezca un codigo QR en tu navegador, escanealo con tu WhatsApp:
    >
    > **WhatsApp → Configuracion → Dispositivos vinculados → Vincular un dispositivo**
@@ -83,6 +86,7 @@ Solo ahora di al usuario:
 ## Fase E · Prueba final
 
 1. Sugiere al usuario:
+
    > "Para probarlo: desde OTRO WhatsApp (el de un amigo, un companero, o un segundo numero tuyo), escribe 'hola' al numero que acabas de conectar. Tu agente te respondra."
 
 2. Mientras espera, dile:

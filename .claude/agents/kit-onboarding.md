@@ -25,50 +25,50 @@ Eres un agente especializado en resolver problemas técnicos del WhatsApp AI Age
 ## Conocimiento técnico del kit
 
 ### Stack
+
 - Next.js 16 App Router + React 19 + Tailwind 4
-- @whiskeysockets/baileys 6.7+
-- better-sqlite3 11+ con PRAGMA WAL
+- @whiskeysockets/baileys 7.0+
+- Supabase (PostgreSQL + pgvector) — base de datos + embeddings
 - openai SDK apuntando a OpenRouter
 - tsx + concurrently
 - Nixpacks para deploy
 
 ### Las 10 lecciones aprendidas (ya pre-aplicadas, no deberían fallar)
 
-| Error | Mitigación en el kit |
-|---|---|
-| Code 405 (Baileys) | `fetchLatestBaileysVersion()` en `src/lib/baileys/client.ts` |
-| Code 440 en loop | `Browsers.macOS('Desktop')` en `src/lib/baileys/client.ts` |
-| Code 515 | NO es error. Reconexión normal |
-| QR no aparece | API status devuelve QR si `qr_string` existe (en `src/app/api/connection/status/route.ts`) |
-| `OPENROUTER_API_KEY undefined` | `scripts/env-loader.ts` importado PRIMERO en `start-bot.ts` |
-| Procesos zombies Windows | El `doctor.ts` detecta y guía al usuario a `tasklist`/`taskkill` |
-| better-sqlite3 build Linux | `python3 + gcc + gnumake` declarados en `nixpacks.toml` |
-| Node 18 default Nixpacks | `engines.node` en package.json + `.nvmrc=22` |
-| Modelos `:free` saturados | Default es `openai/gpt-4o-mini` en `.env.example` |
-| Dashboard sin auth | `/deploy` guía obligatoriamente Cloudflare Access |
+| Error                          | Mitigación en el kit                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| Code 405 (Baileys)             | `fetchLatestBaileysVersion()` en `src/lib/baileys/client.ts`                               |
+| Code 440 en loop               | `Browsers.macOS('Desktop')` en `src/lib/baileys/client.ts`                                 |
+| Code 515                       | NO es error. Reconexión normal                                                             |
+| QR no aparece                  | API status devuelve QR si `qr_string` existe (en `src/app/api/connection/status/route.ts`) |
+| `OPENROUTER_API_KEY undefined` | `scripts/env-loader.ts` importado PRIMERO en `start-bot.ts`                                |
+| Procesos zombies Windows       | El `doctor.ts` detecta y guía al usuario a `tasklist`/`taskkill`                           |
+| Supabase connection error      | Verificar env vars `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`                |
+| Node 18 default Nixpacks       | `engines.node` en package.json + `.nvmrc=22`                                               |
+| Modelos `:free` saturados      | Default es `openai/gpt-4o-mini` en `.env.example`                                          |
+| Dashboard sin auth             | `/deploy` guía obligatoriamente Cloudflare Access                                          |
 
 ### Archivos donde mirar según el síntoma
 
-| Síntoma | Mirar primero |
-|---|---|
-| Bot no arranca | `scripts/start-bot.ts`, output de `npm run doctor` |
-| QR no aparece | `data/messages.db` tabla `connection_state`, API `/api/connection/status` |
-| LLM no responde | `.env.local` (OPENROUTER_API_KEY válida?), logs del bot |
-| Tool no se ejecuta | `src/lib/tools/<nombre>.ts` (¿está el TODO completo?) |
-| Build EasyPanel falla | `nixpacks.toml`, logs de build de EasyPanel |
-| Reconexión en loop | `src/lib/baileys/client.ts` (state machine), backoff |
-| Mensajes duplicados | Handler filtra `fromMe`, type='notify' en `src/lib/baileys/handler.ts` |
-| Crash Windows tras Ctrl+C | Procesos `tsx` zombies. Guiar a `tasklist | findstr node` + `taskkill /PID X /F` |
+| Síntoma                   | Mirar primero                                                             |
+| ------------------------- | ------------------------------------------------------------------------- |
+| Bot no arranca            | `scripts/start-bot.ts`, output de `npm run doctor`                        |
+| QR no aparece             | `data/messages.db` tabla `connection_state`, API `/api/connection/status` |
+| LLM no responde           | `.env.local` (OPENROUTER_API_KEY válida?), logs del bot                   |
+| Tool no se ejecuta        | `src/lib/tools/<nombre>.ts` (¿está el TODO completo?)                     |
+| Build EasyPanel falla     | `nixpacks.toml`, logs de build de EasyPanel                               |
+| Reconexión en loop        | `src/lib/baileys/client.ts` (state machine), backoff                      |
+| Mensajes duplicados       | Handler filtra `fromMe`, type='notify' en `src/lib/baileys/handler.ts`    |
+| Crash Windows tras Ctrl+C | Procesos `tsx` zombies. Guiar a `tasklist                                 | findstr node`+`taskkill /PID X /F` |
 
 ### Diferencias Windows vs macOS
 
-| Aspecto | macOS | Windows |
-|---|---|---|
-| Node install | brew o nodejs.org | nodejs.org (instalador `.msi`) |
-| better-sqlite3 build | Compila si tiene Xcode CLT | Necesita Visual Studio Build Tools si no hay prebuilt |
-| Ctrl+C | Mata procesos hijos | Puede dejar zombies (`tasklist`+`taskkill`) |
-| Paths | `/` | `\` (pero Node.js normaliza con `path.join`) |
-| Shell | bash/zsh | PowerShell o cmd |
+| Aspecto      | macOS               | Windows                                      |
+| ------------ | ------------------- | -------------------------------------------- |
+| Node install | brew o nodejs.org   | nodejs.org (instalador `.msi`)               |
+| Ctrl+C       | Mata procesos hijos | Puede dejar zombies (`tasklist`+`taskkill`)  |
+| Paths        | `/`                 | `\` (pero Node.js normaliza con `path.join`) |
+| Shell        | bash/zsh            | PowerShell o cmd                             |
 
 ## Cuándo derivar al usuario al grupo
 

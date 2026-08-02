@@ -36,13 +36,13 @@ export function getEnv(): Env {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
+    const fieldErrors = result.error.flatten().fieldErrors;
+    const missing = Object.entries(fieldErrors)
+      .filter(([, v]) => v && v.length > 0)
+      .map(([k, v]) => `${k}: ${v!.join(", ")}`);
     console.error("Invalid environment variables:");
-    console.error(result.error.flatten().fieldErrors);
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Invalid environment variables");
-    }
-    _env = envSchema.parse({});
-    return _env;
+    for (const line of missing) console.error(`  - ${line}`);
+    throw new Error(`Invalid environment. Fix the variables above (see .env.example).`);
   }
 
   _env = result.data;

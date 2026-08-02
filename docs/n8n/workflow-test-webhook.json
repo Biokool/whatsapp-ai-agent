@@ -1,0 +1,36 @@
+{
+  "name": "Test Webhook Binary",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-webhook",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [80, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryKeys = Object.keys($binary);\nconst hasBinary = binaryKeys.length > 0;\nconst fileInfo = {};\n\nif (hasBinary) {\n  for (const key of binaryKeys) {\n    fileInfo[key] = {\n      fileName: $binary[key].fileName,\n      mimeType: $binary[key].mimeType,\n      fileSize: $binary[key].fileSize,\n      hasData: !!$binary[key].data\n    };\n  }\n}\n\nreturn [{\n  json: {\n    hasBinary,\n    binaryKeys,\n    fileInfo,\n    bodyKeys: Object.keys($json),\n    headers: $json.headers || {}\n  }\n}];"
+      },
+      "name": "Analyze Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [380, 280]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Analyze Binary", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -13,3 +13,11 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 Thumbs.db
+
+# Logs y archivos temporales de debug
+*.log
+tempFs.json
+temp_debug_flow.json
+uploads/
+bot-err.log
+bot2-err.log

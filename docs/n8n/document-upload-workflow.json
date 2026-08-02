@@ -1,0 +1,101 @@
+{
+  "name": "Document Upload Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "document-upload",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "node-1-webhook",
+      "name": "1. Recibir Archivo",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "notes": "RECIBE ARCHIVOS VIA POST\n\nHeaders requeridos:\n- x-tenant-id: UUID del tenant\n- x-document-id: UUID del documento\n- x-knowledge-base-id: UUID de la base de conocimiento\n\nBody: multipart/form-data con campo 'file'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ========================================\n// NODO 2: PROCESAR ARCHIVO\n// ========================================\n// Extrae metadatos del archivo recibido\n// y prepara la información para los siguientes nodos\n\nconst headers = $json.headers || {};\nconst tenantId = headers[\"x-tenant-id\"] || \"default\";\nconst documentId = headers[\"x-document-id\"] || \"new\";\nconst knowledgeBaseId = headers[\"x-knowledge-base-id\"] || \"default\";\n\n// Obtener archivo binario\nconst binaryKeys = Object.keys($binary || {});\n\nif (binaryKeys.length === 0) {\n  return [{ json: { success: false, error: \"No se recibió archivo\" } }];\n}\n\nconst binaryKey = binaryKeys[0];\nconst fileData = $binary[binaryKey];\n\n// Generar nombre único para Google Drive\nconst timestamp = new Date().toISOString().replace(/[:.]/g, \"-\");\nconst baseName = fileData.fileName || \"document.pdf\";\nconst driveFileName = `${tenantId}/${documentId}/${timestamp}_${baseName}`;\n\nreturn [{\n  json: {\n    success: true,\n    documentId,\n    tenantId,\n    knowledgeBaseId,\n    originalName: baseName,\n    driveFileName,\n    mimeType: fileData.mimeType || \"application/octet-stream\",\n    fileSize: fileData.fileSize || 0,\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    file: {\n      data: $binary[binaryKey].data,\n      mimeType: fileData.mimeType || \"application/octet-stream\",\n      fileName: baseName\n    }\n  }\n}];"
+      },
+      "id": "node-2-process",
+      "name": "2. Procesar Archivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "notes": "PROCESA EL ARCHIVO RECIBIDO\n\nFunciones:\n1. Extrae headers (tenantId, documentId, knowledgeBaseId)\n2. Valida que exista archivo binario\n3. Genera nombre único para Google Drive\n4. Prepara metadata para siguientes nodos\n\nOutput:\n- tenantId, documentId, knowledgeBaseId\n- driveFileName (ruta en Google Drive)\n- mimeType, fileSize, timestamp"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $json.driveFileName }}",
+        "inputDataFieldName": "file",
+        "options": {
+          "ocrLanguage": "es",
+          "useContentAsIndexableText": true
+        }
+      },
+      "id": "node-3-gdrive",
+      "name": "3. Subir a Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "neBYtaMCymhmxubt",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "SUBE EL ARCHIVO A GOOGLE DRIVE\n\nOperación: Upload\n- Input Data Field Name: 'file' (campo binario)\n- Nombre: ruta jerárquica (tenant/documento/archivo)\n- Parent Folder: carpeta configurada\n\nOpciones:\n- OCR en español para búsqueda\n- Indexado para búsqueda de contenido\n\nOutput:\n- fileId: ID del archivo en Google Drive\n- webViewLink: enlace para ver/download"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO document_versions (document_id, tenant_id, version_number, file_url, file_size, storage_provider, storage_path, metadata) VALUES ('{{ $('2. Procesar Archivo').item.json.documentId }}', '{{ $('2. Procesar Archivo').item.json.tenantId }}', (SELECT COALESCE(MAX(version_number), 0) + 1 FROM document_versions WHERE document_id = '{{ $('2. Procesar Archivo').item.json.documentId }}'), '{{ $('3. Subir a Google Drive').item.json.webViewLink }}', {{ $('2. Procesar Archivo').item.json.fileSize }}, 'gdrive', '{{ $('3. Subir a Google Drive').item.json.id }}', '{\"originalName\": \"{{ $('2. Procesar Archivo').item.json.originalName }}\", \"uploadedVia\": \"n8n\"}') RETURNING id, version_number;"
+      },
+      "id": "node-4-supabase",
+      "name": "4. Guardar Versión en Supabase",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [850, 300],
+      "credentials": {
+        "postgres": {
+          "id": "ByU42CyK5np0lT7P",
+          "name": "Postgres-NeonTech-Biokool"
+        }
+      },
+      "notes": "GUARDA EL REGISTRO DE VERSIÓN EN SUPABASE (via PostgreSQL)\n\nTabla: document_versions\n\nCampos:\n- document_id: ID del documento\n- tenant_id: ID del tenant\n- version_number: número incremental\n- file_url: enlace de Google Drive\n- file_size: tamaño en bytes\n- storage_provider: 'gdrive'\n- storage_path: ID del archivo en Drive\n- metadata: JSON con datos adicionales\n\nOutput:\n- id: UUID de la versión creada\n- version_number: número de versión"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  documentId: $('2. Procesar Archivo').item.json.documentId,\n  tenantId: $('2. Procesar Archivo').item.json.tenantId,\n  filename: $('2. Procesar Archivo').item.json.originalName,\n  fileUrl: $('3. Subir a Google Drive').item.json.webViewLink,\n  storageProvider: 'gdrive',\n  fileSize: $('2. Procesar Archivo').item.json.fileSize,\n  contentType: $('2. Procesar Archivo').item.json.mimeType,\n  version: $('4. Guardar Versión en Supabase').item.json.version_number,\n  versionId: $('4. Guardar Versión en Supabase').item.json.id,\n  timestamp: new Date().toISOString(),\n  message: 'Archivo subido a Google Drive y versión registrada en Supabase'\n}) }}",
+        "options": {}
+      },
+      "id": "node-5-response",
+      "name": "5. Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "notes": "RESPONDE AL CLIENTE CON EL RESULTADO\n\nResponse JSON con:\n- success: true\n- documentId: ID del documento\n- tenantId: ID del tenant\n- filename: nombre original del archivo\n- fileUrl: enlace de Google Drive\n- storageProvider: 'gdrive'\n- fileSize: tamaño del archivo\n- contentType: tipo MIME\n- version: número de versión creado\n- versionId: UUID de la versión\n- timestamp: fecha/hora de la operación\n- message: confirmación en español"
+    }
+  ],
+  "connections": {
+    "1. Recibir Archivo": {
+      "main": [[{ "node": "2. Procesar Archivo", "type": "main", "index": 0 }]]
+    },
+    "2. Procesar Archivo": {
+      "main": [[{ "node": "3. Subir a Google Drive", "type": "main", "index": 0 }]]
+    },
+    "3. Subir a Google Drive": {
+      "main": [[{ "node": "4. Guardar Versión en Supabase", "type": "main", "index": 0 }]]
+    },
+    "4. Guardar Versión en Supabase": {
+      "main": [[{ "node": "5. Responder", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

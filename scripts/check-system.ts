@@ -100,8 +100,8 @@ const checks: CheckResult[] = [];
     detail: envLocal
       ? "Configurado"
       : envExample
-      ? "No configurado todavía"
-      : "Falta también .env.example",
+        ? "No configurado todavía"
+        : "Falta también .env.example",
     fix: envLocal ? undefined : "Ejecuta /setup en Claude Code (lo crea automáticamente)",
   });
 }

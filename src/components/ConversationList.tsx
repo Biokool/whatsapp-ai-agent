@@ -29,17 +29,16 @@ export default function ConversationList({
   const filtered = conversations.filter((c) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return (
-      (c.name && c.name.toLowerCase().includes(q)) ||
-      c.phone.includes(q)
-    );
+    return (c.name && c.name.toLowerCase().includes(q)) || c.phone.includes(q);
   });
 
   return (
-    <aside className="w-full border-r border-navy-500 bg-navy-800 flex flex-col flex-shrink-0 h-full overflow-hidden">
+    <aside className="w-full md:w-80 lg:w-96 border-r border-navy-500 bg-navy-800 flex flex-col flex-shrink-0 h-full overflow-hidden">
       <div className="p-3 md:p-4 border-b border-navy-500 flex justify-between items-center bg-navy-600 shrink-0">
         <div className="flex items-center gap-2">
-          <h2 className="font-geist text-sm md:text-base font-bold text-navy-200">Conversaciones</h2>
+          <h2 className="font-geist text-sm md:text-base font-bold text-navy-200">
+            Conversaciones
+          </h2>
           <span className="text-[10px] md:text-xs bg-navy-700 text-ai-green-light px-1.5 md:px-2 py-0.5 rounded-full border border-navy-500 font-mono">
             {filtered.length}
           </span>
@@ -49,7 +48,9 @@ export default function ConversationList({
       <div className="overflow-y-auto flex-1 p-2 space-y-1.5 md:space-y-2 custom-scrollbar pb-20 md:pb-2">
         {filtered.length === 0 && (
           <div className="text-center py-12 text-navy-300 text-sm">
-            <span className="material-symbols-outlined text-3xl mb-2 text-navy-400">chat_error</span>
+            <span className="material-symbols-outlined text-3xl mb-2 text-navy-400">
+              chat_error
+            </span>
             <p>No hay conversaciones todavia.</p>
           </div>
         )}
@@ -70,11 +71,23 @@ export default function ConversationList({
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-ai-green-light" />
               )}
 
-              <div className={`flex justify-between items-start mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}>
+              <div
+                className={`flex justify-between items-start mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}
+              >
                 <span className="font-bold text-navy-200 text-xs md:text-sm truncate flex items-center gap-1.5">
-                  {c.name ?? `+${c.phone}`}
+                  {c.name ??
+                    (() => {
+                      const isLid = c.jid?.endsWith("@lid");
+                      const phoneIsHash =
+                        isLid && /^\d{10,}$/.test(c.phone) && c.phone.length >= 10;
+                      if (isLid && phoneIsHash) return "Contacto WhatsApp";
+                      return `+${c.phone}`;
+                    })()}
                   {c.mode === "HUMAN" && (
-                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-warm" title="Modo Humano" />
+                    <span
+                      className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-warm"
+                      title="Modo Humano"
+                    />
                   )}
                 </span>
                 <span className="text-[10px] md:text-[11px] text-navy-300 ml-2 whitespace-nowrap font-mono">
@@ -83,8 +96,10 @@ export default function ConversationList({
               </div>
 
               {c.name && (
-                <div className={`text-[10px] md:text-xs text-navy-400 font-mono mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}>
-                  +{c.phone}
+                <div
+                  className={`text-[10px] md:text-xs text-navy-400 font-mono mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}
+                >
+                  {c.jid?.endsWith("@lid") ? "WhatsApp" : `+${c.phone}`}
                 </div>
               )}
 

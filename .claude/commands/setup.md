@@ -38,12 +38,12 @@ Solo ahora di al usuario:
 1. Ejecuta `npm install` en la raíz del proyecto. Muestra al usuario "Instalando dependencias (1-2 minutos)..."
    - **Si `npm install` falla con `ERR_INVALID_ARG_TYPE` / "The 'from' argument..." o el stack menciona `reify`/`rollback`**: es un `node_modules` corrupto de un intento previo, NO un problema de dependencias. Borra `node_modules` (en Mac/Linux `rm -rf node_modules`; el `package-lock.json` queda intacto) y vuelve a ejecutar `npm install`. Ver `errores-sesion.md` #13
 2. **Validación**: ejecuta `npm run typecheck`. Si falla, NO continúes — pide al usuario el error literal y consulta `errores-sesion.md`
-3. **Específico Windows**: si `better-sqlite3` falla compilando, guía al usuario a instalar **Visual Studio Build Tools** (link: `https://visualstudio.microsoft.com/visual-cpp-build-tools/`). Después de instalarlo, ejecuta `npm rebuild better-sqlite3`
-4. **Compila el panel**: ejecuta `npm run build`. El comando `start:all` usa `next start` (modo producción), que necesita un build previo. Muestra "Compilando el panel (~1 minuto)...". El kit ya está blindado contra el `database is locked` que daba este build — `src/lib/db.ts` usa init perezoso, así que el build no abre la base de datos (ver `errores-sesion.md` #15). Si alguien lo rompiera reintroduciendo I/O de DB a nivel de módulo, volvería el error
+3. **Compila el panel**: ejecuta `npm run build`. Muestra "Compilando el panel (~1 minuto)..."
 
 ## Fase C · Configuración OpenRouter
 
 1. Pregunta:
+
    > "¿Ya tienes cuenta de OpenRouter? OpenRouter es la pasarela que el agente usa para hablar con modelos de IA (GPT, Claude, Gemini...). Plan gratuito + 5€ de saldo te dan para meses."
    >
    > 1. Sí, ya tengo
@@ -52,9 +52,11 @@ Solo ahora di al usuario:
 2. Si responde 2: explica brevemente y dale el link: `https://openrouter.ai/keys`. Espera a que diga "listo"
 
 3. Pídele la API key:
+
    > "Pégame tu API key de OpenRouter. Empieza por `sk-or-v1-`. La guardo automáticamente en `.env.local` (no se sube a ningún sitio)."
 
 4. **Crea/edita `.env.local`** con la API key. Si el archivo ya existe, conserva las demás variables. Usa esta plantilla:
+
    ```
    OPENROUTER_API_KEY=<la-que-pegó-el-usuario>
    OPENROUTER_MODEL=openai/gpt-4o-mini
@@ -65,6 +67,7 @@ Solo ahora di al usuario:
 ## Fase D · Conexión WhatsApp
 
 1. Avisa al usuario:
+
    > "Ahora voy a arrancar el bot y el panel. Cuando aparezca un código QR en tu navegador, escanéalo con tu WhatsApp:
    >
    > **WhatsApp → Configuración → Dispositivos vinculados → Vincular un dispositivo**
@@ -86,9 +89,11 @@ Solo ahora di al usuario:
 ## Fase E · Prueba final
 
 1. Sugiere al usuario:
+
    > "Para probarlo: desde OTRO WhatsApp (el de un amigo, un compañero, o un segundo número tuyo), escribe 'hola' al número que acabas de conectar. Tu agente te responderá."
 
 2. Mientras espera, dile:
+
    > "Ahora mismo el agente usa un prompt genérico — responde como un asistente cualquiera. Cuando lo pruebes y veas que funciona, vuelve aquí y escribe `/personaliza` para adaptarlo a tu negocio (6 preguntas, 5 minutos)."
 
 3. **Si el agente conecta pero NO responde al "hola"** (y en el log del bot no aparece `[bot] ← mensaje`): el kit ya soporta el formato `@lid` de WhatsApp (2025+) tanto al recibir como al responder desde el panel. Si aun así fallara, verifica que `src/lib/baileys/handler.ts` acepta `@lid` y que existe la columna `jid` en la tabla `conversations`. Ver `errores-sesion.md` #14. Recuerda: para probar hay que escribir desde OTRO móvil (los mensajes del propio número vinculado se ignoran a propósito)

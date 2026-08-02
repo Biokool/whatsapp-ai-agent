@@ -1,25 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$comment": "Configuración de servidores - Local/Remote switching",
-  
+
   "environments": {
     "local": {
       "name": "Desarrollo Local",
       "description": "Entorno de desarrollo con Docker local",
       "active": true,
-      
+
       "evolution_api": {
         "base_url": "http://localhost:8081",
         "api_key": "429683C4C977415CAAFCCE10F7D57E11",
         "instance": "aima",
         "webhook_url": "http://localhost:5678/webhook/whatsapp",
-        "events": [
-          "messages.upsert",
-          "connection.update",
-          "instance.status"
-        ]
+        "events": ["messages.upsert", "connection.update", "instance.status"]
       },
-      
+
       "n8n": {
         "base_url": "http://localhost:5678",
         "webhook_base": "http://localhost:5678/webhook",
@@ -30,7 +26,7 @@
           "password": ""
         }
       },
-      
+
       "database": {
         "type": "postgresql",
         "host": "localhost",
@@ -39,48 +35,44 @@
         "user": "postgres",
         "password": "typebot"
       },
-      
+
       "redis": {
         "host": "localhost",
         "port": 6379,
         "password": ""
       },
-      
+
       "llm": {
         "provider": "openrouter",
         "api_key": "USE_ENV_VAR_OPENROUTER_API_KEY",
         "model": "openai/gpt-4o-mini",
         "fallback_model": "anthropic/claude-haiku-4-5"
       },
-      
+
       "dashboard": {
         "port": 3000,
         "url": "http://localhost:3000"
       },
-      
+
       "pkm_viewer": {
         "port": 3456,
         "url": "http://localhost:3456"
       }
     },
-    
+
     "production": {
       "name": "Producción (VPS)",
       "description": "Servidor de producción en VPS",
       "active": false,
-      
+
       "evolution_api": {
         "base_url": "https://api.yourdomain.com",
         "api_key": "YOUR_PRODUCTION_API_KEY",
         "instance": "aima-prod",
         "webhook_url": "https://n8n.yourdomain.com/webhook/whatsapp",
-        "events": [
-          "messages.upsert",
-          "connection.update",
-          "instance.status"
-        ]
+        "events": ["messages.upsert", "connection.update", "instance.status"]
       },
-      
+
       "n8n": {
         "base_url": "https://n8n.yourdomain.com",
         "webhook_base": "https://n8n.yourdomain.com/webhook",
@@ -91,7 +83,7 @@
           "password": "YOUR_N8N_PASSWORD"
         }
       },
-      
+
       "database": {
         "type": "postgresql",
         "host": "db.yourdomain.com",
@@ -100,48 +92,44 @@
         "user": "evolution_user",
         "password": "YOUR_DB_PASSWORD"
       },
-      
+
       "redis": {
         "host": "redis.yourdomain.com",
         "port": 6379,
         "password": "YOUR_REDIS_PASSWORD"
       },
-      
+
       "llm": {
         "provider": "openrouter",
         "api_key": "YOUR_OPENROUTER_API_KEY",
         "model": "openai/gpt-4o-mini",
         "fallback_model": "anthropic/claude-haiku-4-5"
       },
-      
+
       "dashboard": {
         "port": 443,
         "url": "https://app.yourdomain.com"
       },
-      
+
       "pkm_viewer": {
         "port": 443,
         "url": "https://docs.yourdomain.com"
       }
     },
-    
+
     "staging": {
       "name": "Staging (Pre-producción)",
       "description": "Entorno de pruebas antes de producción",
       "active": false,
-      
+
       "evolution_api": {
         "base_url": "https://staging-api.yourdomain.com",
         "api_key": "YOUR_STAGING_API_KEY",
         "instance": "aima-staging",
         "webhook_url": "https://staging-n8n.yourdomain.com/webhook/whatsapp",
-        "events": [
-          "messages.upsert",
-          "connection.update",
-          "instance.status"
-        ]
+        "events": ["messages.upsert", "connection.update", "instance.status"]
       },
-      
+
       "n8n": {
         "base_url": "https://staging-n8n.yourdomain.com",
         "webhook_base": "https://staging-n8n.yourdomain.com/webhook",
@@ -152,7 +140,7 @@
           "password": "YOUR_STAGING_PASSWORD"
         }
       },
-      
+
       "database": {
         "type": "postgresql",
         "host": "staging-db.yourdomain.com",
@@ -161,32 +149,32 @@
         "user": "evolution_user",
         "password": "YOUR_STAGING_DB_PASSWORD"
       },
-      
+
       "redis": {
         "host": "staging-redis.yourdomain.com",
         "port": 6379,
         "password": "YOUR_STAGING_REDIS_PASSWORD"
       },
-      
+
       "llm": {
         "provider": "openrouter",
         "api_key": "YOUR_STAGING_API_KEY",
         "model": "openai/gpt-4o-mini",
         "fallback_model": "anthropic/claude-haiku-4-5"
       },
-      
+
       "dashboard": {
         "port": 443,
         "url": "https://staging-app.yourdomain.com"
       },
-      
+
       "pkm_viewer": {
         "port": 443,
         "url": "https://staging-docs.yourdomain.com"
       }
     }
   },
-  
+
   "settings": {
     "default_environment": "local",
     "auto_detect": true,

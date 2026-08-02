@@ -75,6 +75,7 @@ Espera respuesta. Guardala como `accion_lead`. Si elige 1, pidele el link de Cal
 ## Despues de las 6 preguntas
 
 1. **Resumen y confirmacion**: muestrale las 6 respuestas formateadas. Pregunta:
+
    > "¿Esta todo correcto?
    >
    > 1. Si, guarda
@@ -92,21 +93,27 @@ generado: <ISO timestamp>
 # Datos del negocio
 
 ## Nombre
+
 <nombre>
 
 ## A que se dedica
+
 <actividad>
 
 ## Propuesta de valor
+
 <propuesta_valor>
 
 ## Preguntas de calificacion al lead
+
 <preguntas_calificacion>
 
 ## Criterios de lead bueno vs malo
+
 <criterios_lead>
 
 ## Accion cuando el lead encaja
+
 <accion_lead>
 ```
 

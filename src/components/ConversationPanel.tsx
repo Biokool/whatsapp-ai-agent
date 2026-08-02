@@ -14,10 +14,7 @@ interface ConversationPanelProps {
   onBack?: () => void;
 }
 
-export default function ConversationPanel({
-  conversation,
-  onBack,
-}: ConversationPanelProps) {
+export default function ConversationPanel({ conversation, onBack }: ConversationPanelProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -85,11 +82,24 @@ export default function ConversationPanel({
             </h2>
             <div className="flex items-center gap-2 md:gap-3 mt-0.5 text-[11px] md:text-xs text-navy-300">
               <span className="font-mono bg-navy-600 px-1.5 md:px-2 py-0.5 rounded text-navy-200">
-                +{conversation.phone}
+                {(() => {
+                  const isLid = conversation.jid?.endsWith("@lid");
+                  const phoneIsHash =
+                    isLid &&
+                    /^\d{10,}$/.test(conversation.phone) &&
+                    conversation.phone.length >= 10;
+                  if (isLid && phoneIsHash) {
+                    return "WhatsApp";
+                  }
+                  return `+${conversation.phone}`;
+                })()}
               </span>
               <span className="flex items-center gap-1">
-                <span className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${isHuman ? "bg-amber-warm" : "bg-ai-green-light"}`} />
-                <span className="hidden sm:inline">Modo:</span> <strong className="text-navy-200">{isHuman ? "Humano" : "IA"}</strong>
+                <span
+                  className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${isHuman ? "bg-amber-warm" : "bg-ai-green-light"}`}
+                />
+                <span className="hidden sm:inline">Modo:</span>{" "}
+                <strong className="text-navy-200">{isHuman ? "Humano" : "IA"}</strong>
               </span>
             </div>
           </div>
@@ -109,23 +119,13 @@ export default function ConversationPanel({
       </div>
 
       {/* Messages - scrollable area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 md:p-6 custom-scrollbar">
         <div className="flex flex-col gap-3 md:gap-4 max-w-3xl mx-auto pb-2">
           {messages.length === 0 && (
-            <div className="text-center text-sm text-navy-400 py-10">
-              Sin mensajes todavia
-            </div>
+            <div className="text-center text-sm text-navy-400 py-10">Sin mensajes todavia</div>
           )}
           {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              role={m.role}
-              content={m.content}
-              timestamp={m.created_at}
-            />
+            <MessageBubble key={m.id} role={m.role} content={m.content} timestamp={m.created_at} />
           ))}
         </div>
       </div>
@@ -157,7 +157,8 @@ export default function ConversationPanel({
           </div>
         ) : (
           <div className="text-center text-[11px] md:text-xs text-navy-400 py-1.5 md:py-2">
-            El agente IA responde automaticamente. Cambia a <strong>Modo Humano</strong> para escribir tu.
+            El agente IA responde automaticamente. Cambia a <strong>Modo Humano</strong> para
+            escribir tu.
           </div>
         )}
       </div>

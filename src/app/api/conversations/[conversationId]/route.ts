@@ -8,10 +8,7 @@ interface RouteContext {
   params: Promise<{ conversationId: string }>;
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: RouteContext
-): Promise<NextResponse> {
+export async function DELETE(_req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { conversationId } = await params;
 
   const validation = validateConversationId(conversationId);

@@ -28,6 +28,7 @@ Tu equipo deja de perder 8-15 horas semanales en tareas repetitivas (atender Wha
 ## Criterios de lead bueno vs malo
 
 **BUENO (procede a agendar):**
+
 - Tiene negocio activo y operativo (mínimo 3 meses)
 - Factura más de 5.000 €/mes
 - Tiene un dolor concreto identificado (no "quiero usar IA porque está de moda")
@@ -35,6 +36,7 @@ Tu equipo deja de perder 8-15 horas semanales en tareas repetitivas (atender Wha
 - Tiene equipo de al menos 1 persona aparte del founder
 
 **MALO (responde cordialmente sin agendar):**
+
 - Solo curiosea sin negocio
 - Quiere "que le enseñes" gratis
 - No tiene presupuesto ni puede invertir

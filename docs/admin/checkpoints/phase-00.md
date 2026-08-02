@@ -87,6 +87,7 @@ human_approval_required: true
 ## Key Findings
 
 ### What Works
+
 - WhatsApp connection via Baileys 7.0.0-rc.9
 - AI response generation via OpenRouter
 - Conversation persistence in SQLite
@@ -95,6 +96,7 @@ human_approval_required: true
 - Docker deployment
 
 ### What Needs Improvement
+
 - No authentication (P0)
 - No multi-tenancy (P0)
 - No input validation (P1)
@@ -104,6 +106,7 @@ human_approval_required: true
 - No monitoring (P2)
 
 ### What's Missing
+
 - Supabase/PostgreSQL integration
 - n8n orchestration
 - RAG/Knowledge base

@@ -4,8 +4,8 @@
 
 **Nombre:** WhatsApp AI Agent Kit (Biokool)
 **Tipo:** Plataforma de agentes de IA para WhatsApp
-**Stack:** Next.js 16, React 19, Baileys 7.0, SQLite, Docker
-**Estado:** Fase 00 — System Audit
+**Stack:** Next.js 16, React 19, Baileys 7.0, Supabase (PostgreSQL + pgvector), RAG
+**Estado:** Fase 05 — RAG + Knowledge Completada
 
 ---
 
@@ -59,13 +59,13 @@ NUNCA CARGAR:
 
 ## Comandos Disponibles
 
-| Comando | Acción |
-|---------|--------|
-| `/setup` | Instalación guiada del kit |
-| `/personaliza` | Personalización del agente |
-| `/deploy` | Despliegue a producción |
-| `ejecuta fase X` | Ejecutar fase específica del AI-BOS |
-| `estado del proyecto` | Ver progreso actual |
+| Comando               | Acción                              |
+| --------------------- | ----------------------------------- |
+| `/setup`              | Instalación guiada del kit          |
+| `/personaliza`        | Personalización del agente          |
+| `/deploy`             | Despliegue a producción             |
+| `ejecuta fase X`      | Ejecutar fase específica del AI-BOS |
+| `estado del proyecto` | Ver progreso actual                 |
 
 ---
 
@@ -93,9 +93,9 @@ MASTER (fuente de verdad)
 
 ## Referencias
 
-| Archivo | Propósito |
-|---------|-----------|
+| Archivo                                      | Propósito                   |
+| -------------------------------------------- | --------------------------- |
 | `docs/admin/AI-BOS-MASTER-IMPLEMENTATION.md` | Fuente maestra del proyecto |
-| `AI-BOS-STATE.md` | Estado actual |
-| `.opencode/skills/ai-bos/SKILL.md` | Protocolo de ejecución |
-| `docs/admin/checkpoints/` | Evidencia de validación |
+| `AI-BOS-STATE.md`                            | Estado actual               |
+| `.opencode/skills/ai-bos/SKILL.md`           | Protocolo de ejecución      |
+| `docs/admin/checkpoints/`                    | Evidencia de validación     |

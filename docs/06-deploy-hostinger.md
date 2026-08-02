@@ -17,11 +17,11 @@ Tiempo total: ~45 minutos la primera vez.
 1. Ve a https://hostinger.es/vps-hosting
 2. Planes recomendados (precios mayo 2026, sujeto a promo de Hostinger):
 
-   | Plan | Precio | RAM | vCPU | Agentes simultáneos |
-   |---|---|---|---|---|
-   | KVM 1 | **5,49 €/mes** | 4 GB | 1 | 2-4 (1 vCPU limita) |
-   | KVM 2 | **7,99 €/mes** | 8 GB | 2 | 5-10 (recomendado) |
-   | KVM 4 | 10,99 €/mes | 16 GB | 4 | 15-25 |
+   | Plan  | Precio         | RAM   | vCPU | Agentes simultáneos |
+   | ----- | -------------- | ----- | ---- | ------------------- |
+   | KVM 1 | **5,49 €/mes** | 4 GB  | 1    | 2-4 (1 vCPU limita) |
+   | KVM 2 | **7,99 €/mes** | 8 GB  | 2    | 5-10 (recomendado)  |
+   | KVM 4 | 10,99 €/mes    | 16 GB | 4    | 15-25               |
 
    **Nota técnica importante**: el cuello de botella real son las **vCPU**, no la RAM. Cada agente Baileys consume poca RAM (~150 MB) pero usa CPU para WebSocket + cifrado. Si vas a vender esto a varios clientes, KVM 2 es el sweet spot.
 
@@ -111,8 +111,8 @@ Sin esto, cada redeploy borra conversaciones Y obliga a re-escanear el QR. Es el
 
 En la pestaña **Mounts** (o **Volumes**):
 
-| Mount path | Type |
-|---|---|
+| Mount path  | Type   |
+| ----------- | ------ |
 | `/app/data` | Volume |
 | `/app/auth` | Volume |
 
@@ -131,7 +131,6 @@ Anota el dominio — lo usarás para Cloudflare Access.
 
 Click en **Deploy**. Tarda 3-5 minutos:
 
-- `better-sqlite3` se compila nativamente (por eso `nixpacks.toml` declara python3 + gcc)
 - Next.js se compila
 - El bot arranca
 
@@ -155,21 +154,21 @@ EasyPanel redespliega automáticamente. Tarda 2-3 minutos.
 
 ## Si el build falla
 
-| Error | Solución |
-|---|---|
+| Error                        | Solución                                                                                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `better-sqlite3 build error` | Inspecciona el log — probablemente faltan deps de sistema. El `nixpacks.toml` del kit ya declara python3+gcc+gnumake. Si no las declara, fíjalo |
-| `Node version mismatch` | Verifica que `.nvmrc` está en el repo. Si no, el VPS usa Node 18 default. Crea `.nvmrc` con `22` |
-| `Cannot find module 'tsx'` | tsx debe estar en `dependencies`, no devDependencies. Verifica tu `package.json` |
+| `Node version mismatch`      | Verifica que `.nvmrc` está en el repo. Si no, el VPS usa Node 18 default. Crea `.nvmrc` con `22`                                                |
+| `Cannot find module 'tsx'`   | tsx debe estar en `dependencies`, no devDependencies. Verifica tu `package.json`                                                                |
 
 Si te atascas, ejecuta `npm run doctor` en local con las mismas variables de entorno (copia `.env.production` del VPS a `.env.local` temporalmente). Suele dar pistas.
 
 ## Cuántos agentes caben en un VPS
 
-| Plan Hostinger | RAM | vCPU | Agentes simultáneos recomendados |
-|---|---|---|---|
-| KVM 1 (5,49€) | 4 GB | 1 | 2-4 (1 vCPU limita) |
-| KVM 2 (7,99€) | 8 GB | 2 | 5-10 |
-| KVM 4 (10,99€) | 16 GB | 4 | 15-25 |
+| Plan Hostinger | RAM   | vCPU | Agentes simultáneos recomendados |
+| -------------- | ----- | ---- | -------------------------------- |
+| KVM 1 (5,49€)  | 4 GB  | 1    | 2-4 (1 vCPU limita)              |
+| KVM 2 (7,99€)  | 8 GB  | 2    | 5-10                             |
+| KVM 4 (10,99€) | 16 GB | 4    | 15-25                            |
 
 Un agente típico usa ~150 MB RAM. **El cuello de botella real son las vCPU**, no la RAM — Baileys + Next.js compiten por CPU cuando hay tráfico simultáneo.
 
@@ -177,11 +176,11 @@ Cada agente nuevo = nueva app en EasyPanel apuntando al mismo repo, con `.env.lo
 
 ## Negocio: rentabilidad
 
-| Concepto | Coste mensual |
-|---|---|
-| VPS Hostinger KVM 2 | 7,99 € |
-| OpenRouter (50 leads/día × varios agentes) | 10-30 € |
-| **Total coste tuyo** | **18-38 €/mes** |
+| Concepto                                   | Coste mensual   |
+| ------------------------------------------ | --------------- |
+| VPS Hostinger KVM 2                        | 7,99 €          |
+| OpenRouter (50 leads/día × varios agentes) | 10-30 €         |
+| **Total coste tuyo**                       | **18-38 €/mes** |
 
 Si cobras 150 €/mes de mantenimiento por agente y montas 5 agentes (1 VPS): 750 €/mes - 38 €/mes = **712 €/mes de margen**. Implementación inicial 800-1.500 € por cliente.
 
