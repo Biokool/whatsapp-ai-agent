@@ -37,6 +37,7 @@ export interface Conversation {
   mode: ConversationMode;
   status: ConversationStatus;
   last_message_at: string | null;
+  summary?: string | null;
   created_at: string;
 }
 

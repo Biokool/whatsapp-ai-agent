@@ -181,6 +181,31 @@ export async function getRecentHistory(conversationId: string, limit = 20): Prom
 }
 
 // ============================================================
+// Conversation Summary (memoria mínima viable)
+// ============================================================
+
+const CONVERSATION_SUMMARY_MAX_CHARS = 1200;
+
+export async function getConversationSummary(conversationId: string): Promise<string> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("conversations")
+    .select("summary")
+    .eq("id", conversationId)
+    .single();
+  return (data?.summary as string | null) ?? "";
+}
+
+export async function updateConversationSummary(
+  conversationId: string,
+  summary: string
+): Promise<void> {
+  const supabase = getSupabase();
+  const trimmed = summary.slice(0, CONVERSATION_SUMMARY_MAX_CHARS);
+  await supabase.from("conversations").update({ summary: trimmed }).eq("id", conversationId);
+}
+
+// ============================================================
 // Delete Conversation (cascade handled by FK)
 // ============================================================
 
