@@ -3,36 +3,8 @@ import fs from "node:fs";
 
 const NEGOCIO_PATH = path.resolve(process.cwd(), "prompts", "negocio.md");
 
-const FALLBACK_PROMPT = `
-Eres un asistente virtual amable que responde mensajes de WhatsApp.
-Responde en español neutro, en mensajes breves de 2 a 4 líneas.
-No uses emojis.
-
-Si el usuario te pregunta cosas que no puedes resolver, responde:
-"Déjame derivarte con un asesor humano."
-
-⚠️ NOTA: este es el prompt POR DEFECTO. Para adaptar el agente a tu negocio,
-ejecuta /personaliza dentro de Claude Code. Eso creará el archivo prompts/negocio.md
-que se cargará automáticamente en tu lugar.
-`.trim();
-
-/**
- * Construye el system prompt leyendo prompts/negocio.md.
- * Si no existe, devuelve el fallback genérico.
- */
-export function buildSystemPrompt(): string {
-  if (!fs.existsSync(NEGOCIO_PATH)) {
-    return FALLBACK_PROMPT;
-  }
-
-  const negocio = fs.readFileSync(NEGOCIO_PATH, "utf-8");
-
-  return `
+const CUSTOMER_SERVICE_EXPERTISE = `
 Eres el asistente virtual de un negocio. Tu trabajo es atender los mensajes que llegan por WhatsApp, calificar leads, agendar llamadas cuando proceda y derivar a un humano si el caso lo requiere.
-
-## Datos de tu negocio
-
-${negocio}
 
 ## Reglas generales de comunicación
 
@@ -53,4 +25,38 @@ ${negocio}
 - **agendar**: SOLO si calificar() devuelve score ≥ 7. Si menor, responde cordialmente pero NO agendes
 - **derivarHumano**: si el lead pide precios específicos, casos raros, queja, o algo fuera de tu alcance
 `.trim();
+
+const FALLBACK_BUSINESS = `
+Vendemos productos y servicios que se detallan en nuestra base de conocimiento.
+Para adaptar el agente a tu negocio, ejecuta /personaliza en Claude Code para crear prompts/negocio.md.
+`.trim();
+
+export function getCustomerServiceExpertise(): string {
+  return CUSTOMER_SERVICE_EXPERTISE;
+}
+
+export function getBusinessKnowledge(): string {
+  if (!fs.existsSync(NEGOCIO_PATH)) {
+    return FALLBACK_BUSINESS;
+  }
+  return fs.readFileSync(NEGOCIO_PATH, "utf-8");
+}
+
+export function splitPrompt(combined: string): { expertise: string; knowledge: string } {
+  const expertiseMatch = combined.match(/## Datos de tu negocio([\s\S]*)/);
+  if (expertiseMatch) {
+    // Formato antiguo: la parte antes de "## Datos de tu negocio" es expertise
+    const idx = combined.indexOf("## Datos de tu negocio");
+    return {
+      expertise: combined.slice(0, idx).trim(),
+      knowledge: combined.slice(idx).trim(),
+    };
+  }
+  return { expertise: CUSTOMER_SERVICE_EXPERTISE, knowledge: combined.trim() };
+}
+
+export function buildSystemPrompt(): string {
+  const expertise = getCustomerServiceExpertise();
+  const knowledge = getBusinessKnowledge();
+  return `${expertise}\n\n## Datos de tu negocio\n\n${knowledge}`;
 }
