@@ -26,7 +26,9 @@ let handle: { sock: WASocket; shutdown: () => Promise<void> } | null = null;
 let reconnectTimer: NodeJS.Timeout | null = null;
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
-const baileysLogger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "silent" });
+const baileysLogger = pino({
+  level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "silent",
+});
 
 function scheduleReconnect(code: number | undefined) {
   if (reconnectTimer) return;
