@@ -4,25 +4,34 @@ import {
   getOrCreateConversation,
   getConversationById,
   insertMessage,
-  getRecentHistory,
   updateConversationPhone,
 } from "../db";
-import { generateReply } from "../openrouter";
-import { retrieveContext } from "../rag/retrieval";
+import { UniversalAgent } from "@/lib/agent/universal-agent";
+import { SupabaseMemoryProvider } from "@/lib/agent/memory";
+import { SupabaseRAGProvider } from "@/lib/agent/providers/rag-provider";
+import { DefaultToolProvider } from "@/lib/agent/providers/tool-provider";
+import { OpenRouterLLMProvider } from "@/lib/agent/providers/openrouter-llm";
+import { executeTool } from "@/lib/tools";
+import { getCustomerServiceExpertise, getBusinessKnowledge } from "@/lib/system-prompt";
 import { DEFAULT_TENANT_ID } from "@/core/types/database";
 
 const logger = pino({ level: (process.env.LOG_LEVEL as pino.Level | undefined) ?? "info" });
 
-/**
- * Resolve a WhatsApp JID to a usable identifier.
- * - @s.whatsapp.net → phone number (standard)
- * - @lid → Linked Device ID (not a phone). Use pushName for display.
- */
-function resolveJid(remoteJid: string): {
-  phone: string;
-  isLid: boolean;
-  jid: string;
-} {
+let agent: UniversalAgent | null = null;
+
+function getAgent(): UniversalAgent {
+  if (agent) return agent;
+  const memory = new SupabaseMemoryProvider(
+    new OpenRouterLLMProvider({ conversationId: "summary", executeTool })
+  );
+  const llm = new OpenRouterLLMProvider({ conversationId: "runtime", executeTool });
+  const rag = new SupabaseRAGProvider();
+  const tools = new DefaultToolProvider();
+  agent = new UniversalAgent({ llm, rag, memory, tools });
+  return agent;
+}
+
+function resolveJid(remoteJid: string): { phone: string; isLid: boolean; jid: string } {
   const phone = remoteJid.split("@")[0].split(":")[0];
   const isLid = remoteJid.endsWith("@lid");
   return { phone, isLid, jid: remoteJid };
@@ -50,17 +59,14 @@ export async function handleIncomingMessages(
     if (!remoteJid.endsWith("@s.whatsapp.net") && !remoteJid.endsWith("@lid")) continue;
 
     const text = msg.message?.conversation ?? msg.message?.extendedTextMessage?.text ?? null;
-
     if (!text || text.trim() === "") continue;
 
     const { phone, isLid, jid } = resolveJid(remoteJid);
     const pushName = msg.pushName ?? undefined;
 
-    // For LID contacts, try to find the real phone number from Baileys store
     let resolvedPhone = phone;
     if (isLid) {
       try {
-        // Check if store has a LID-to-phone mapping
         const storeContacts = (sock as any).store?.contacts;
         if (storeContacts) {
           const lidKey = remoteJid.split("@")[0];
@@ -68,12 +74,11 @@ export async function handleIncomingMessages(
             const contact = val as any;
             if (contact.lid === lidKey || key === lidKey) {
               resolvedPhone = contact.phoneNumber ?? contact.phone ?? key;
-              logger.info(`[bot] LID resolved: ${lidKey} → ${resolvedPhone} (from store)`);
               break;
             }
           }
         }
-      } catch (e) {
+      } catch {
         // ignore store errors
       }
     }
@@ -85,7 +90,6 @@ export async function handleIncomingMessages(
     try {
       const convo = await getOrCreateConversation(resolvedPhone, pushName, jid);
 
-      // If we resolved a better phone number, update it
       if (isLid && resolvedPhone !== phone && convo.phone === phone) {
         await updateConversationPhone(convo.id, resolvedPhone);
         convo.phone = resolvedPhone;
@@ -102,27 +106,45 @@ export async function handleIncomingMessages(
 
       const start = Date.now();
       try {
-        const history = await getRecentHistory(convo.id, 20);
-        logger.info(`[bot] llamando al LLM con ${history.length} mensajes...`);
+        const a = getAgent();
+        const memory = new SupabaseMemoryProvider(
+          new OpenRouterLLMProvider({ conversationId: convo.id, executeTool })
+        );
+        const recent = await memory.getRecent(convo.id, 20);
+        const summary = await memory.getSummary(convo.id);
 
-        // Retrieve RAG context if available
-        const ragContext = await retrieveContext(DEFAULT_TENANT_ID, text);
+        const ctx = {
+          tenantId: DEFAULT_TENANT_ID,
+          conversationId: convo.id,
+          channel: "whatsapp",
+          userPhone: resolvedPhone,
+          userName: pushName,
+          systemInstructions: getCustomerServiceExpertise(),
+          businessKnowledge: getBusinessKnowledge(),
+          ragContext: "",
+          history: recent,
+          conversationSummary: summary,
+          nowIso: new Date().toISOString(),
+        };
 
-        const reply = await generateReply({ history, conversationId: convo.id, ragContext });
+        const result = await a.process(ctx);
 
-        if (!reply || reply.trim() === "") {
-          logger.warn("[bot] LLM devolvió respuesta vacía, ignorando");
+        if (result.action === "reject") {
+          await insertMessage(convo.id, "assistant", result.reply);
+          await sock.sendMessage(jid, { text: result.reply });
+          logger.info(`[bot] → rechazado (${result.intent})`);
           continue;
         }
 
+        if (result.reply && result.reply.trim() !== "") {
+          await insertMessage(convo.id, "assistant", result.reply);
+          await sock.sendMessage(jid, { text: result.reply });
+        }
+
         const ms = Date.now() - start;
-        logger.info(`[bot] LLM respondió en ${ms}ms`);
-
-        await insertMessage(convo.id, "assistant", reply);
-        // Send reply using the original JID — Baileys handles both @s.whatsapp.net and @lid
-        await sock.sendMessage(jid, { text: reply });
-
-        logger.info(`[bot] → enviado a ${phone}: "${reply.slice(0, 60)}"`);
+        logger.info(
+          `[bot] ${result.action} en ${ms}ms (intent=${result.intent}, rag=${result.usedRag}, tools=${result.toolsUsed.join(",") || "-"})`
+        );
       } catch (err: any) {
         logger.error(
           `[bot] error procesando mensaje de ${phone}: ${err?.message ?? String(err)}\n${err?.stack ?? ""}`
