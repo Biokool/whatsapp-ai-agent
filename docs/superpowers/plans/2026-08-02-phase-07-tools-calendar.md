@@ -1877,6 +1877,15 @@ function findSpec(calendar: CalendarProvider, name: string) {
   return spec;
 }
 
+function makeDeps() {
+  return {
+    idempotencyStore: {
+      has: vi.fn().mockResolvedValue(false),
+      set: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+}
+
 describe("calendar tools", () => {
   it("getAvailability returns slots", async () => {
     const calendar = makeCalendar();
@@ -1898,7 +1907,7 @@ describe("calendar tools", () => {
       spec,
       { scheduledAt: "2026-08-10T10:00:00Z", timezone: "America/Mexico_City" },
       ctx,
-      {}
+      makeDeps()
     );
     expect(result.status).toBe("VALID");
     expect(result.data?.appointment?.id).toBe("a1");
