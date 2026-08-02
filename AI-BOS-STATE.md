@@ -14,10 +14,10 @@ project:
 
 ```yaml
 execution:
-  current_phase: "05"
-  last_completed_phase: "05"
-  status: "PHASE_05_COMPLETED"
-  phases_completed: ["00", "01", "02", "03", "04", "05"]
+  current_phase: "06"
+  last_completed_phase: "06"
+  status: "PHASE_06_COMPLETED"
+  phases_completed: ["00", "01", "02", "03", "04", "05", "06"]
   phases_in_progress: []
 ```
 
@@ -25,10 +25,10 @@ execution:
 
 ```yaml
 validation:
-  last_validated_phase: "05"
+  last_validated_phase: "06"
   last_validation_date: "2026-08-02"
-  total_tests_executed: 15
-  total_tests_passed: 15
+  total_tests_executed: 34
+  total_tests_passed: 34
   total_tests_failed: 0
 ```
 
@@ -36,7 +36,7 @@ validation:
 
 ```yaml
 approval:
-  approved_phase: "05"
+  approved_phase: "06"
   approved_by: "human"
   approval_date: "2026-08-02"
   pending_approvals: []
@@ -89,12 +89,22 @@ risks:
     description: "n8n sube documentos a Google Drive como text/plain vacíos (bug MIME)"
     status: "RESOLVED"
     resolution: "typeVersion 2→3 en workflow_entity + workflow_history snapshot; patch bug V1 línea 2233; verificado E2E (mimeType application/pdf, size real, RAG ready)"
+  - id: "R-007"
+    severity: "P0"
+    description: "Escalada a humano rota por conversationId 'runtime' en el singleton del agente (Task 8)"
+    status: "RESOLVED"
+    resolution: "Agente construido por-conversación con convo.id real; setMode actualiza la conversación correcta y el rate-limit es per-conversación"
+  - id: "R-008"
+    severity: "P2"
+    description: "generateReply (vía legacy) quedó sin tools tras la extracción del provider; el handler de Baileys ya usa el agente completo con tools"
+    status: "OPEN"
+    resolution: null
 ```
 
 ## Próxima Acción
 
 ```yaml
-next_action: "Phase 06: Universal Agent + Memory"
+next_action: "Phase 07: Tools + Calendar"
 next_action_date: null
 dependencies: []
 ```
@@ -109,7 +119,7 @@ dependencies: []
 | 03   | Engineering Foundation           | COMPLETED | docs/admin/checkpoints/phase-03.md |
 | 04   | Data + Multi-Tenancy             | COMPLETED | docs/admin/checkpoints/phase-04.md |
 | 05   | RAG + Knowledge                  | COMPLETED | docs/admin/checkpoints/phase-05.md |
-| 06   | Universal Agent + Memory         | PENDIENTE | -                                  |
+| 06   | Universal Agent + Memory         | COMPLETED | docs/admin/checkpoints/phase-06.md |
 | 07   | Tools + Calendar                 | PENDIENTE | -                                  |
 | 08   | Omnichannel                      | PENDIENTE | -                                  |
 | 09   | N8N Orchestration                | PENDIENTE | -                                  |
@@ -176,6 +186,17 @@ artifacts:
     - "src/components/DocumentList.tsx"
     - "src/components/KnowledgeBaseCard.tsx"
     - "src/components/KnowledgeSection.tsx"
+  phase_06:
+    - "src/core/types/agent.ts"
+    - "src/lib/agent/guard.ts"
+    - "src/lib/agent/memory.ts"
+    - "src/lib/agent/universal-agent.ts"
+    - "src/lib/agent/providers/openrouter-llm.ts"
+    - "src/lib/agent/providers/rag-provider.ts"
+    - "src/lib/agent/providers/tool-provider.ts"
+    - "src/lib/system-prompt.ts"
+    - "src/lib/baileys/handler.ts"
+    - "docs/superpowers/plans/2026-08-02-phase-06-universal-agent.md"
 ```
 
 ## Estadísticas
@@ -183,15 +204,15 @@ artifacts:
 ```yaml
 statistics:
   total_phases: 15
-  phases_completed: 6
-  phases_pending: 9
-  completion_percentage: 40.0
-  risks_identified: 6
+  phases_completed: 7
+  phases_pending: 8
+  completion_percentage: 46.7
+  risks_identified: 8
   risks_open: 1
-  risks_resolved: 5
+  risks_resolved: 7
   technical_debt_items: 16
   system_gaps: 22
-  tests_total: 15
-  tests_passed: 15
+  tests_total: 34
+  tests_passed: 34
   tests_failed: 0
 ```
