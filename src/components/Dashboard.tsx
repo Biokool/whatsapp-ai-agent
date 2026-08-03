@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { MessagesSquare, BarChart3, Filter, GraduationCap, Settings } from "lucide-react";
 import Sidebar from "./Sidebar";
 import DashboardHeader from "./DashboardHeader";
 import ConversationList from "./ConversationList";
@@ -25,7 +26,7 @@ export default function Dashboard({ phone }: DashboardProps) {
   const showConversationList = selectedId === null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-navy-950">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Desktop sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -69,7 +70,7 @@ export default function Dashboard({ phone }: DashboardProps) {
       </div>
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-navy-900 border-t border-navy-500 z-50 px-2 py-1.5 safe-area-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50 px-2 py-1.5 safe-area-bottom">
         <div className="flex justify-around items-center">
           <button
             onClick={() => {
@@ -77,53 +78,53 @@ export default function Dashboard({ phone }: DashboardProps) {
               setSelectedId(null);
             }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "chats" ? "text-ai-green-light" : "text-navy-400"
+              activeTab === "chats" ? "text-ai-green" : "text-text-subtle"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">chat</span>
+            <MessagesSquare className="w-5 h-5" />
             <span className="text-[9px] font-medium">Chats</span>
           </button>
 
           <button
             onClick={() => setActiveTab("analytics")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "analytics" ? "text-ai-green-light" : "text-navy-400"
+              activeTab === "analytics" ? "text-ai-green" : "text-text-subtle"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">insights</span>
+            <BarChart3 className="w-5 h-5" />
             <span className="text-[9px] font-medium">Analisis</span>
           </button>
 
           <button
             onClick={() => setActiveTab("funnel")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all relative ${
-              activeTab === "funnel" ? "text-ai-green-light" : "text-navy-400"
+              activeTab === "funnel" ? "text-ai-green" : "text-text-subtle"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">filter_alt</span>
+            <Filter className="w-5 h-5" />
             <span className="text-[9px] font-medium">Embudo</span>
             {humanRequiredCount > 0 && (
-              <span className="absolute top-0.5 right-2 w-2 h-2 bg-amber-warm rounded-full animate-pulse" />
+              <span className="absolute top-0.5 right-2 w-2 h-2 bg-warning rounded-full animate-pulse" />
             )}
           </button>
 
           <button
             onClick={() => setActiveTab("knowledge")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "knowledge" ? "text-ai-green-light" : "text-navy-400"
+              activeTab === "knowledge" ? "text-ai-green" : "text-text-subtle"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">school</span>
+            <GraduationCap className="w-5 h-5" />
             <span className="text-[9px] font-medium">Knowledge</span>
           </button>
 
           <button
             onClick={() => setActiveTab("settings")}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-all ${
-              activeTab === "settings" ? "text-ai-green-light" : "text-navy-400"
+              activeTab === "settings" ? "text-ai-green" : "text-text-subtle"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">settings</span>
+            <Settings className="w-5 h-5" />
             <span className="text-[9px] font-medium">Ajustes</span>
           </button>
         </div>
