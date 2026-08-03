@@ -68,9 +68,38 @@ export interface Appointment {
   tenant_id: string;
   lead_id: string;
   scheduled_at: string;
+  timezone: string;
   status: AppointmentStatus;
   meeting_url: string | null;
   notes: string | null;
+  external_event_id: string | null;
+  created_at: string;
+}
+
+export type FollowUpStatus = "pending" | "done" | "cancelled";
+
+export interface FollowUp {
+  id: string;
+  tenant_id: string;
+  conversation_id: string | null;
+  contact_id: string | null;
+  lead_id: string | null;
+  scheduled_at: string;
+  status: FollowUpStatus;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ToolExecution {
+  id: string;
+  tenant_id: string;
+  tool_name: string;
+  idempotency_key: string | null;
+  status: string;
+  input: Record<string, unknown> | null;
+  output: Record<string, unknown> | null;
+  error: string | null;
   created_at: string;
 }
 

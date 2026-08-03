@@ -14,10 +14,10 @@ project:
 
 ```yaml
 execution:
-  current_phase: "06"
-  last_completed_phase: "06"
-  status: "PHASE_06_COMPLETED"
-  phases_completed: ["00", "01", "02", "03", "04", "05", "06"]
+  current_phase: "07"
+  last_completed_phase: "07"
+  status: "PHASE_07_COMPLETED"
+  phases_completed: ["00", "01", "02", "03", "04", "05", "06", "07"]
   phases_in_progress: []
 ```
 
@@ -25,10 +25,10 @@ execution:
 
 ```yaml
 validation:
-  last_validated_phase: "06"
+  last_validated_phase: "07"
   last_validation_date: "2026-08-02"
-  total_tests_executed: 34
-  total_tests_passed: 34
+  total_tests_executed: 76
+  total_tests_passed: 76
   total_tests_failed: 0
 ```
 
@@ -36,7 +36,7 @@ validation:
 
 ```yaml
 approval:
-  approved_phase: "06"
+  approved_phase: "07"
   approved_by: "human"
   approval_date: "2026-08-02"
   pending_approvals: []
@@ -99,12 +99,22 @@ risks:
     description: "generateReply (vía legacy) quedó sin tools tras la extracción del provider; el handler de Baileys ya usa el agente completo con tools"
     status: "OPEN"
     resolution: null
+  - id: "R-009"
+    severity: "P1"
+    description: "Adaptadores externos de calendario (Google Calendar, Cal.com) pendientes de credenciales y validación en vivo; solo el MVP Supabase está operativo"
+    status: "OPEN"
+    resolution: null
+  - id: "R-010"
+    severity: "P2"
+    description: "SupabaseCalendarProvider usa leadId 'unknown' como fallback hasta que la tool de calendario reciba el lead real del canal"
+    status: "OPEN"
+    resolution: null
 ```
 
 ## Próxima Acción
 
 ```yaml
-next_action: "Phase 07: Tools + Calendar"
+next_action: "Phase 08: Omnichannel"
 next_action_date: null
 dependencies: []
 ```
@@ -120,7 +130,7 @@ dependencies: []
 | 04   | Data + Multi-Tenancy             | COMPLETED | docs/admin/checkpoints/phase-04.md |
 | 05   | RAG + Knowledge                  | COMPLETED | docs/admin/checkpoints/phase-05.md |
 | 06   | Universal Agent + Memory         | COMPLETED | docs/admin/checkpoints/phase-06.md |
-| 07   | Tools + Calendar                 | PENDIENTE | -                                  |
+| 07   | Tools + Calendar                 | COMPLETED | docs/admin/checkpoints/phase-07.md |
 | 08   | Omnichannel                      | PENDIENTE | -                                  |
 | 09   | N8N Orchestration                | PENDIENTE | -                                  |
 | 10   | CRM + Follow-Up                  | PENDIENTE | -                                  |
@@ -197,6 +207,26 @@ artifacts:
     - "src/lib/system-prompt.ts"
     - "src/lib/baileys/handler.ts"
     - "docs/superpowers/plans/2026-08-02-phase-06-universal-agent.md"
+  phase_07:
+    - "src/core/types/tool.ts"
+    - "src/lib/tools/executor.ts"
+    - "src/lib/tools/executor.test.ts"
+    - "src/lib/tools/data-tools.ts"
+    - "src/lib/tools/data-tools.test.ts"
+    - "src/lib/tools/calendar-tools.ts"
+    - "src/lib/tools/calendar-tools.test.ts"
+    - "src/lib/tools/registry.ts"
+    - "src/lib/tools/registry.test.ts"
+    - "src/lib/tools/transfer-to-human.ts"
+    - "src/lib/tools/infra.ts"
+    - "src/lib/calendar/types.ts"
+    - "src/lib/calendar/providers/supabase-calendar.ts"
+    - "src/lib/calendar/providers/supabase-calendar.test.ts"
+    - "src/lib/calendar/providers/google-calendar.ts"
+    - "src/lib/calendar/providers/cal-com.ts"
+    - "src/lib/calendar/providers/adapters.test.ts"
+    - "src/infrastructure/database/migrations/007_tools_calendar.sql"
+    - "docs/admin/checkpoints/phase-07.md"
 ```
 
 ## Estadísticas
@@ -204,15 +234,15 @@ artifacts:
 ```yaml
 statistics:
   total_phases: 15
-  phases_completed: 7
-  phases_pending: 8
-  completion_percentage: 46.7
-  risks_identified: 8
-  risks_open: 1
+  phases_completed: 8
+  phases_pending: 7
+  completion_percentage: 53.3
+  risks_identified: 10
+  risks_open: 3
   risks_resolved: 7
   technical_debt_items: 16
   system_gaps: 22
-  tests_total: 34
-  tests_passed: 34
+  tests_total: 76
+  tests_passed: 76
   tests_failed: 0
 ```

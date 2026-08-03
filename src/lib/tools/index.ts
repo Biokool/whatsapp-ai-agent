@@ -1,7 +1,11 @@
+// src/lib/tools/index.ts (final)
 import { guardarLeadDefinition, guardarLeadHandler } from "./guardar-lead";
 import { calificarDefinition, calificarHandler } from "./calificar";
 import { agendarDefinition, agendarHandler } from "./agendar";
 import { derivarHumanoDefinition, derivarHumanoHandler } from "./derivar-humano";
+import { SupabaseCalendarProvider } from "@/lib/calendar/providers/supabase-calendar";
+import { SupabaseIdempotencyStore, SupabaseAuditSink } from "./infra";
+import { buildRegistry } from "./registry";
 
 // ============================================================
 // Tipos compartidos
@@ -20,28 +24,22 @@ export interface ToolDefinition {
   };
 }
 
-// El handler de cada tool define sus propios argumentos.
-// Aquí trabajamos con un wrapper que acepta unknown args (los validamos al entrar).
 export type ToolHandler<TArgs = Record<string, unknown>> = (
   args: TArgs & { conversationId?: string }
 ) => Promise<Record<string, unknown>>;
 
-// ============================================================
-// Registry — usamos wrappers que aceptan unknown y delegan a los handlers tipados
-// ============================================================
+type GenericHandler = (
+  args: Record<string, unknown> & { conversationId?: string }
+) => Promise<Record<string, unknown>>;
 
-export const toolDefinitions: ToolDefinition[] = [
+const legacyDefinitions: ToolDefinition[] = [
   guardarLeadDefinition,
   calificarDefinition,
   agendarDefinition,
   derivarHumanoDefinition,
 ];
 
-type GenericHandler = (
-  args: Record<string, unknown> & { conversationId?: string }
-) => Promise<Record<string, unknown>>;
-
-const handlers: Record<string, GenericHandler> = {
+const legacyHandlers: Record<string, GenericHandler> = {
   guardarLead: (args) =>
     guardarLeadHandler(args as unknown as Parameters<typeof guardarLeadHandler>[0]),
   calificar: (args) => calificarHandler(args as unknown as Parameters<typeof calificarHandler>[0]),
@@ -50,14 +48,50 @@ const handlers: Record<string, GenericHandler> = {
     derivarHumanoHandler(args as unknown as Parameters<typeof derivarHumanoHandler>[0]),
 };
 
+// Registry principal del proyecto (MVP: Supabase como calendario).
+const defaultRegistry = buildRegistry(
+  new SupabaseCalendarProvider({
+    tenantId: process.env.DEFAULT_TENANT_ID ?? "00000000-0000-0000-0000-000000000001",
+    leadId: "unknown",
+  })
+);
+
+const defaultDeps = {
+  idempotencyStore: new SupabaseIdempotencyStore(),
+  auditSink: new SupabaseAuditSink(),
+};
+
+export const toolDefinitions: ToolDefinition[] = [
+  ...legacyDefinitions,
+  ...defaultRegistry.definitions(),
+];
+
 export async function executeTool(
   toolName: string,
   args: Record<string, unknown>,
-  context: { conversationId: string }
+  context: { conversationId: string; tenantId?: string }
 ): Promise<Record<string, unknown>> {
-  const handler = handlers[toolName];
-  if (!handler) {
-    return { ok: false, message: `Tool desconocida: ${toolName}` };
+  const legacyHandler = legacyHandlers[toolName];
+  if (legacyHandler) {
+    return legacyHandler({ ...args, conversationId: context.conversationId });
   }
-  return handler({ ...args, conversationId: context.conversationId });
+
+  const result = await defaultRegistry.run(
+    toolName,
+    args,
+    {
+      tenantId: context.tenantId ?? "00000000-0000-0000-0000-000000000001",
+      conversationId: context.conversationId,
+      actor: undefined,
+      permissions: [],
+    },
+    defaultDeps
+  );
+
+  return {
+    ok: result.ok,
+    status: result.status,
+    ...(result.data ?? {}),
+    ...(result.error ? { error: result.error } : {}),
+  };
 }
