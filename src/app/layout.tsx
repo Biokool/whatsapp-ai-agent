@@ -1,28 +1,29 @@
 import type { Metadata } from "next";
+import { Archivo } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
+
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-archivo",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Biokool - Lead Monitor",
   description: "Panel de control del agente de IA conectado a WhatsApp",
 };
 
+const THEME_SCRIPT = `(function(){try{var s=localStorage.getItem('biokool-theme');var c='scheme-light-dark';if(s==='light'||s==='dark'){c='scheme-'+s;}var d=document.documentElement;d.classList.add(c);}catch(e){document.documentElement.classList.add('scheme-light-dark');}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className={archivo.variable}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="bg-navy-950 text-navy-200 antialiased selection:bg-ai-green/30 selection:text-ai-green-light">
+      <body className="bg-canvas text-primary antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

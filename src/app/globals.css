@@ -1,48 +1,134 @@
 @import "tailwindcss";
 
-@theme {
-  --color-emerald-glow: #4ade80;
-  --color-amber-glow: #fbbf24;
-  --color-navy-950: #031427;
-  --color-navy-900: #0b1c30;
-  --color-navy-800: #102034;
-  --color-navy-700: #1b2b3f;
-  --color-navy-600: #26364a;
-  --color-navy-500: #3c4a42;
-  --color-navy-400: #86948a;
-  --color-navy-300: #bbcabf;
-  --color-navy-200: #d3e4fe;
-  --color-ai-green: #10b981;
-  --color-ai-green-light: #4edea3;
-  --color-ai-green-dark: #00422b;
-  --color-human-blue: #3131c0;
-  --color-human-blue-light: #c0c1ff;
-  --color-human-blue-dark: #1000a9;
-  --color-amber-warm: #ffb95f;
-  --color-red-alert: #ffb4ab;
-  --color-red-dark: #93000a;
+/* Variables base — emiten a :root para que var(--pds-*) funcione en CSS plano */
+:root {
+  color-scheme: light dark;
 
-  /* shadcn/ui CSS variables */
-  --color-background: #031427;
-  --color-foreground: #d3e4fe;
-  --color-card: #0b1c30;
-  --color-card-foreground: #d3e4fe;
-  --color-popover: #0b1c30;
-  --color-popover-foreground: #d3e4fe;
-  --color-primary: #10b981;
-  --color-primary-foreground: #031427;
-  --color-secondary: #1b2b3f;
-  --color-secondary-foreground: #d3e4fe;
-  --color-muted: #1b2b3f;
-  --color-muted-foreground: #86948a;
-  --color-accent: #1b2b3f;
-  --color-accent-foreground: #d3e4fe;
-  --color-destructive: #93000a;
-  --color-destructive-foreground: #ffb4ab;
-  --color-border: #26364a;
-  --color-input: #26364a;
-  --color-ring: #10b981;
-  --radius: 0.5rem;
+  --pds-canvas: light-dark(#ffffff, hsl(225 66.7% 1.2%));
+  --pds-surface: light-dark(hsl(240 10% 95%), hsl(240 2% 10%));
+  --pds-surface-hover: light-dark(hsl(240 5% 70% / 0.148), hsl(240 2% 43% / 0.228));
+  --pds-surface-shade: light-dark(hsl(234 9.8% 60% / 0.06), hsl(240 3.7% 26.5% / 0.154));
+  --pds-primary: light-dark(hsl(225 66.7% 1.2%), hsl(225 100% 99%));
+  --pds-text-subtle: light-dark(hsl(240 7.1% 11% / 0.7), hsl(240 12.5% 96.9% / 0.67));
+  --pds-text-faint: light-dark(hsl(240 6.1% 7% / 0.6), hsl(240 12.5% 96.9% / 0.56));
+  --pds-border: light-dark(hsl(240 5.3% 14.9% / 0.5), hsl(240 12.5% 96.9% / 0.45));
+  --pds-focus: #1a44ea;
+  --pds-backdrop: hsl(240 5.3% 14.9% / 0.5);
+
+  --pds-info: light-dark(hsl(228 83.2% 51%), hsl(210 100% 54.5%));
+  --pds-info-medium: light-dark(hsl(228 83.2% 51% / 0.6), hsl(210 100% 54.5% / 0.6));
+  --pds-info-low: light-dark(hsl(228 83.2% 51% / 0.18), hsl(210 100% 54.5% / 0.18));
+  --pds-info-frosted: light-dark(hsl(228 83.2% 51% / 0.22), hsl(210 100% 54.5% / 0.22));
+  --pds-info-frosted-soft: light-dark(hsl(228 83.2% 51% / 0.12), hsl(210 100% 54.5% / 0.12));
+
+  --pds-success: light-dark(hsl(115 77.5% 27.8%), hsl(157 84.9% 41.6%));
+  --pds-success-medium: light-dark(hsl(115 77.5% 27.8% / 0.6), hsl(157 84.9% 41.6% / 0.6));
+  --pds-success-low: light-dark(hsl(115 77.5% 27.8% / 0.18), hsl(157 84.9% 41.6% / 0.18));
+  --pds-success-frosted: light-dark(hsl(115 77.5% 27.8% / 0.22), hsl(157 84.9% 41.6% / 0.22));
+  --pds-success-frosted-soft: light-dark(hsl(115 77.5% 27.8% / 0.12), hsl(157 84.9% 41.6% / 0.12));
+
+  --pds-warning: light-dark(hsl(28 97.7% 34.1%), hsl(28 90.2% 56.1%));
+  --pds-warning-medium: light-dark(hsl(28 97.7% 34.1% / 0.6), hsl(28 90.2% 56.1% / 0.6));
+  --pds-warning-low: light-dark(hsl(28 97.7% 34.1% / 0.18), hsl(28 90.2% 56.1% / 0.18));
+  --pds-warning-frosted: light-dark(hsl(28 97.7% 34.1% / 0.22), hsl(28 90.2% 56.1% / 0.22));
+  --pds-warning-frosted-soft: light-dark(hsl(28 97.7% 34.1% / 0.12), hsl(28 90.2% 56.1% / 0.12));
+
+  --pds-error: light-dark(hsl(357 78% 41%), hsl(0 96.9% 62%));
+  --pds-error-medium: light-dark(hsl(357 78% 41% / 0.6), hsl(0 96.9% 62% / 0.6));
+  --pds-error-low: light-dark(hsl(357 78% 41% / 0.18), hsl(0 96.9% 62% / 0.18));
+  --pds-error-frosted: light-dark(hsl(357 78% 41% / 0.22), hsl(0 96.9% 62% / 0.22));
+  --pds-error-frosted-soft: light-dark(hsl(357 78% 41% / 0.12), hsl(0 96.9% 62% / 0.12));
+
+  --pds-ai-green: light-dark(#0d9e6e, #10b981);
+  --pds-ai-green-contrast: light-dark(#ffffff, #031427);
+  --pds-human-blue: light-dark(#3131c0, #6d7dff);
+  --pds-human-blue-contrast: light-dark(#ffffff, #0b1c30);
+}
+
+html.scheme-light {
+  color-scheme: light;
+}
+
+html.scheme-dark {
+  color-scheme: dark;
+}
+
+/* Mapeo a utilities Tailwind. @theme inline NO emite las variables a :root;
+   por eso se referencian var(--pds-*) definidas arriba. */
+@theme inline {
+  --color-canvas: var(--pds-canvas);
+  --color-surface: var(--pds-surface);
+  --color-surface-hover: var(--pds-surface-hover);
+  --color-surface-shade: var(--pds-surface-shade);
+  --color-primary: var(--pds-primary);
+  --color-text-subtle: var(--pds-text-subtle);
+  --color-text-faint: var(--pds-text-faint);
+  --color-border: var(--pds-border);
+  --color-focus: var(--pds-focus);
+  --color-backdrop: var(--pds-backdrop);
+
+  --color-info: var(--pds-info);
+  --color-info-medium: var(--pds-info-medium);
+  --color-info-low: var(--pds-info-low);
+  --color-info-frosted: var(--pds-info-frosted);
+  --color-info-frosted-soft: var(--pds-info-frosted-soft);
+
+  --color-success: var(--pds-success);
+  --color-success-medium: var(--pds-success-medium);
+  --color-success-low: var(--pds-success-low);
+  --color-success-frosted: var(--pds-success-frosted);
+  --color-success-frosted-soft: var(--pds-success-frosted-soft);
+
+  --color-warning: var(--pds-warning);
+  --color-warning-medium: var(--pds-warning-medium);
+  --color-warning-low: var(--pds-warning-low);
+  --color-warning-frosted: var(--pds-warning-frosted);
+  --color-warning-frosted-soft: var(--pds-warning-frosted-soft);
+
+  --color-error: var(--pds-error);
+  --color-error-medium: var(--pds-error-medium);
+  --color-error-low: var(--pds-error-low);
+  --color-error-frosted: var(--pds-error-frosted);
+  --color-error-frosted-soft: var(--pds-error-frosted-soft);
+
+  --color-ai-green: var(--pds-ai-green);
+  --color-ai-green-contrast: var(--pds-ai-green-contrast);
+  --color-human-blue: var(--pds-human-blue);
+  --color-human-blue-contrast: var(--pds-human-blue-contrast);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  --font-sans: var(--font-archivo), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-archivo), system-ui, sans-serif;
+
+  --shadow-sm: 0 3px 8px rgb(0 0 0 / 0.16);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 0.16);
+  --shadow-lg: 0 8px 40px rgb(0 0 0 / 0.18);
+
+  --ease-pds: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* shadcn/ui CSS variables (mapeadas a Porsche) */
+  --color-background: var(--pds-canvas);
+  --color-foreground: var(--pds-primary);
+  --color-card: var(--pds-surface);
+  --color-card-foreground: var(--pds-primary);
+  --color-popover: var(--pds-canvas);
+  --color-popover-foreground: var(--pds-primary);
+  --color-primary-foreground: var(--pds-canvas);
+  --color-secondary: var(--pds-surface);
+  --color-secondary-foreground: var(--pds-primary);
+  --color-muted: var(--pds-surface-hover);
+  --color-muted-foreground: var(--pds-text-subtle);
+  --color-accent: var(--pds-surface-hover);
+  --color-accent-foreground: var(--pds-primary);
+  --color-destructive: var(--pds-error);
+  --color-destructive-foreground: #ffffff;
+  --color-input: var(--pds-surface-shade);
+  --color-ring: var(--pds-focus);
 }
 
 html,
@@ -51,72 +137,50 @@ body {
 }
 
 body {
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  background-color: #031427;
-  color: #d3e4fe;
+  font-family: var(--font-sans);
+  background-color: var(--pds-canvas);
+  color: var(--pds-primary);
 }
 
 h1,
 h2,
 h3,
-h4,
-.font-geist {
-  font-family: "Geist", sans-serif;
+h4 {
+  font-family: var(--font-display);
 }
 
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
+/* Foco accesible Porsche */
+:focus-visible {
+  outline: 2px solid #1a44ea;
+  outline-offset: 2px;
 }
 
-.material-symbols-outlined.fill {
-  font-variation-settings:
-    "FILL" 1,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
+/* Scrollbars con tokens */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.ai-glow {
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--pds-border);
+  border-radius: 9999px;
 }
 
-.ai-glow-pulse {
-  animation: aiPulse 2s infinite ease-in-out;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--pds-text-faint);
 }
 
-@keyframes aiPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 18px rgba(16, 185, 129, 0.7);
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@keyframes fadeIn {
+/* Safe area */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Animaciones */
+@keyframes pdsFadeIn {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -128,69 +192,15 @@ h4,
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
+  animation: pdsFadeIn 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-/* Custom scrollbars for dark mode */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0b1c30;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #26364a;
-  border-radius: 9999px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #3c4a42;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-/* Safe area for mobile devices with notches */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Ensure full height on mobile */
-html,
-body,
-#__next {
-  height: 100%;
-  overflow: hidden;
-}
-
-/* Mobile-specific adjustments */
-@media (max-width: 768px) {
-  .material-symbols-outlined {
-    font-size: 20px;
-  }
-}
-
-/* shadcn/ui base layer */
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--pds-border);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--pds-canvas);
+    color: var(--pds-primary);
   }
 }
