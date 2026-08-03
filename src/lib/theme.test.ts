@@ -6,10 +6,9 @@ import {
   getSystemScheme,
   applySchemeClass,
   THEME_STORAGE_KEY,
-  type ThemePreference,
 } from "@/lib/theme";
 
-const PREF = "biokool-theme";
+const PREF = THEME_STORAGE_KEY;
 
 function setStorage(value: string | null) {
   const store: Record<string, string> = {};
