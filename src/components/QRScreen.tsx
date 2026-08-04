@@ -92,7 +92,7 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
             <button
               onClick={handleReset}
               disabled={resetting}
-              className="w-full py-2.5 rounded-lg bg-success hover:bg-success/85 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 rounded-lg bg-success hover:bg-success/85 text-success-contrast text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {resetting ? "Reseteando sesión..." : "Resetear sesión (QR nuevo)"}
             </button>

@@ -20,24 +20,28 @@
   --pds-info-low: light-dark(hsl(228 83.2% 51% / 0.18), hsl(210 100% 54.5% / 0.18));
   --pds-info-frosted: light-dark(hsl(228 83.2% 51% / 0.22), hsl(210 100% 54.5% / 0.22));
   --pds-info-frosted-soft: light-dark(hsl(228 83.2% 51% / 0.12), hsl(210 100% 54.5% / 0.12));
+  --pds-info-contrast: light-dark(#ffffff, #031427);
 
   --pds-success: light-dark(hsl(115 77.5% 27.8%), hsl(157 84.9% 41.6%));
   --pds-success-medium: light-dark(hsl(115 77.5% 27.8% / 0.6), hsl(157 84.9% 41.6% / 0.6));
   --pds-success-low: light-dark(hsl(115 77.5% 27.8% / 0.18), hsl(157 84.9% 41.6% / 0.18));
   --pds-success-frosted: light-dark(hsl(115 77.5% 27.8% / 0.22), hsl(157 84.9% 41.6% / 0.22));
   --pds-success-frosted-soft: light-dark(hsl(115 77.5% 27.8% / 0.12), hsl(157 84.9% 41.6% / 0.12));
+  --pds-success-contrast: light-dark(#ffffff, #031427);
 
   --pds-warning: light-dark(hsl(28 97.7% 34.1%), hsl(28 90.2% 56.1%));
   --pds-warning-medium: light-dark(hsl(28 97.7% 34.1% / 0.6), hsl(28 90.2% 56.1% / 0.6));
   --pds-warning-low: light-dark(hsl(28 97.7% 34.1% / 0.18), hsl(28 90.2% 56.1% / 0.18));
   --pds-warning-frosted: light-dark(hsl(28 97.7% 34.1% / 0.22), hsl(28 90.2% 56.1% / 0.22));
   --pds-warning-frosted-soft: light-dark(hsl(28 97.7% 34.1% / 0.12), hsl(28 90.2% 56.1% / 0.12));
+  --pds-warning-contrast: light-dark(#ffffff, #031427);
 
   --pds-error: light-dark(hsl(357 78% 41%), hsl(0 96.9% 62%));
   --pds-error-medium: light-dark(hsl(357 78% 41% / 0.6), hsl(0 96.9% 62% / 0.6));
   --pds-error-low: light-dark(hsl(357 78% 41% / 0.18), hsl(0 96.9% 62% / 0.18));
   --pds-error-frosted: light-dark(hsl(357 78% 41% / 0.22), hsl(0 96.9% 62% / 0.22));
   --pds-error-frosted-soft: light-dark(hsl(357 78% 41% / 0.12), hsl(0 96.9% 62% / 0.12));
+  --pds-error-contrast: light-dark(#ffffff, #031427);
 
   --pds-ai-green: light-dark(#0d9e6e, #10b981);
   --pds-ai-green-contrast: light-dark(#ffffff, #031427);
@@ -74,24 +78,28 @@ html.scheme-dark {
   --color-info-low: var(--pds-info-low);
   --color-info-frosted: var(--pds-info-frosted);
   --color-info-frosted-soft: var(--pds-info-frosted-soft);
+  --color-info-contrast: var(--pds-info-contrast);
 
   --color-success: var(--pds-success);
   --color-success-medium: var(--pds-success-medium);
   --color-success-low: var(--pds-success-low);
   --color-success-frosted: var(--pds-success-frosted);
   --color-success-frosted-soft: var(--pds-success-frosted-soft);
+  --color-success-contrast: var(--pds-success-contrast);
 
   --color-warning: var(--pds-warning);
   --color-warning-medium: var(--pds-warning-medium);
   --color-warning-low: var(--pds-warning-low);
   --color-warning-frosted: var(--pds-warning-frosted);
   --color-warning-frosted-soft: var(--pds-warning-frosted-soft);
+  --color-warning-contrast: var(--pds-warning-contrast);
 
   --color-error: var(--pds-error);
   --color-error-medium: var(--pds-error-medium);
   --color-error-low: var(--pds-error-low);
   --color-error-frosted: var(--pds-error-frosted);
   --color-error-frosted-soft: var(--pds-error-frosted-soft);
+  --color-error-contrast: var(--pds-error-contrast);
 
   --color-ai-green: var(--pds-ai-green);
   --color-ai-green-contrast: var(--pds-ai-green-contrast);

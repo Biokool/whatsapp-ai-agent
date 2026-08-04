@@ -56,4 +56,19 @@ describe("ThemeToggle", () => {
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     expect(document.documentElement.classList.contains("scheme-dark")).toBe(true);
   });
+
+  it("shows the stored dark preference after mount", () => {
+    setStorage("dark");
+    render(<ThemeToggle />);
+    const btn = screen.getByRole("button", { name: /cambiar tema/i });
+    expect(btn).toHaveAttribute("title", "Tema: Tema oscuro. Clic para cambiar.");
+  });
+
+  it("renders the pre-mount placeholder without crashing", () => {
+    setStorage("dark");
+    render(<ThemeToggle />);
+    const btn = screen.getByRole("button", { name: /cambiar tema/i });
+    expect(btn).toBeInTheDocument();
+    expect(btn).toHaveAttribute("title", "Tema: Tema oscuro. Clic para cambiar.");
+  });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -20,13 +21,22 @@ const LABELS: Record<Pref, string> = {
 
 export default function ThemeToggle() {
   const { pref, setPref } = useTheme();
-  const next: Pref = ORDER[(ORDER.indexOf(pref as Pref) + 1) % ORDER.length];
-  const Icon = ICONS[pref as Pref];
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
+  const active: Pref = (pref as Pref) || "system";
+  const shown: Pref = mounted ? active : "system";
+  const next: Pref = ORDER[(ORDER.indexOf(active) + 1) % ORDER.length];
+  const Icon = ICONS[shown];
 
   return (
     <button
       onClick={() => setPref(next)}
-      title={`Tema: ${LABELS[pref as Pref]}. Clic para cambiar.`}
+      title={`Tema: ${LABELS[shown]}. Clic para cambiar.`}
       aria-label="Cambiar tema"
       className="relative inline-flex items-center justify-center h-9 w-9 rounded-full bg-surface-shade text-primary transition-colors duration-300 hover:bg-surface-hover"
     >
