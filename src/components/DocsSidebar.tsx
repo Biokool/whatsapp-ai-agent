@@ -1,5 +1,28 @@
 "use client";
 
+import {
+  Folder,
+  Download,
+  MessagesSquare,
+  Pencil,
+  Wrench,
+  ShieldCheck,
+  CloudUpload,
+  Bug,
+  Smartphone,
+  GitBranch,
+  Map,
+  History,
+  Shield,
+  BadgeCheck,
+  FileText,
+  X,
+  Menu,
+  BookOpen,
+  Home,
+  type LucideIcon,
+} from "lucide-react";
+
 interface DocFile {
   name: string;
   relativePath: string;
@@ -15,23 +38,23 @@ interface DocsSidebarProps {
   onToggle: () => void;
 }
 
-function getIcon(name: string, isDir: boolean): string {
-  if (isDir) return "folder";
-  if (name.startsWith("01-")) return "download";
-  if (name.startsWith("02-")) return "chat";
-  if (name.startsWith("03-")) return "edit";
-  if (name.startsWith("04-")) return "build";
-  if (name.startsWith("05-")) return "security";
-  if (name.startsWith("06-")) return "cloud_upload";
-  if (name.startsWith("07-")) return "bug_report";
-  if (name.startsWith("08-")) return "devices";
-  if (name.includes("architecture")) return "account_tree";
-  if (name.includes("roadmap")) return "map";
-  if (name.includes("changelog")) return "history";
-  if (name.includes("security")) return "shield";
-  if (name.includes("testing")) return "verified";
-  if (name.includes("admin")) return "admin_panel_settings";
-  return "description";
+function getIcon(name: string, isDir: boolean): LucideIcon {
+  if (isDir) return Folder;
+  if (name.startsWith("01-")) return Download;
+  if (name.startsWith("02-")) return MessagesSquare;
+  if (name.startsWith("03-")) return Pencil;
+  if (name.startsWith("04-")) return Wrench;
+  if (name.startsWith("05-")) return ShieldCheck;
+  if (name.startsWith("06-")) return CloudUpload;
+  if (name.startsWith("07-")) return Bug;
+  if (name.startsWith("08-")) return Smartphone;
+  if (name.includes("architecture")) return GitBranch;
+  if (name.includes("roadmap")) return Map;
+  if (name.includes("changelog")) return History;
+  if (name.includes("security")) return Shield;
+  if (name.includes("testing")) return BadgeCheck;
+  if (name.includes("admin")) return ShieldCheck;
+  return FileText;
 }
 
 function TreeItem({
@@ -50,8 +73,8 @@ function TreeItem({
   if (file.isDirectory) {
     return (
       <div>
-        <div className="flex items-center gap-2 px-3 py-1.5 text-navy-300 text-xs font-semibold uppercase tracking-wider">
-          <span className="material-symbols-outlined text-[16px]">folder</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 text-text-subtle text-xs font-semibold uppercase tracking-wider">
+          <Folder className="w-4 h-4 shrink-0" />
           <span className="truncate">{file.name}</span>
         </div>
         <div className="ml-2">
@@ -69,19 +92,19 @@ function TreeItem({
     );
   }
 
+  const icon = getIcon(file.name, false);
+
   return (
     <button
       onClick={() => onSelect(file.relativePath)}
       className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all ${
         isSelected
-          ? "bg-ai-green/10 text-ai-green-light border border-ai-green/30"
-          : "text-navy-300 hover:bg-navy-700 hover:text-navy-200 border border-transparent"
+          ? "bg-ai-green-low text-ai-green border border-ai-green/30"
+          : "text-text-subtle hover:bg-surface-hover hover:text-primary border border-transparent"
       }`}
       style={{ paddingLeft: `${12 + depth * 16}px` }}
     >
-      <span className="material-symbols-outlined text-[18px] shrink-0">
-        {getIcon(file.name, false)}
-      </span>
+      {icon({ className: "w-[18px] h-[18px] shrink-0" })}
       <span className="truncate">{file.name}</span>
     </button>
   );
@@ -98,26 +121,24 @@ export default function DocsSidebar({
     <>
       <button
         onClick={onToggle}
-        className="md:hidden fixed top-4 left-4 z-50 bg-navy-700 text-navy-200 p-2 rounded-lg border border-navy-500"
+        className="md:hidden fixed top-4 left-4 z-50 bg-surface-hover text-primary p-2 rounded-lg border border-border"
       >
-        <span className="material-symbols-outlined text-[20px]">{isOpen ? "close" : "menu"}</span>
+        {isOpen ? <X className="w-[20px] h-[20px]" /> : <Menu className="w-[20px] h-[20px]" />}
       </button>
 
       {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-30" onClick={onToggle} />}
 
       <aside
-        className={`fixed md:static top-0 left-0 h-full w-72 bg-navy-900 border-r border-navy-500 flex flex-col z-40 transition-transform duration-200 ${
+        className={`fixed md:static top-0 left-0 h-full w-72 bg-surface border-r border-border flex flex-col z-40 transition-transform duration-200 ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="p-4 border-b border-navy-500">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-ai-green-light text-[24px]">
-              menu_book
-            </span>
-            <h2 className="font-geist text-lg font-bold text-navy-200">Documentacion</h2>
+            <BookOpen className="w-6 h-6 text-ai-green" />
+            <h2 className="font-display text-lg font-bold text-primary">Documentacion</h2>
           </div>
-          <p className="text-xs text-navy-400 mt-1">{files.length} archivos</p>
+          <p className="text-xs text-text-faint mt-1">{files.length} archivos</p>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
@@ -125,11 +146,11 @@ export default function DocsSidebar({
             onClick={() => onSelect("")}
             className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all mb-2 ${
               !selectedPath
-                ? "bg-ai-green/10 text-ai-green-light border border-ai-green/30"
-                : "text-navy-300 hover:bg-navy-700 hover:text-navy-200 border border-transparent"
+                ? "bg-ai-green-low text-ai-green border border-ai-green/30"
+                : "text-text-subtle hover:bg-surface-hover hover:text-primary border border-transparent"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">home</span>
+            <Home className="w-[18px] h-[18px] shrink-0" />
             <span>Inicio</span>
           </button>
 

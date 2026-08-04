@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeft, Clock, Loader2 } from "lucide-react";
 import DocsSidebar from "@/components/DocsSidebar";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 
@@ -88,7 +89,7 @@ export default function DocsPage() {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-navy-950">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       <DocsSidebar
         files={files}
         selectedPath={selectedDoc}
@@ -98,24 +99,24 @@ export default function DocsPage() {
       />
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-navy-800 border-b border-navy-500 px-6 py-3 flex items-center justify-between">
+        <header className="bg-surface border-b border-border px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-navy-300 hover:text-ai-green-light transition-colors"
+              className="text-text-subtle hover:text-ai-green transition-colors"
               title="Volver al Dashboard"
             >
-              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              <ArrowLeft className="w-[20px] h-[20px]" />
             </Link>
-            <h1 className="font-geist text-lg font-bold text-navy-200">
+            <h1 className="font-display text-lg font-bold text-primary">
               {selectedDoc
                 ? selectedDoc.split("/").pop()?.replace(/\.md$/, "").replace(/-/g, " ")
                 : "Documentacion"}
             </h1>
           </div>
           {selectedDoc && (
-            <div className="flex items-center gap-2 text-xs text-navy-400">
-              <span className="material-symbols-outlined text-[16px]">schedule</span>
+            <div className="flex items-center gap-2 text-xs text-text-faint">
+              <Clock className="w-[16px] h-[16px]" />
               {docContent?.lastModified &&
                 new Date(docContent.lastModified).toLocaleDateString("es-ES")}
             </div>
@@ -125,8 +126,8 @@ export default function DocsPage() {
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="flex items-center gap-3 text-ai-green-light animate-pulse">
-                <span className="material-symbols-outlined text-[24px]">hourglass_empty</span>
+              <div className="flex items-center gap-3 text-ai-green animate-pulse">
+                <Loader2 className="w-[24px] h-[24px] animate-spin" />
                 <span className="text-sm">Cargando documento...</span>
               </div>
             </div>
