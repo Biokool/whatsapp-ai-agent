@@ -36,11 +36,11 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-8 shadow-2xl">
+    <main className="min-h-screen bg-canvas flex items-center justify-center p-6">
+      <div className="max-w-md w-full bg-surface border border-border rounded-2xl p-8 shadow-2xl">
         <header className="text-center mb-6">
           <h1 className="text-2xl font-bold mb-2">Conectar WhatsApp</h1>
-          <p className="text-sm text-neutral-400">
+          <p className="text-sm text-text-subtle">
             Escanea el código con tu WhatsApp para conectar el agente
           </p>
         </header>
@@ -57,10 +57,10 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
         )}
 
         {!qrPng && (
-          <div className="bg-neutral-950 border border-neutral-800 rounded-xl aspect-square flex items-center justify-center mb-6">
+          <div className="bg-canvas border border-border rounded-xl aspect-square flex items-center justify-center mb-6">
             <div className="text-center">
-              <div className="w-8 h-8 border-2 border-neutral-700 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-neutral-500">
+              <div className="w-8 h-8 border-2 border-border border-t-ai-green rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-text-faint">
                 {status === "connecting" && "Conectando..."}
                 {status === "disconnected" && "Esperando al bot..."}
                 {status === "unknown" && "Cargando..."}
@@ -70,8 +70,8 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
           </div>
         )}
 
-        <div className="text-xs text-neutral-500 space-y-2">
-          <p className="font-medium text-neutral-300">Cómo escanear:</p>
+        <div className="text-xs text-text-faint space-y-2">
+          <p className="font-medium text-primary">Cómo escanear:</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Abre WhatsApp en tu móvil</li>
             <li>Configuración → Dispositivos vinculados</li>
@@ -85,18 +85,18 @@ export default function QRScreen({ status, qrPng }: QRScreenProps) {
         {(elapsed > 30 || status === "disconnected") && (
           <div className="mt-6 space-y-3">
             {elapsed > 60 && (
-              <div className="p-3 bg-amber-950/50 border border-amber-900 rounded-lg text-sm text-amber-200">
+              <div className="p-3 bg-warning-low border border-warning/50 rounded-lg text-sm text-warning">
                 ¿Llevas más de 1 minuto? El QR puede haber caducado.
               </div>
             )}
             <button
               onClick={handleReset}
               disabled={resetting}
-              className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 rounded-lg bg-success hover:bg-success/85 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {resetting ? "Reseteando sesión..." : "Resetear sesión (QR nuevo)"}
             </button>
-            <p className="text-[11px] text-neutral-600 text-center">
+            <p className="text-[11px] text-text-faint text-center">
               Borra la sesión guardada y genera un QR fresco
             </p>
           </div>
