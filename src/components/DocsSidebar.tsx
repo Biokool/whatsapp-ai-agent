@@ -1,5 +1,6 @@
 "use client";
 
+import { createElement } from "react";
 import {
   Folder,
   Download,
@@ -104,7 +105,7 @@ function TreeItem({
       }`}
       style={{ paddingLeft: `${12 + depth * 16}px` }}
     >
-      {icon({ className: "w-[18px] h-[18px] shrink-0" })}
+      {createElement(icon, { className: "w-[18px] h-[18px] shrink-0" })}
       <span className="truncate">{file.name}</span>
     </button>
   );
