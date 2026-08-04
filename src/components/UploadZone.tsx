@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { UploadCloud, Hourglass } from "lucide-react";
 
 interface UploadZoneProps {
   onUpload: (file: File) => void;
@@ -47,8 +48,8 @@ export default function UploadZone({ onUpload, onAddUrl, isUploading }: UploadZo
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
           isDragging
-            ? "border-ai-green-light bg-ai-green/10"
-            : "border-navy-500 hover:border-navy-400 hover:bg-navy-700/50"
+            ? "border-ai-green bg-ai-green-low"
+            : "border-border hover:border-text-subtle hover:bg-surface-shade"
         } ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
       >
         <input
@@ -58,13 +59,15 @@ export default function UploadZone({ onUpload, onAddUrl, isUploading }: UploadZo
           onChange={handleChange}
           className="hidden"
         />
-        <span className="material-symbols-outlined text-3xl text-navy-400 mb-2">
-          {isUploading ? "hourglass_top" : "upload_file"}
-        </span>
-        <p className="text-sm text-navy-300">
+        {isUploading ? (
+          <Hourglass className="w-8 h-8 mb-2 text-text-faint" />
+        ) : (
+          <UploadCloud className="w-8 h-8 mb-2 text-text-faint" />
+        )}
+        <p className="text-sm text-text-subtle">
           {isUploading ? "Procesando archivo..." : "Arrastra un archivo o haz clic para subir"}
         </p>
-        <p className="text-xs text-navy-400 mt-1">PDF, TXT, MD — Max 10MB</p>
+        <p className="text-xs text-text-faint mt-1">PDF, TXT, MD — Max 10MB</p>
       </div>
 
       {/* URL Input Toggle */}
@@ -72,7 +75,7 @@ export default function UploadZone({ onUpload, onAddUrl, isUploading }: UploadZo
         <div className="text-center">
           <button
             onClick={() => setShowUrlInput(!showUrlInput)}
-            className="text-xs text-ai-green-light hover:text-ai-green transition-colors"
+            className="text-xs text-ai-green hover:text-ai-green transition-colors"
           >
             {showUrlInput ? "Cancelar" : "+ Agregar desde URL"}
           </button>
@@ -87,13 +90,13 @@ export default function UploadZone({ onUpload, onAddUrl, isUploading }: UploadZo
             value={urlValue}
             onChange={(e) => setUrlValue(e.target.value)}
             placeholder="https://ejemplo.com/documentacion"
-            className="flex-1 bg-navy-900 border border-navy-500 rounded-lg px-3 py-2 text-sm text-navy-200 placeholder-navy-400 focus:outline-none focus:border-ai-green-light"
+            className="flex-1 bg-surface-shade border border-border rounded-lg px-3 py-2 text-sm text-primary placeholder-text-faint focus:outline-none focus:border-focus"
             onKeyDown={(e) => e.key === "Enter" && handleUrlSubmit()}
           />
           <button
             onClick={handleUrlSubmit}
             disabled={!urlValue.trim() || isUploading}
-            className="bg-ai-green hover:bg-ai-green-light text-ai-green-dark text-xs font-bold px-3 py-2 rounded-lg disabled:opacity-50"
+            className="bg-ai-green hover:bg-ai-green/85 text-ai-green-contrast text-xs font-bold px-3 py-2 rounded-lg disabled:opacity-50"
           >
             Agregar
           </button>

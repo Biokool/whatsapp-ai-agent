@@ -9,6 +9,7 @@ import {
 import KnowledgeBaseCard from "./KnowledgeBaseCard";
 import N8nSettings from "./N8nSettings";
 import type { KnowledgeBaseWithStats } from "@/core/types/rag";
+import { GraduationCap, Settings } from "lucide-react";
 
 export default function KnowledgeSection() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -45,8 +46,8 @@ export default function KnowledgeSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="font-geist text-lg font-bold text-navy-200 flex items-center gap-2">
-          <span className="material-symbols-outlined text-ai-green-light">school</span>
+        <h2 className="font-display text-lg font-bold text-primary flex items-center gap-2">
+          <GraduationCap className="w-5 h-5 text-ai-green" />
           Knowledge Base
         </h2>
         <div className="flex gap-2">
@@ -54,18 +55,16 @@ export default function KnowledgeSection() {
             onClick={() => setShowSettings(!showSettings)}
             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${
               showSettings
-                ? "bg-navy-600 text-navy-200"
-                : "bg-navy-700 text-navy-400 hover:text-navy-200"
+                ? "bg-surface-hover text-primary"
+                : "bg-surface-hover text-text-subtle hover:text-primary"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px] align-middle mr-1">
-              settings
-            </span>
+            <Settings className="w-4 h-4 inline-block align-middle mr-1" />
             n8n
           </button>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="bg-ai-green hover:bg-ai-green-light text-ai-green-dark text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+            className="bg-ai-green hover:bg-ai-green/85 text-ai-green-contrast text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
           >
             + Nuevo
           </button>
@@ -73,38 +72,38 @@ export default function KnowledgeSection() {
       </div>
 
       {showSettings && (
-        <div className="bg-navy-700 rounded-xl p-4 border border-navy-500">
+        <div className="bg-surface rounded-xl p-4 border border-border">
           <N8nSettings />
         </div>
       )}
 
       {showCreate && (
-        <div className="bg-navy-700 rounded-xl p-4 space-y-3 border border-navy-500">
+        <div className="bg-surface rounded-xl p-4 space-y-3 border border-border">
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Nombre (ej: Catálogo Biokool)"
-            className="w-full bg-navy-900 border border-navy-500 rounded-lg px-3 py-2 text-sm text-navy-200 placeholder-navy-400 focus:outline-none focus:border-ai-green-light"
+            className="w-full bg-surface-shade border border-border rounded-lg px-3 py-2 text-sm text-primary placeholder-text-faint focus:outline-none focus:border-focus"
           />
           <input
             type="text"
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             placeholder="Descripción (opcional)"
-            className="w-full bg-navy-900 border border-navy-500 rounded-lg px-3 py-2 text-sm text-navy-200 placeholder-navy-400 focus:outline-none focus:border-ai-green-light"
+            className="w-full bg-surface-shade border border-border rounded-lg px-3 py-2 text-sm text-primary placeholder-text-faint focus:outline-none focus:border-focus"
           />
           <div className="flex gap-2">
             <button
               onClick={handleCreate}
               disabled={!newName.trim() || createMutation.isPending}
-              className="bg-ai-green hover:bg-ai-green-light text-ai-green-dark text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-50"
+              className="bg-ai-green hover:bg-ai-green/85 text-ai-green-contrast text-xs font-bold px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
               {createMutation.isPending ? "Creando..." : "Crear"}
             </button>
             <button
               onClick={() => setShowCreate(false)}
-              className="text-navy-400 hover:text-navy-200 text-xs px-3 py-1.5"
+              className="text-text-faint hover:text-primary text-xs px-3 py-1.5"
             >
               Cancelar
             </button>
@@ -113,12 +112,12 @@ export default function KnowledgeSection() {
       )}
 
       {isLoading ? (
-        <div className="text-center py-8 text-navy-400 text-sm">Cargando...</div>
+        <div className="text-center py-8 text-text-faint text-sm">Cargando...</div>
       ) : knowledgeBases.length === 0 ? (
-        <div className="text-center py-12 text-navy-400">
-          <span className="material-symbols-outlined text-4xl mb-2 text-navy-500">school</span>
+        <div className="text-center py-12 text-text-faint">
+          <GraduationCap className="w-10 h-10 mb-2 text-text-faint mx-auto" />
           <p className="text-sm">No hay Knowledge Bases creadas.</p>
-          <p className="text-xs text-navy-500 mt-1">
+          <p className="text-xs text-text-faint mt-1">
             Crea una para subir catálogos, FAQs y documentación técnica.
           </p>
         </div>

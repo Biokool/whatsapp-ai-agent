@@ -1,6 +1,7 @@
 "use client";
 
 import type { Document } from "@/core/types/rag";
+import { FileText, Trash2 } from "lucide-react";
 
 interface DocumentListProps {
   documents: Document[];
@@ -9,10 +10,10 @@ interface DocumentListProps {
 
 function StatusBadge({ status }: { status: Document["status"] }) {
   const styles = {
-    ready: "bg-ai-green/20 text-ai-green-light",
-    processing: "bg-amber-warm/20 text-amber-warm",
-    pending: "bg-navy-600 text-navy-300",
-    error: "bg-red-dark/20 text-red-alert",
+    ready: "bg-success-low text-success",
+    processing: "bg-warning-low text-warning",
+    pending: "bg-surface-hover text-text-subtle",
+    error: "bg-error-low text-error",
   };
   const labels = {
     ready: "Listo",
@@ -31,7 +32,7 @@ function StatusBadge({ status }: { status: Document["status"] }) {
 export default function DocumentList({ documents, onDelete }: DocumentListProps) {
   if (documents.length === 0) {
     return (
-      <p className="text-sm text-navy-400 text-center py-4">
+      <p className="text-sm text-text-faint text-center py-4">
         No hay documentos. Sube un PDF para empezar.
       </p>
     );
@@ -40,19 +41,19 @@ export default function DocumentList({ documents, onDelete }: DocumentListProps)
   return (
     <div className="space-y-2">
       {documents.map((doc) => (
-        <div key={doc.id} className="flex items-center justify-between p-2 bg-navy-700 rounded-lg">
+        <div key={doc.id} className="flex items-center justify-between p-2 bg-surface rounded-lg">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="material-symbols-outlined text-navy-400 text-[18px]">description</span>
-            <span className="text-sm text-navy-200 truncate">{doc.title}</span>
+            <FileText className="w-4 h-4 shrink-0 text-text-faint" />
+            <span className="text-sm text-primary truncate">{doc.title}</span>
             <StatusBadge status={doc.status} />
             {doc.status === "ready" && (
-              <span className="text-[10px] text-navy-400">{doc.chunk_count} chunks</span>
+              <span className="text-[10px] text-text-faint">{doc.chunk_count} chunks</span>
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             {doc.status === "error" && doc.error_message && (
               <span
-                className="text-[10px] text-red-alert max-w-[150px] truncate"
+                className="text-[10px] text-error max-w-[150px] truncate"
                 title={doc.error_message}
               >
                 {doc.error_message}
@@ -60,9 +61,9 @@ export default function DocumentList({ documents, onDelete }: DocumentListProps)
             )}
             <button
               onClick={() => onDelete(doc.id)}
-              className="text-navy-400 hover:text-red-alert p-1"
+              className="text-text-faint hover:text-error p-1"
             >
-              <span className="material-symbols-outlined text-[16px]">delete</span>
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>

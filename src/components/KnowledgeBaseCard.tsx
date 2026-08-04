@@ -4,6 +4,7 @@ import type { KnowledgeBaseWithStats } from "@/core/types/rag";
 import { useDocuments, useUploadDocument, useDeleteDocument } from "@/hooks/use-documents";
 import DocumentList from "./DocumentList";
 import UploadZone from "./UploadZone";
+import { Trash2 } from "lucide-react";
 
 interface KnowledgeBaseCardProps {
   kb: KnowledgeBaseWithStats;
@@ -40,15 +41,15 @@ export default function KnowledgeBaseCard({
     <div
       className={`rounded-xl border transition-all ${
         isSelected
-          ? "border-ai-green-light bg-navy-700"
-          : "border-navy-500 bg-navy-800 hover:border-navy-400"
+          ? "border-ai-green bg-surface"
+          : "border-border bg-surface hover:border-text-subtle"
       }`}
     >
       <div onClick={onSelect} className="p-4 cursor-pointer flex justify-between items-start">
         <div>
-          <h3 className="font-bold text-navy-200">{kb.name}</h3>
-          {kb.description && <p className="text-xs text-navy-400 mt-1">{kb.description}</p>}
-          <div className="flex gap-3 mt-2 text-[11px] text-navy-300">
+          <h3 className="font-bold text-primary">{kb.name}</h3>
+          {kb.description && <p className="text-xs text-text-faint mt-1">{kb.description}</p>}
+          <div className="flex gap-3 mt-2 text-[11px] text-text-subtle">
             <span>{kb.document_count} docs</span>
             <span>{kb.total_chunks} chunks</span>
           </div>
@@ -58,14 +59,14 @@ export default function KnowledgeBaseCard({
             e.stopPropagation();
             onDelete(kb.id);
           }}
-          className="text-navy-400 hover:text-red-alert p-1"
+          className="text-text-faint hover:text-error p-1"
         >
-          <span className="material-symbols-outlined text-[18px]">delete</span>
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
       {isSelected && (
-        <div className="px-4 pb-4 space-y-3 border-t border-navy-600 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
           <DocumentList documents={documents} onDelete={handleDeleteDoc} />
           <UploadZone
             onUpload={handleUpload}
