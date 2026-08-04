@@ -19,7 +19,7 @@ const THEME_SCRIPT = `(function(){try{var s=localStorage.getItem('biokool-theme'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={archivo.variable}>
+    <html lang="es" className={archivo.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
