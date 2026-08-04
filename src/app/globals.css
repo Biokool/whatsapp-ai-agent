@@ -41,8 +41,10 @@
 
   --pds-ai-green: light-dark(#0d9e6e, #10b981);
   --pds-ai-green-contrast: light-dark(#ffffff, #031427);
+  --pds-ai-green-low: color-mix(in srgb, var(--pds-ai-green) 18%, transparent);
   --pds-human-blue: light-dark(#3131c0, #6d7dff);
   --pds-human-blue-contrast: light-dark(#ffffff, #0b1c30);
+  --pds-human-blue-low: color-mix(in srgb, var(--pds-human-blue) 18%, transparent);
 }
 
 html.scheme-light {
@@ -93,8 +95,10 @@ html.scheme-dark {
 
   --color-ai-green: var(--pds-ai-green);
   --color-ai-green-contrast: var(--pds-ai-green-contrast);
+  --color-ai-green-low: var(--pds-ai-green-low);
   --color-human-blue: var(--pds-human-blue);
   --color-human-blue-contrast: var(--pds-human-blue-contrast);
+  --color-human-blue-low: var(--pds-human-blue-low);
 
   --radius-sm: 4px;
   --radius-md: 8px;
