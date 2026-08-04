@@ -1,5 +1,6 @@
 "use client";
 
+import { MessageCircleOff } from "lucide-react";
 import type { Conversation } from "@/core/types";
 
 interface ConversationListProps {
@@ -33,13 +34,13 @@ export default function ConversationList({
   });
 
   return (
-    <aside className="w-full md:w-80 lg:w-96 border-r border-navy-500 bg-navy-800 flex flex-col flex-shrink-0 h-full overflow-hidden">
-      <div className="p-3 md:p-4 border-b border-navy-500 flex justify-between items-center bg-navy-600 shrink-0">
+    <aside className="w-full md:w-80 lg:w-96 border-r border-border bg-surface flex flex-col flex-shrink-0 h-full overflow-hidden">
+      <div className="p-3 md:p-4 border-b border-border flex justify-between items-center bg-surface-hover shrink-0">
         <div className="flex items-center gap-2">
-          <h2 className="font-geist text-sm md:text-base font-bold text-navy-200">
+          <h2 className="font-display text-sm md:text-base font-bold text-primary">
             Conversaciones
           </h2>
-          <span className="text-[10px] md:text-xs bg-navy-700 text-ai-green-light px-1.5 md:px-2 py-0.5 rounded-full border border-navy-500 font-mono">
+          <span className="text-[10px] md:text-xs bg-surface-hover text-ai-green px-1.5 md:px-2 py-0.5 rounded-full border border-border font-mono">
             {filtered.length}
           </span>
         </div>
@@ -47,10 +48,8 @@ export default function ConversationList({
 
       <div className="overflow-y-auto flex-1 p-2 space-y-1.5 md:space-y-2 custom-scrollbar pb-20 md:pb-2">
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-navy-300 text-sm">
-            <span className="material-symbols-outlined text-3xl mb-2 text-navy-400">
-              chat_error
-            </span>
+          <div className="text-center py-12 text-text-subtle text-sm">
+            <MessageCircleOff className="w-8 h-8 mx-auto mb-2 text-text-faint" />
             <p>No hay conversaciones todavia.</p>
           </div>
         )}
@@ -63,18 +62,16 @@ export default function ConversationList({
               onClick={() => onSelect(c.id)}
               className={`p-2.5 md:p-3 rounded-lg cursor-pointer relative overflow-hidden transition-all group ${
                 isSelected
-                  ? "bg-navy-700 border border-navy-500 shadow-md"
-                  : "hover:bg-navy-600 border border-transparent hover:border-navy-500"
+                  ? "bg-surface-hover border border-border shadow-md"
+                  : "hover:bg-surface-shade border border-transparent hover:border-border"
               }`}
             >
-              {isSelected && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-ai-green-light" />
-              )}
+              {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-ai-green" />}
 
               <div
                 className={`flex justify-between items-start mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}
               >
-                <span className="font-bold text-navy-200 text-xs md:text-sm truncate flex items-center gap-1.5">
+                <span className="font-bold text-primary text-xs md:text-sm truncate flex items-center gap-1.5">
                   {c.name ??
                     (() => {
                       const isLid = c.jid?.endsWith("@lid");
@@ -85,34 +82,34 @@ export default function ConversationList({
                     })()}
                   {c.mode === "HUMAN" && (
                     <span
-                      className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-amber-warm"
+                      className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-warning"
                       title="Modo Humano"
                     />
                   )}
                 </span>
-                <span className="text-[10px] md:text-[11px] text-navy-300 ml-2 whitespace-nowrap font-mono">
+                <span className="text-[10px] md:text-[11px] text-text-subtle ml-2 whitespace-nowrap font-mono">
                   {formatRelative(c.last_message_at)}
                 </span>
               </div>
 
               {c.name && (
                 <div
-                  className={`text-[10px] md:text-xs text-navy-400 font-mono mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}
+                  className={`text-[10px] md:text-xs text-text-faint font-mono mb-0.5 md:mb-1 ${isSelected ? "pl-2" : ""}`}
                 >
                   {c.jid?.endsWith("@lid") ? "WhatsApp" : `+${c.phone}`}
                 </div>
               )}
 
               <div className={`flex items-center justify-between ${isSelected ? "pl-2" : ""}`}>
-                <p className="text-[10px] md:text-xs text-navy-300 truncate pr-2 leading-tight">
+                <p className="text-[10px] md:text-xs text-text-subtle truncate pr-2 leading-tight">
                   {c.last_message_preview ?? "Sin mensajes"}
                 </p>
                 <div className="flex items-center gap-1 shrink-0">
                   <span
                     className={`text-[8px] md:text-[10px] uppercase tracking-wider px-1 md:px-1.5 py-0.5 rounded font-semibold ${
                       c.mode === "AI"
-                        ? "bg-ai-green-dark text-ai-green-light"
-                        : "bg-human-blue text-human-blue-light"
+                        ? "bg-ai-green-low text-ai-green"
+                        : "bg-human-blue text-human-blue-contrast"
                     }`}
                   >
                     {c.mode}
